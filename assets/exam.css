@@ -300,27 +300,45 @@
   }
 
   /* ---------- Lab Values split layout ---------- */
+  /* When the panel is open the app becomes a fixed-height shell: the top bar
+     stays put and the question column and the lab panel each scroll on their
+     own, so scrolling the labs never moves the question. */
   #examBody{width:100%;}
-  #examBody.with-lab{display:flex;align-items:stretch;}
-  #examBody.with-lab #examMain{flex:1 1 0;min-width:0;}
-  #app.lab-open{max-width:none;}
-
+  #app.lab-open{
+    max-width:none;
+    height:100vh;
+    display:flex !important;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  #app.lab-open .topbar{flex:0 0 auto;}
+  #app.lab-open #examBody.with-lab{
+    flex:1 1 auto;
+    min-height:0;
+    display:flex;
+    align-items:stretch;
+  }
+  #app.lab-open #examBody.with-lab #examMain{
+    flex:1 1 0;
+    min-width:0;
+    overflow-y:auto;
+  }
   .lv-side{
     flex:0 0 46%;
-    max-width:720px;
-    align-self:flex-start;
-    position:sticky;
-    top:0;
-    height:100vh;
+    max-width:760px;
+    min-width:340px;
+    display:flex;
+    overflow:hidden;
     border-left:1px solid var(--border);
     background:#fff;
   }
   @media (max-width:820px){
-    #examBody.with-lab{display:block;}
+    #app.lab-open{height:auto;overflow:visible;display:block !important;}
+    #app.lab-open #examBody.with-lab{display:block;}
+    #app.lab-open #examBody.with-lab #examMain{overflow-y:visible;}
     .lv-side{
       position:fixed;
       inset:0;
-      height:100vh;
       max-width:none;
       z-index:400;
       border-left:none;

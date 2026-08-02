@@ -223,8 +223,13 @@ function renderLabValues(root, opts){
   // ----- search -----
   const controls = document.createElement('div');
   controls.className = 'lv-controls';
-  controls.innerHTML = `<input type="search" class="lv-search" id="lvSearch"
-     placeholder="Search" aria-label="Search lab values" autocomplete="off">`;
+  controls.innerHTML = `<div class="lv-search-wrap">
+      <svg class="lv-search-icon" width="17" height="17" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg>
+      <input type="search" class="lv-search" id="lvSearch"
+        placeholder="Search lab values" aria-label="Search lab values" autocomplete="off">
+    </div>`;
   root.appendChild(controls);
 
   // ----- tabs -----
