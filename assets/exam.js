@@ -494,13 +494,6 @@ function openLabValues(){
   document.getElementById('app').classList.add('lab-open');
 
   renderLabValues(lvSide, {
-    showPopOut: true,
-    onPopOut: () => {
-      const w = window.open(window.LAB_VALUES_URL, 'labvalues',
-        'width=680,height=820,menubar=no,toolbar=no,location=no,scrollbars=yes');
-      if(w){ w.focus(); closeLabValues(); }
-      else { alert('Please allow pop-ups to open Lab Values in a separate window.'); }
-    },
     showClose: true,
     onClose: closeLabValues
   });
