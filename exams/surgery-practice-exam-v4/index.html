@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Practice Exam</title>
+<link rel="stylesheet" href="../../assets/exam.css">
+</head>
+<body>
+
+<div class="splash" id="loadingScreen">
+  <div class="spinner"></div>
+  <div class="splash-text" id="loadingText">Loading&hellip;</div>
+</div>
+
+<div class="splash" id="startScreen" style="display:none">
+  <div class="start-card">
+    <h1 id="examName"></h1>
+    <p class="sub" id="examSub"></p>
+    <ul class="instructions">
+      <li>Click an answer choice to select it.</li>
+      <li>Click the <b>ab</b> tab on the right of a choice to cross it out; click it again to restore the choice.</li>
+      <li>Click and drag across any part of a question to highlight it; click a highlight to remove it.</li>
+      <li>Use "Mark for review" to flag an item, and "Review / Item List" to jump to any item.</li>
+      <li>Your progress, highlights, and crossed-out choices are all saved automatically in this browser.</li>
+    </ul>
+    <div class="start-actions" id="resumeRow" style="display:none">
+      <button class="btn" id="resumeBtn">Resume where you left off (Item <span id="resumeItem"></span>)</button>
+      <button class="btn secondary" id="startOverBtn">Start Over</button>
+    </div>
+    <div class="start-actions" id="beginRow" style="display:none">
+      <button class="btn" id="beginBtn">Begin Exam</button>
+    </div>
+  </div>
+</div>
+
+<div id="app">
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="item-box">Item: <span id="curItem">1</span> of <span id="totalItems"></span></div>
+      <div class="exam-title" id="examTitleBar"></div>
+    </div>
+    <div class="topbar-center">
+      <button class="nav-btn" id="prevBtn"><span class="nav-circle">&#8592;</span>Previous</button>
+      <div class="counter"><span id="curItem2">1</span> / <span id="totalItems2"></span></div>
+      <button class="nav-btn" id="nextBtn"><span class="nav-circle">&#8594;</span>Next</button>
+    </div>
+    <div class="topbar-right">
+      <div class="tb-item" id="reviewOpenBtn">&#9635;<div>Review</div></div>
+      <div class="tb-item" id="restartBtn">&#8635;<div>Restart</div></div>
+    </div>
+  </header>
+
+  <div class="subbar">
+    <label class="mark-flag"><input type="checkbox" id="markChk"> Mark for review</label>
+    <div class="timer" id="timer">Elapsed: 00:00:00</div>
+  </div>
+
+  <main id="quizMain">
+    <div class="graded-banner" id="gradedBanner"></div>
+    <div class="qimg-wrap" id="qimgWrap" style="display:none"><img id="qimg" src="" alt="Exhibit"></div>
+    <div class="stem" id="qstem"></div>
+    <div class="options" id="qoptions"></div>
+  </main>
+
+  <footer class="botbar">
+    <button class="btn secondary" id="prevBtn2">Previous</button>
+    <button class="btn secondary" id="reviewBtn">Review / Item List</button>
+    <button class="btn" id="nextBtn2">Next</button>
+  </footer>
+
+  <!-- Review overlay -->
+  <div class="overlay" id="reviewOverlay">
+    <div class="modal">
+      <button class="close-x" id="closeReview">&times;</button>
+      <h2>Item Review</h2>
+      <div class="legend" id="reviewLegend">
+        <span><span class="dot a"></span> Answered</span>
+        <span><span class="dot u"></span> Unanswered</span>
+        <span><span class="dot m" style="border-radius:50%"></span> Marked for review</span>
+      </div>
+      <div class="summary-row" id="summaryRow"></div>
+      <div class="grid-nav" id="gridNav"></div>
+      <button class="btn" id="finishBtn">End Block &amp; See Results</button>
+    </div>
+  </div>
+
+  <!-- Results screen -->
+  <div id="resultsScreen">
+    <h1>Exam Complete</h1>
+    <p>Here is how you scored, and which items you got wrong. Go back to the exam to page through your answers &mdash; incorrect items are marked so you can review them.</p>
+
+    <div class="score-card">
+      <div>
+        <div class="score-percent" id="scorePercent">0%</div>
+        <div class="score-frac" id="scoreFrac"></div>
+      </div>
+      <div class="score-breakdown">
+        <div class="b-correct"><b id="bCorrect">0</b><span>Correct</span></div>
+        <div class="b-incorrect"><b id="bIncorrect">0</b><span>Incorrect</span></div>
+        <div class="b-unanswered"><b id="bUnanswered">0</b><span>Unanswered</span></div>
+      </div>
+    </div>
+
+    <button class="btn secondary" id="downloadBtn">Download My Results (.txt)</button>
+    <button class="btn secondary" id="backToExamBtn">Back to Exam</button>
+    <table class="results-table">
+      <thead><tr><th>Item</th><th>Your Answer</th><th>Correct Answer</th><th>Result</th><th>Marked for Review</th></tr></thead>
+      <tbody id="resultsBody"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<script src="data.js"></script>
+<script src="../../assets/exam.js"></script>
+</body>
+</html>
