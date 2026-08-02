@@ -1,0 +1,150 @@
+/* Lab Values panel — UWorld-style reference window.
+   Works both docked (.lv-dock) inside an exam and standalone (popup window). */
+
+.lv{
+  --lv-header:#d6d6d6;
+  --lv-bg:#dfe0ef;
+  --lv-tab:#ffffff;
+  --lv-tab-active:#d4d7ee;
+  --lv-border:#b9bcd6;
+  --lv-line:rgba(30,40,60,.12);
+  --lv-text:#1c2330;
+  --lv-accent:#3a4a8c;
+  display:flex;
+  flex-direction:column;
+  height:100%;
+  min-height:0;
+  background:#fff;
+  color:var(--lv-text);
+  font-family:"Segoe UI",Arial,Helvetica,sans-serif;
+}
+
+.lv-header{
+  flex:0 0 auto;
+  background:var(--lv-header);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:12px 16px;
+  gap:12px;
+}
+.lv-title{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:19px;
+  font-weight:600;
+}
+.lv-beaker{color:var(--lv-accent);}
+.lv-header-actions{display:flex;align-items:center;gap:6px;}
+.lv-popout,.lv-close{
+  background:transparent;
+  border:1px solid transparent;
+  border-radius:5px;
+  cursor:pointer;
+  color:#33404f;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:5px;
+  line-height:1;
+}
+.lv-close{font-size:22px;width:32px;height:32px;}
+.lv-popout:hover,.lv-close:hover{background:rgba(0,0,0,.08);}
+
+.lv-controls{
+  flex:0 0 auto;
+  background:#fff;
+  padding:16px;
+}
+.lv-search{
+  width:min(300px,60%);
+  padding:8px 12px;
+  border:1px solid #9aa0b3;
+  border-radius:6px;
+  font-size:15px;
+  outline:none;
+}
+.lv-search:focus{border-color:var(--lv-accent);box-shadow:0 0 0 2px rgba(58,74,140,.18);}
+
+.lv-tabs{
+  flex:0 0 auto;
+  background:#fff;
+  display:flex;
+  gap:8px;
+  padding:0 16px;
+  position:relative;
+  z-index:1;
+}
+.lv-tab{
+  background:var(--lv-tab);
+  border:1px solid var(--lv-border);
+  border-bottom:none;
+  border-radius:7px 7px 0 0;
+  padding:8px 14px;
+  font-size:14.5px;
+  cursor:pointer;
+  color:var(--lv-text);
+  position:relative;
+  top:1px;
+}
+.lv-tab:hover{background:#eef0fa;}
+.lv-tab.active{
+  background:var(--lv-tab-active);
+  font-weight:600;
+}
+.lv-tab-label{border-radius:2px;padding:0 1px;}
+.lv-tab.lv-tab-hit .lv-tab-label{background:#ffe86b;color:#1c2330;box-shadow:0 0 0 1px #ffe86b;}
+
+/* search match highlight */
+mark.lv-hit{
+  background:#ffe86b;
+  color:inherit;
+  padding:0 1px;
+  border-radius:2px;
+}
+
+.lv-body{
+  flex:1 1 auto;
+  min-height:0;
+  overflow:auto;
+  background:var(--lv-bg);
+  border-top:1px solid var(--lv-border);
+}
+.lv-table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:15px;
+}
+.lv-table thead th{
+  text-align:left;
+  font-weight:700;
+  padding:14px 16px 10px;
+  position:sticky;
+  top:0;
+  background:var(--lv-bg);
+  z-index:1;
+}
+.lv-table tbody td{
+  padding:9px 16px;
+  vertical-align:top;
+  border-top:1px solid var(--lv-line);
+}
+.lv-row .lv-val{white-space:nowrap;}
+.lv-group .lv-label{font-weight:400;}
+.lv-bold .lv-label,.lv-bold .lv-val{font-weight:700;}
+.lv-empty{
+  padding:24px 16px;
+  color:#5b6270;
+  font-style:italic;
+  border-top:1px solid var(--lv-line);
+}
+
+/* ---- standalone popup window ---- */
+body.lv-standalone{margin:0;}
+body.lv-standalone .lv{height:100vh;}
+
+@media (max-width:520px){
+  .lv-table{font-size:14px;}
+  .lv-row .lv-val{white-space:normal;}
+}

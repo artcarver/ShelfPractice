@@ -138,6 +138,17 @@ function render(){
     optsDiv.appendChild(row);
   });
 
+  // explanation (shown only after the exam is graded / during review)
+  const expEl = document.getElementById('explanation');
+  const expHtml = state.graded && EXAM.explanations ? EXAM.explanations[q.n] : null;
+  if(expHtml){
+    expEl.innerHTML = '<div class="exp-h">Explanation</div>' + expHtml;
+    expEl.style.display = '';
+  }else{
+    expEl.innerHTML = '';
+    expEl.style.display = 'none';
+  }
+
   document.getElementById('markChk').checked = !!state.marked[q.n];
 
   document.getElementById('prevBtn').disabled = state.idx === 0;
@@ -468,6 +479,43 @@ document.getElementById('startOverBtn').addEventListener('click', () => {
   saveState();
   enterExam();
 });
+
+/* ---------- Lab Values panel (splits the layout, reflowing the question) ---------- */
+
+let lvSide = null;
+
+function openLabValues(){
+  if(lvSide) return;
+  const examBody = document.getElementById('examBody');
+  lvSide = document.createElement('div');
+  lvSide.className = 'lv-side';
+  examBody.appendChild(lvSide);
+  examBody.classList.add('with-lab');
+  document.getElementById('app').classList.add('lab-open');
+
+  renderLabValues(lvSide, {
+    showPopOut: true,
+    onPopOut: () => {
+      const w = window.open(window.LAB_VALUES_URL, 'labvalues',
+        'width=680,height=820,menubar=no,toolbar=no,location=no,scrollbars=yes');
+      if(w){ w.focus(); closeLabValues(); }
+      else { alert('Please allow pop-ups to open Lab Values in a separate window.'); }
+    },
+    showClose: true,
+    onClose: closeLabValues
+  });
+}
+
+function closeLabValues(){
+  if(!lvSide) return;
+  document.getElementById('examBody').classList.remove('with-lab');
+  document.getElementById('app').classList.remove('lab-open');
+  lvSide.remove();
+  lvSide = null;
+}
+
+const labBtn = document.getElementById('labValuesBtn');
+if(labBtn) labBtn.addEventListener('click', openLabValues);
 
 loadState();
 tickTimer();
