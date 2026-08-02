@@ -138,6 +138,17 @@ function render(){
     optsDiv.appendChild(row);
   });
 
+  // explanation (shown only after the exam is graded / during review)
+  const expEl = document.getElementById('explanation');
+  const expHtml = state.graded && EXAM.explanations ? EXAM.explanations[q.n] : null;
+  if(expHtml){
+    expEl.innerHTML = '<div class="exp-h">Explanation</div>' + expHtml;
+    expEl.style.display = '';
+  }else{
+    expEl.innerHTML = '';
+    expEl.style.display = 'none';
+  }
+
   document.getElementById('markChk').checked = !!state.marked[q.n];
 
   document.getElementById('prevBtn').disabled = state.idx === 0;
