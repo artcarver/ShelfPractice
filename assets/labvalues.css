@@ -43,7 +43,7 @@
 }
 .lv-beaker{color:var(--lv-navy);flex:0 0 auto;}
 .lv-header-actions{display:flex;align-items:center;gap:4px;}
-.lv-popout,.lv-close{
+.lv-close{
   background:transparent;
   border:none;
   border-radius:7px;
@@ -55,10 +55,10 @@
   width:34px;
   height:34px;
   line-height:1;
+  font-size:22px;
   transition:background .12s,color .12s;
 }
-.lv-close{font-size:22px;}
-.lv-popout:hover,.lv-close:hover{background:rgba(11,74,115,.1);color:var(--lv-navy);}
+.lv-close:hover{background:rgba(11,74,115,.1);color:var(--lv-navy);}
 
 /* ---- search ---- */
 .lv-controls{flex:0 0 auto;padding:16px 18px 12px;}

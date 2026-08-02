@@ -11,9 +11,7 @@ assets/
   exam.js                           Shared exam engine (navigation, grading,
                                     highlighting, cross-outs, saved progress)
   labvalues.css                     Styles for the Lab Values reference panel
-  labvalues.js                      Lab Values data + panel (searchable,
-                                    tabbed, with pop-out-to-window support)
-  labvalues.html                    Standalone Lab Values page (pop-out target)
+  labvalues.js                      Lab Values data + panel (searchable, tabbed)
 exams/
   surgery-practice-exam-v4/
     index.html                      Exam shell page (identical for every exam)
@@ -22,7 +20,7 @@ exams/
 
 Each exam page loads `data.js` (which sets `window.EXAM`) followed by the shared engine. All titles, item counts, and the localStorage key come from `window.EXAM`, so the shell page and engine never need editing per exam.
 
-The shell page also loads `assets/labvalues.js` / `assets/labvalues.css`, which add a **Lab Values** button to the toolbar. It opens a searchable, tabbed reference panel (Serum / Cerebrospinal / Blood / Urine and BMI) that can be popped out into its own window. The lab-value data is shared across all exams — edit it once in `assets/labvalues.js`.
+The shell page also loads `assets/labvalues.js` / `assets/labvalues.css`, which add a **Lab Values** button to the toolbar. It opens a searchable, tabbed reference panel (Serum / Cerebrospinal / Blood / Urine and BMI) that splits the screen beside the question. The lab-value data is shared across all exams — edit it once in `assets/labvalues.js`.
 
 ## Adding a new exam
 

@@ -2,8 +2,7 @@
    Exposes:
      window.LAB_VALUES            – the reference data
      window.renderLabValues(root, opts)  – builds the panel UI into `root`
-     window.LAB_VALUES_URL        – absolute URL of the standalone popup page
-   opts: { showPopOut, onPopOut, showClose, onClose }
+   opts: { showClose, onClose }
 
    Each category is a flat list of rows: [label, value, level]
      - value === "" marks a group header (no reference range)
@@ -193,12 +192,6 @@ function beakerSVG(){
     <path d="M9 3h6M10 3v6.5L5.5 17.2A2 2 0 0 0 7.2 20h9.6a2 2 0 0 0 1.7-2.8L14 9.5V3"/>
     <path d="M8.2 13.5h7.6"/></svg>`;
 }
-function popOutSVG(){
-  return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-    stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-    <path d="M14 4h6v6M20 4l-8.5 8.5"/><path d="M18 13v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h5"/></svg>`;
-}
-
 function renderLabValues(root, opts){
   opts = opts || {};
   root.classList.add('lv');
@@ -210,14 +203,11 @@ function renderLabValues(root, opts){
   // ----- header -----
   const header = document.createElement('div');
   header.className = 'lv-header';
-  const popBtn = opts.showPopOut
-    ? `<button class="lv-popout" id="lvPopout" title="Open in a separate window">${popOutSVG()}</button>`
-    : '';
   const closeBtn = opts.showClose
     ? `<button class="lv-close" id="lvClose" title="Close" aria-label="Close">&times;</button>`
     : '';
   header.innerHTML = `<div class="lv-title">${beakerSVG()}<span>Lab Values</span></div>
-    <div class="lv-header-actions">${popBtn}${closeBtn}</div>`;
+    <div class="lv-header-actions">${closeBtn}</div>`;
   root.appendChild(header);
 
   // ----- search -----
@@ -323,10 +313,6 @@ function renderLabValues(root, opts){
     query = e.target.value;
     renderTable();
   });
-  if(opts.showPopOut){
-    const pb = root.querySelector('#lvPopout');
-    if(pb) pb.addEventListener('click', () => opts.onPopOut && opts.onPopOut());
-  }
   if(opts.showClose){
     const cb = root.querySelector('#lvClose');
     if(cb) cb.addEventListener('click', () => opts.onClose && opts.onClose());
@@ -336,13 +322,5 @@ function renderLabValues(root, opts){
 }
 
 window.renderLabValues = renderLabValues;
-
-// URL of the standalone popup page, resolved relative to this script.
-try{
-  const src = (document.currentScript && document.currentScript.src) || '';
-  window.LAB_VALUES_URL = src ? new URL('labvalues.html', src).href : 'labvalues.html';
-}catch(e){
-  window.LAB_VALUES_URL = 'labvalues.html';
-}
 
 })();
