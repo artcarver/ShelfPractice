@@ -187,22 +187,6 @@ const CATEGORIES = [
 
 window.LAB_VALUES = CATEGORIES;
 
-/* Precompute, per category, each row's ancestor indices (the enclosing
-   group-header chain). Used so a search match reveals its parent headers
-   and a matched header reveals its children. */
-function computeAncestors(rows){
-  const ancestors = [];
-  const stack = []; // entries: {level, idx}
-  rows.forEach((r, i) => {
-    const level = r[2] || 0;
-    while(stack.length && stack[stack.length - 1].level >= level) stack.pop();
-    ancestors.push(stack.map(s => s.idx));
-    stack.push({level, idx: i});
-  });
-  return ancestors;
-}
-CATEGORIES.forEach(c => { c._ancestors = computeAncestors(c.rows); });
-
 function beakerSVG(){
   return `<svg class="lv-beaker" width="22" height="22" viewBox="0 0 24 24" fill="none"
     stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -249,8 +233,9 @@ function renderLabValues(root, opts){
   CATEGORIES.forEach(cat => {
     const b = document.createElement('button');
     b.className = 'lv-tab';
-    b.textContent = cat.tab;
     b.dataset.id = cat.id;
+    b.innerHTML = `<span class="lv-tab-label"></span>`;
+    b.querySelector('.lv-tab-label').textContent = cat.tab;
     b.addEventListener('click', () => { activeId = cat.id; renderTable(); });
     tabs.appendChild(b);
   });
@@ -261,52 +246,28 @@ function renderLabValues(root, opts){
   body.className = 'lv-body';
   root.appendChild(body);
 
-  function rowMatches(label, value, q){
-    return (label.toLowerCase().includes(q) || value.toLowerCase().includes(q));
-  }
-
-  function visibleSet(cat, q){
-    if(!q) return null; // null => show all
-    const rows = cat.rows;
-    const anc = cat._ancestors;
-    const direct = rows.map(r => rowMatches(r[0], r[1] || '', q));
-    const show = new Array(rows.length).fill(false);
-    rows.forEach((r, i) => {
-      if(!direct[i]) return;
-      show[i] = true;
-      anc[i].forEach(a => { show[a] = true; }); // reveal parent headers of a match
-    });
-    // reveal all descendants of a directly-matched header
-    rows.forEach((r, i) => {
-      if(direct[i] && (r[1] || '') === ''){
-        for(let j = i + 1; j < rows.length; j++){
-          if((rows[j][2] || 0) <= (r[2] || 0)) break;
-          show[j] = true;
-        }
-      }
-    });
-    return show;
+  function categoryMatches(cat, q){
+    return cat.rows.some(r =>
+      r[0].toLowerCase().includes(q) || (r[1] || '').toLowerCase().includes(q));
   }
 
   function renderTable(){
-    // tab active states
-    tabs.querySelectorAll('.lv-tab').forEach(t => {
-      t.classList.toggle('active', t.dataset.id === activeId);
-    });
-
     const cat = CATEGORIES.find(c => c.id === activeId);
     const q = query.trim().toLowerCase();
-    const show = visibleSet(cat, q);
+
+    // tab: mark the active one, and highlight any tab whose table has a match
+    tabs.querySelectorAll('.lv-tab').forEach(t => {
+      const c = CATEGORIES.find(x => x.id === t.dataset.id);
+      t.classList.toggle('active', t.dataset.id === activeId);
+      t.classList.toggle('lv-tab-hit', !!q && categoryMatches(c, q));
+    });
 
     const table = document.createElement('table');
     table.className = 'lv-table';
-    table.innerHTML = `<thead><tr><th>${cat.heading}</th><th>Reference Range</th></tr></thead>`;
+    table.innerHTML = `<thead><tr><th>${escapeHtml(cat.heading)}</th><th>Reference Range</th></tr></thead>`;
     const tbody = document.createElement('tbody');
 
-    let shown = 0;
-    cat.rows.forEach((r, i) => {
-      if(show && !show[i]) return;
-      shown++;
+    cat.rows.forEach(r => {
       const [label, value, level] = [r[0], r[1] || '', r[2] || 0];
       const meta = r[3] || {};
       const tr = document.createElement('tr');
@@ -314,26 +275,42 @@ function renderLabValues(root, opts){
       tr.className = 'lv-row' + (isHeader ? ' lv-group' : '') + (meta.bold ? ' lv-bold' : '');
       const pad = 4 + level * 22;
       if(isHeader){
-        tr.innerHTML = `<td class="lv-label" colspan="2" style="padding-left:${pad}px">${escapeHtml(label)}</td>`;
+        tr.innerHTML = `<td class="lv-label" colspan="2" style="padding-left:${pad}px">${highlightHtml(label, q)}</td>`;
       }else{
-        tr.innerHTML = `<td class="lv-label" style="padding-left:${pad}px">${escapeHtml(label)}</td>` +
-          `<td class="lv-val">${escapeHtml(value)}</td>`;
+        tr.innerHTML = `<td class="lv-label" style="padding-left:${pad}px">${highlightHtml(label, q)}</td>` +
+          `<td class="lv-val">${highlightHtml(value, q)}</td>`;
       }
       tbody.appendChild(tr);
     });
 
-    if(shown === 0){
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td class="lv-empty" colspan="2">No matching lab values.</td>`;
-      tbody.appendChild(tr);
-    }
     table.appendChild(tbody);
     body.innerHTML = '';
     body.appendChild(table);
+
+    // bring the first match into view
+    if(q){
+      const first = table.querySelector('mark.lv-hit');
+      if(first) first.scrollIntoView({block: 'center'});
+    }
   }
 
   function escapeHtml(s){
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // Escape text, wrapping every case-insensitive occurrence of q in <mark>.
+  function highlightHtml(text, q){
+    if(!q) return escapeHtml(text);
+    const lower = text.toLowerCase();
+    const qlen = q.length;
+    let out = '', i = 0, idx;
+    while((idx = lower.indexOf(q, i)) !== -1){
+      out += escapeHtml(text.slice(i, idx));
+      out += '<mark class="lv-hit">' + escapeHtml(text.slice(idx, idx + qlen)) + '</mark>';
+      i = idx + qlen;
+    }
+    out += escapeHtml(text.slice(i));
+    return out;
   }
 
   // wire controls

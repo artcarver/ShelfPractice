@@ -53,23 +53,52 @@
     </div>
   </header>
 
-  <div class="subbar">
-    <label class="mark-flag"><input type="checkbox" id="markChk"> Mark for review</label>
-    <div class="timer" id="timer">Elapsed: 00:00:00</div>
+  <div id="examBody">
+    <div id="examMain">
+      <div class="subbar">
+        <label class="mark-flag"><input type="checkbox" id="markChk"> Mark for review</label>
+        <div class="timer" id="timer">Elapsed: 00:00:00</div>
+      </div>
+
+      <main id="quizMain">
+        <div class="graded-banner" id="gradedBanner"></div>
+        <div class="qimg-wrap" id="qimgWrap" style="display:none"><img id="qimg" src="" alt="Exhibit"></div>
+        <div class="stem" id="qstem"></div>
+        <div class="options" id="qoptions"></div>
+      </main>
+
+      <footer class="botbar">
+        <button class="btn secondary" id="prevBtn2">Previous</button>
+        <button class="btn secondary" id="reviewBtn">Review / Item List</button>
+        <button class="btn" id="nextBtn2">Next</button>
+      </footer>
+
+      <!-- Results screen -->
+      <div id="resultsScreen">
+        <h1>Exam Complete</h1>
+        <p>Here is how you scored, and which items you got wrong. Go back to the exam to page through your answers &mdash; incorrect items are marked so you can review them.</p>
+
+        <div class="score-card">
+          <div>
+            <div class="score-percent" id="scorePercent">0%</div>
+            <div class="score-frac" id="scoreFrac"></div>
+          </div>
+          <div class="score-breakdown">
+            <div class="b-correct"><b id="bCorrect">0</b><span>Correct</span></div>
+            <div class="b-incorrect"><b id="bIncorrect">0</b><span>Incorrect</span></div>
+            <div class="b-unanswered"><b id="bUnanswered">0</b><span>Unanswered</span></div>
+          </div>
+        </div>
+
+        <button class="btn secondary" id="downloadBtn">Download My Results (.txt)</button>
+        <button class="btn secondary" id="backToExamBtn">Back to Exam</button>
+        <table class="results-table">
+          <thead><tr><th>Item</th><th>Your Answer</th><th>Correct Answer</th><th>Result</th><th>Marked for Review</th></tr></thead>
+          <tbody id="resultsBody"></tbody>
+        </table>
+      </div>
+    </div>
   </div>
-
-  <main id="quizMain">
-    <div class="graded-banner" id="gradedBanner"></div>
-    <div class="qimg-wrap" id="qimgWrap" style="display:none"><img id="qimg" src="" alt="Exhibit"></div>
-    <div class="stem" id="qstem"></div>
-    <div class="options" id="qoptions"></div>
-  </main>
-
-  <footer class="botbar">
-    <button class="btn secondary" id="prevBtn2">Previous</button>
-    <button class="btn secondary" id="reviewBtn">Review / Item List</button>
-    <button class="btn" id="nextBtn2">Next</button>
-  </footer>
 
   <!-- Review overlay -->
   <div class="overlay" id="reviewOverlay">
@@ -85,31 +114,6 @@
       <div class="grid-nav" id="gridNav"></div>
       <button class="btn" id="finishBtn">End Block &amp; See Results</button>
     </div>
-  </div>
-
-  <!-- Results screen -->
-  <div id="resultsScreen">
-    <h1>Exam Complete</h1>
-    <p>Here is how you scored, and which items you got wrong. Go back to the exam to page through your answers &mdash; incorrect items are marked so you can review them.</p>
-
-    <div class="score-card">
-      <div>
-        <div class="score-percent" id="scorePercent">0%</div>
-        <div class="score-frac" id="scoreFrac"></div>
-      </div>
-      <div class="score-breakdown">
-        <div class="b-correct"><b id="bCorrect">0</b><span>Correct</span></div>
-        <div class="b-incorrect"><b id="bIncorrect">0</b><span>Incorrect</span></div>
-        <div class="b-unanswered"><b id="bUnanswered">0</b><span>Unanswered</span></div>
-      </div>
-    </div>
-
-    <button class="btn secondary" id="downloadBtn">Download My Results (.txt)</button>
-    <button class="btn secondary" id="backToExamBtn">Back to Exam</button>
-    <table class="results-table">
-      <thead><tr><th>Item</th><th>Your Answer</th><th>Correct Answer</th><th>Result</th><th>Marked for Review</th></tr></thead>
-      <tbody id="resultsBody"></tbody>
-    </table>
   </div>
 
 </div>

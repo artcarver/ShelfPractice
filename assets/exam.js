@@ -469,20 +469,20 @@ document.getElementById('startOverBtn').addEventListener('click', () => {
   enterExam();
 });
 
-/* ---------- Lab Values panel ---------- */
+/* ---------- Lab Values panel (splits the layout, reflowing the question) ---------- */
 
-let lvBackdrop = null, lvDock = null;
+let lvSide = null;
 
 function openLabValues(){
-  if(lvDock) return;
-  lvBackdrop = document.createElement('div');
-  lvBackdrop.className = 'lv-backdrop';
-  lvDock = document.createElement('div');
-  lvDock.className = 'lv-dock';
-  document.body.appendChild(lvBackdrop);
-  document.body.appendChild(lvDock);
+  if(lvSide) return;
+  const examBody = document.getElementById('examBody');
+  lvSide = document.createElement('div');
+  lvSide.className = 'lv-side';
+  examBody.appendChild(lvSide);
+  examBody.classList.add('with-lab');
+  document.getElementById('app').classList.add('lab-open');
 
-  renderLabValues(lvDock, {
+  renderLabValues(lvSide, {
     showPopOut: true,
     onPopOut: () => {
       const w = window.open(window.LAB_VALUES_URL, 'labvalues',
@@ -493,22 +493,14 @@ function openLabValues(){
     showClose: true,
     onClose: closeLabValues
   });
-
-  lvBackdrop.addEventListener('click', closeLabValues);
-  // trigger slide-in
-  requestAnimationFrame(() => {
-    lvBackdrop.classList.add('show');
-    lvDock.classList.add('show');
-  });
 }
 
 function closeLabValues(){
-  if(!lvDock) return;
-  const dock = lvDock, backdrop = lvBackdrop;
-  lvDock = null; lvBackdrop = null;
-  dock.classList.remove('show');
-  backdrop.classList.remove('show');
-  setTimeout(() => { dock.remove(); backdrop.remove(); }, 220);
+  if(!lvSide) return;
+  document.getElementById('examBody').classList.remove('with-lab');
+  document.getElementById('app').classList.remove('lab-open');
+  lvSide.remove();
+  lvSide = null;
 }
 
 const labBtn = document.getElementById('labValuesBtn');
