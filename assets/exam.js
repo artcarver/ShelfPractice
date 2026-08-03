@@ -1,17 +1,36 @@
 /* Shared exam engine.
-   Expects the page to define window.EXAM before this script loads:
-   { id, title, subtitle?, storageKey?, questions, images, answerKey } */
+   exam.html defines window.EXAM before this script loads, merging the exam's
+   catalog entry from exams/manifest.js with its own data.js:
+   { id, title, label?, items?, storageKey?, basePath?,
+     questions, images, answerKey, explanations? } */
 
 const EXAM = window.EXAM;
 const QUESTIONS = EXAM.questions;
-const IMAGES = EXAM.images || {};
 const ANSWER_KEY = EXAM.answerKey;
+
+/* An image is either an inline data: URI or a path relative to the exam's own
+   folder, which is not the folder this page is served from. */
+const IMAGES = (() => {
+  const base = EXAM.basePath || '';
+  const out = {};
+  Object.entries(EXAM.images || {}).forEach(([key, src]) => {
+    out[key] = /^(data:|https?:|\/)/.test(src) ? src : base + src;
+  });
+  return out;
+})();
+
+const SUBTITLE = [EXAM.label, QUESTIONS.length + ' items', 'untimed']
+  .filter(Boolean).join(' · ');
 
 document.title = EXAM.title;
 document.getElementById('loadingText').textContent = 'Loading ' + EXAM.title + '…';
 document.getElementById('examName').textContent = EXAM.title;
-document.getElementById('examSub').textContent = EXAM.subtitle || (QUESTIONS.length + ' items · untimed');
+document.getElementById('examSub').textContent = SUBTITLE;
 document.getElementById('examTitleBar').textContent = EXAM.title;
+
+if(EXAM.items && EXAM.items !== QUESTIONS.length){
+  console.warn(`manifest lists ${EXAM.items} items for "${EXAM.slug}", data.js has ${QUESTIONS.length}`);
+}
 
 const state = {
   idx: 0,

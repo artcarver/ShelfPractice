@@ -5,39 +5,44 @@ A collection of self-contained, browser-based shelf practice exams. No server or
 ## Structure
 
 ```
-index.html                          Landing page listing all exams
+index.html          Landing page; builds its list from exams/manifest.js
+exam.html           The exam page — one shell shared by every exam,
+                    selected with ?exam=<slug>
 assets/
-  exam.css                          Shared styles for every exam
-  exam.js                           Shared exam engine (navigation, grading,
-                                    highlighting, cross-outs, saved progress)
-  labvalues.css                     Styles for the Lab Values reference panel
-  labvalues.js                      Lab Values data + panel (searchable, tabbed)
+  exam.css          Shared styles
+  exam.js           Shared engine (navigation, grading, highlighting,
+                    cross-outs, lab tables, saved progress)
+  labvalues.css     Styles for the Lab Values reference panel
+  labvalues.js      Lab Values data + panel (searchable, tabbed)
 exams/
-  surgery-practice-exam-v4/         CMS Form 9
-    index.html                      Exam shell page (identical for every exam)
-    data.js                         This exam's questions, images, answer key
-  surgery-practice-exam-form8/      CMS Form 8
-    index.html
+  manifest.js       The catalog: one entry per exam
+  surgery-form9/
+    data.js         Questions, images, answer key, explanations
+  surgery-form8/
     data.js
-    images/                         Exhibit images, referenced by relative path
+    images/         Exhibit images, referenced by relative path
 ```
 
-Each exam page loads `data.js` (which sets `window.EXAM`) followed by the shared engine. All titles, item counts, and the localStorage key come from `window.EXAM`, so the shell page and engine never need editing per exam.
+**Rendering and exam content are fully separate.** Everything under `assets/`
+plus `exam.html` is shared machinery and never changes when you add an exam.
+Everything under `exams/` is content. `exam.html` merges an exam's catalog entry
+from `manifest.js` with its `data.js` into `window.EXAM`, then hands that to the
+engine — so the engine has no knowledge of any particular exam.
 
-The shell page also loads `assets/labvalues.js` / `assets/labvalues.css`, which add a **Lab Values** button to the toolbar. It opens a searchable, tabbed reference panel (Serum / Cerebrospinal / Blood / Urine and BMI) that splits the screen beside the question. The lab-value data is shared across all exams — edit it once in `assets/labvalues.js`.
+The exam page also loads `assets/labvalues.js` / `assets/labvalues.css`, which add a **Lab Values** button to the toolbar. It opens a searchable, tabbed reference panel (Serum / Cerebrospinal / Blood / Urine and BMI) that splits the screen beside the question. The lab-value data is shared across all exams — edit it once in `assets/labvalues.js`.
 
 ## Adding a new exam
 
-1. **Create a folder** under `exams/`, e.g. `exams/medicine-practice-exam-v1/`.
-2. **Copy the shell page** from an existing exam — no edits needed:
-   ```
-   cp exams/surgery-practice-exam-v4/index.html exams/medicine-practice-exam-v1/index.html
-   ```
-3. **Create `data.js`** in the new folder defining `window.EXAM`:
+Two steps: drop in a folder, add a line to the manifest.
+
+1. **Create the folder** `exams/<slug>/` containing `data.js`, plus an
+   `images/` folder if the exam has exhibits.
+
    ```js
    (() => {
    const QUESTIONS = [
-     // {"n": 1, "image": null | "q04", "stem": "...", "options": [["A", "..."], ["B", "..."], ...]}
+     // {"n": 1, "image": null | "q04", "stem": "...",
+     //  "options": [["A", "..."], ["B", "..."], ...]}
      //
      // An item whose stem contains a lab or vital-sign table splits in three:
      // "stem" ends with the lead-in ("Laboratory studies show:"), "labs" holds
@@ -47,7 +52,7 @@ The shell page also loads `assets/labvalues.js` / `assets/labvalues.css`, which 
      //             "rows": [["Na+", "118 mEq/L"], ...]}]  // 2+ cells per row
    ];
    const IMAGES = {
-     // "q04": "images/q04.png"  — a path relative to this exam folder, or an
+     // "q04": "images/q04.png"  — a path relative to this exam's folder, or an
      // inline "data:image/png;base64,..." URI. Keys are referenced by a
      // question's "image" field.
    };
@@ -58,10 +63,7 @@ The shell page also loads `assets/labvalues.js` / `assets/labvalues.css`, which 
      // "1": "<p class=\"exp-obj\">Educational Objective: …</p><p>…</p>"
      // Optional. Rendered as HTML below the choices once the block is graded.
    };
-   window.EXAM = {
-     id: "medicine_practice_exam_v1",   // unique; used for saved progress + results filename
-     title: "Medicine Practice Exam",
-     subtitle: QUESTIONS.length + " items · untimed",
+   window.EXAM_DATA = {
      questions: QUESTIONS,
      images: IMAGES,
      answerKey: ANSWER_KEY,
@@ -69,9 +71,26 @@ The shell page also loads `assets/labvalues.js` / `assets/labvalues.css`, which 
    };
    })();
    ```
-4. **Add a link** to the new exam in the root `index.html` exam list.
 
-That's it — the `id` must be unique per exam so saved progress doesn't collide between exams.
+   Note that `data.js` carries no title, subtitle or id — that all lives in the
+   manifest, so an exam's content file is purely content.
+
+2. **Register it** in `exams/manifest.js`:
+
+   ```js
+   {
+     slug: "medicine-form1",   // must match the folder name
+     id: "medicine_form1",     // unique; saved progress + results filename
+     title: "Medicine Practice Exam",
+     label: "CMS Form 1",      // shown next to the item count
+     items: 50
+   }
+   ```
+
+The landing page picks it up automatically, and it is reachable at
+`exam.html?exam=medicine-form1`. Keep `id` unique so saved progress doesn't
+collide between exams; the engine logs a console warning if `items` disagrees
+with the number of questions actually in `data.js`.
 
 Form 9 inlines its exhibits as base64 data URIs; Form 8 keeps them as PNG files
 under its own `images/` folder and points at them by relative path. Either works

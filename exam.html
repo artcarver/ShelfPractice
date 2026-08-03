@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <title>Practice Exam</title>
-<link rel="stylesheet" href="../../assets/exam.css">
-<link rel="stylesheet" href="../../assets/labvalues.css">
+<link rel="stylesheet" href="assets/exam.css">
+<link rel="stylesheet" href="assets/labvalues.css">
 </head>
 <body>
 
@@ -119,8 +119,41 @@
 
 </div>
 
-<script src="data.js"></script>
-<script src="../../assets/labvalues.js"></script>
-<script src="../../assets/exam.js"></script>
+<!-- One shell for every exam. The catalog entry comes from the manifest, the
+     questions from that exam's own data.js; the engine below is shared. -->
+<script src="exams/manifest.js"></script>
+<script>
+(() => {
+  const slug = new URLSearchParams(location.search).get('exam');
+  const entry = (window.EXAMS || []).find(e => e.slug === slug);
+
+  if(!entry){
+    document.getElementById('loadingText').innerHTML =
+      (slug ? 'Unknown exam &ldquo;' + slug.replace(/[<>&]/g, '') + '&rdquo;. '
+            : 'No exam selected. ') +
+      '<a style="color:#fff" href="index.html">Back to the exam list</a>';
+    return;
+  }
+
+  const load = (src, done) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = done;
+    s.onerror = () => {
+      document.getElementById('loadingText').textContent =
+        'Could not load ' + src;
+    };
+    document.body.appendChild(s);
+  };
+
+  load('exams/' + entry.slug + '/data.js', () => {
+    // Catalog metadata + this exam's content, plus where its files live so the
+    // engine can resolve relative image paths.
+    window.EXAM = Object.assign({}, entry, window.EXAM_DATA,
+                                {basePath: 'exams/' + entry.slug + '/'});
+    load('assets/labvalues.js', () => load('assets/exam.js'));
+  });
+})();
+</script>
 </body>
 </html>

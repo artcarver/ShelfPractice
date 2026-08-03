@@ -51,28 +51,45 @@
   }
   a.exam-link .name{font-weight:600;color:var(--navy);font-size:16px;}
   a.exam-link .meta{font-size:13px;color:var(--muted);margin-top:3px;}
+  li.empty{color:var(--muted);font-size:14px;}
+  li.empty code{background:#eef2f5;padding:1px 5px;border-radius:3px;}
 </style>
 </head>
 <body>
   <div class="card">
     <h1>Shelf Practice Exams</h1>
     <p class="sub">Choose an exam to begin. Progress is saved automatically in your browser.</p>
-    <ul class="exam-list">
-      <li>
-        <a class="exam-link" href="exams/surgery-practice-exam-v4/">
-          <div class="name">Surgery Practice Exam</div>
-          <div class="meta">CMS Form 9 &middot; 50 items &middot; untimed</div>
-        </a>
-      </li>
-      <li>
-        <a class="exam-link" href="exams/surgery-practice-exam-form8/">
-          <div class="name">Surgery Practice Exam</div>
-          <div class="meta">CMS Form 8 &middot; 50 items &middot; untimed</div>
-        </a>
-      </li>
-      <!-- To add a new exam, copy an existing folder under exams/, replace its
-           data.js, and add a link here. See README.md for details. -->
-    </ul>
+    <!-- Built from exams/manifest.js — add an exam there, not here. -->
+    <ul class="exam-list" id="examList"></ul>
   </div>
+
+<script src="exams/manifest.js"></script>
+<script>
+  const list = document.getElementById('examList');
+  const exams = window.EXAMS || [];
+
+  if(!exams.length){
+    list.innerHTML = '<li class="empty">No exams are registered in '
+                   + '<code>exams/manifest.js</code> yet.</li>';
+  }
+
+  exams.forEach(e => {
+    const meta = [e.label, e.items ? e.items + ' items' : null, 'untimed']
+      .filter(Boolean).join(' · ');
+    const li = document.createElement('li');
+    const a = document.createElement('a');
+    a.className = 'exam-link';
+    a.href = 'exam.html?exam=' + encodeURIComponent(e.slug);
+    const name = document.createElement('div');
+    name.className = 'name';
+    name.textContent = e.title;
+    const sub = document.createElement('div');
+    sub.className = 'meta';
+    sub.textContent = meta;
+    a.append(name, sub);
+    li.append(a);
+    list.append(li);
+  });
+</script>
 </body>
 </html>
