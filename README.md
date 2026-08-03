@@ -38,6 +38,13 @@ The shell page also loads `assets/labvalues.js` / `assets/labvalues.css`, which 
    (() => {
    const QUESTIONS = [
      // {"n": 1, "image": null | "q04", "stem": "...", "options": [["A", "..."], ["B", "..."], ...]}
+     //
+     // An item whose stem contains a lab or vital-sign table splits in three:
+     // "stem" ends with the lead-in ("Laboratory studies show:"), "labs" holds
+     // the table, and "stemTail" is the prose that follows it.
+     //   "labs": [{"name": "Serum",                       // optional group heading
+     //             "head": ["", "On admission", "Now"],   // optional header row
+     //             "rows": [["Na+", "118 mEq/L"], ...]}]  // 2+ cells per row
    ];
    const IMAGES = {
      // "q04": "images/q04.png"  — a path relative to this exam folder, or an

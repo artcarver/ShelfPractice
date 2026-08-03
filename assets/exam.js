@@ -72,7 +72,7 @@ function render(){
     imgWrap.style.display = 'none';
   }
 
-  document.getElementById('qstem').innerHTML = renderStemHTML(q.stem, state.highlights[q.n] || []);
+  document.getElementById('qstem').innerHTML = renderStemHTML(q, state.highlights[q.n] || []);
 
   const selected = state.answers[q.n];
   const correctLetter = ANSWER_KEY[q.n];
@@ -167,19 +167,76 @@ function escapeHtml(s){
 
 /* ---------- text highlighting ---------- */
 
-function renderStemHTML(text, ranges){
-  if(!ranges || !ranges.length) return escapeHtml(text);
-  const sorted = ranges.slice().sort((a,b) => a[0]-b[0]);
+/* Highlights are stored as character offsets into the question's plain text.
+   A question may render as several text runs (prose, then a lab table, then
+   more prose); `markUp` renders one run that begins at absolute offset `base`,
+   clipping the ranges that fall inside it. Concatenating the runs in DOM order
+   reproduces the offset string exactly, which is what getTextOffset walks. */
+function markUp(text, ranges, base){
   let html = '';
   let pos = 0;
-  sorted.forEach((r, i) => {
-    const start = Math.max(pos, r[0]);
-    const end = Math.max(start, r[1]);
+  ranges.forEach(({r, i}) => {
+    const start = Math.max(pos, r[0] - base);
+    const end = Math.min(text.length, r[1] - base);
+    if(end <= start || start >= text.length) return;
     if(start > pos) html += escapeHtml(text.slice(pos, start));
     html += `<mark class="hl" data-idx="${i}">${escapeHtml(text.slice(start, end))}</mark>`;
     pos = end;
   });
   html += escapeHtml(text.slice(pos));
+  return html;
+}
+
+/* Plain text of a question, in the same order the DOM renders it. */
+function stemText(q){
+  let text = q.stem;
+  (q.labs || []).forEach(group => {
+    if(group.name) text += group.name;
+    (group.head || []).forEach(c => { text += c; });
+    group.rows.forEach(row => row.forEach(c => { text += c; }));
+  });
+  return text + (q.stemTail || '');
+}
+
+function renderStemHTML(q, ranges){
+  const indexed = (ranges || []).slice().sort((a,b) => a[0]-b[0]).map((r,i) => ({r, i}));
+  if(!q.labs || !q.labs.length) return markUp(q.stem, indexed, 0);
+
+  let off = 0;
+  let html = '<div class="stem-p">' + markUp(q.stem, indexed, off) + '</div>';
+  off += q.stem.length;
+
+  html += '<table class="lab-table">';
+  q.labs.forEach(group => {
+    const width = Math.max(...group.rows.map(r => r.length));
+    if(group.name){
+      html += `<tr class="lab-group"><td colspan="${width}">`
+            + markUp(group.name, indexed, off) + '</td></tr>';
+      off += group.name.length;
+    }
+    if(group.head){
+      html += '<tr class="lab-head">';
+      group.head.forEach(c => {
+        html += '<td>' + markUp(c, indexed, off) + '</td>';
+        off += c.length;
+      });
+      html += '</tr>';
+    }
+    group.rows.forEach(row => {
+      html += '<tr>';
+      row.forEach((cell, ci) => {
+        html += `<td class="${ci === 0 ? 'lab-name' : 'lab-val'}">`
+              + markUp(cell, indexed, off) + '</td>';
+        off += cell.length;
+      });
+      html += '</tr>';
+    });
+  });
+  html += '</table>';
+
+  if(q.stemTail){
+    html += '<div class="stem-p">' + markUp(q.stemTail, indexed, off) + '</div>';
+  }
   return html;
 }
 

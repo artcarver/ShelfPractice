@@ -146,6 +146,29 @@
   }
   .stem mark.hl:hover{background:#ffe066;}
 
+  /* lab / vital-sign tables inside a question stem */
+  .stem .stem-p{white-space:pre-line;}
+  .stem .lab-table{
+    border-collapse:collapse;
+    margin:16px 0 16px 34px;
+    white-space:normal;
+  }
+  .stem .lab-table td{padding:3px 0;vertical-align:top;}
+  .stem .lab-table td + td{padding-left:34px;}
+  .stem .lab-table tr.lab-group td{
+    padding-top:14px;
+    font-weight:600;
+  }
+  .stem .lab-table tr.lab-group:first-child td{padding-top:0;}
+  .stem .lab-table tr.lab-head td{
+    font-weight:600;
+    padding-bottom:6px;
+  }
+  .stem .lab-table td.lab-name{padding-left:22px;}
+  .stem .lab-table tr.lab-group td,
+  .stem .lab-table tr.lab-head td{padding-left:0;}
+  .stem .lab-table tr.lab-head td + td{padding-left:34px;}
+
   .qimg-wrap{margin:0 0 20px;text-align:left;}
   .qimg-wrap img{max-width:100%;max-height:480px;border:1px solid var(--border);border-radius:2px;box-shadow:0 1px 4px rgba(0,0,0,.08);}
 
