@@ -44,7 +44,9 @@ const state = {
   elapsedMs: 0,
   runningSince: null,
   paused: false,
-  graded: false
+  graded: false,
+  score: null    // {correct, incorrect, unanswered, total}; saved at grading so
+                 // the landing page can show the result without the answer key
 };
 
 const STORAGE_KEY = EXAM.storageKey || ('exam_state_' + EXAM.id);
@@ -61,6 +63,7 @@ function loadState(){
       state.highlights = saved.highlights || {};
       state.graded = !!saved.graded;
       state.paused = !!saved.paused;
+      state.score = saved.score || null;
       if(typeof saved.elapsedMs === 'number'){
         state.elapsedMs = saved.elapsedMs;
         state.runningSince = saved.runningSince || null;
@@ -77,6 +80,7 @@ function saveState(){
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       idx: state.idx, answers: state.answers, marked: state.marked, struck: state.struck,
       highlights: state.highlights, graded: state.graded, paused: state.paused,
+      score: state.score,
       elapsedMs: state.elapsedMs, runningSince: state.runningSince
     }));
   }catch(e){}
@@ -198,6 +202,16 @@ function render(){
   }
 
   document.getElementById('markChk').checked = !!state.marked[q.n];
+
+  const note = document.getElementById('answeredNote');
+  if(note){
+    if(state.graded){
+      const s = state.score || computeScore();
+      note.textContent = `Score: ${s.correct} of ${s.total} correct`;
+    }else{
+      note.textContent = `${Object.keys(state.answers).length} of ${QUESTIONS.length} answered`;
+    }
+  }
 
   document.getElementById('prevBtn').disabled = state.idx === 0;
   document.getElementById('prevBtn2').disabled = state.idx === 0;
@@ -385,6 +399,7 @@ document.getElementById('markChk').addEventListener('change', (e) => {
 document.getElementById('restartBtn').addEventListener('click', () => {
   if(confirm('Restart the exam? This will clear all your selected answers and your score.')){
     state.idx = 0; state.answers = {}; state.marked = {}; state.struck = {}; state.highlights = {}; state.graded = false;
+    state.score = null;
     state.elapsedMs = 0; state.runningSince = Date.now(); state.paused = false;
     saveState();
     document.getElementById('resultsScreen').style.display = 'none';
@@ -400,7 +415,8 @@ function openReview(){
   grid.innerHTML = '';
   let answeredCount = 0, markedCount = 0, correctCount = 0, incorrectCount = 0;
   QUESTIONS.forEach((q, i) => {
-    const cell = document.createElement('div');
+    const cell = document.createElement('button');
+    cell.type = 'button';
     let cls = 'grid-cell';
     const answered = !!state.answers[q.n];
     if(answered) answeredCount++;
@@ -451,6 +467,9 @@ function closeReview(){
 document.getElementById('reviewBtn').addEventListener('click', openReview);
 document.getElementById('reviewOpenBtn').addEventListener('click', openReview);
 document.getElementById('closeReview').addEventListener('click', closeReview);
+document.getElementById('reviewOverlay').addEventListener('click', (e) => {
+  if(e.target === e.currentTarget) closeReview();
+});
 
 document.getElementById('finishBtn').addEventListener('click', () => {
   const unanswered = QUESTIONS.length - Object.keys(state.answers).length;
@@ -458,6 +477,7 @@ document.getElementById('finishBtn').addEventListener('click', () => {
     if(!confirm(`You have ${unanswered} unanswered item(s). End the block and see your score anyway?`)) return;
   }
   state.graded = true;
+  state.score = computeScore();
   stopClock();            // the block is over; the clock stops with it
   saveState();
   closeReview();
@@ -599,17 +619,36 @@ function resumeExam(){
 document.getElementById('pauseBtn').addEventListener('click', pauseExam);
 document.getElementById('resumeExamBtn').addEventListener('click', resumeExam);
 
-// keyboard shortcuts: left/right arrows navigate, letter keys select option
+// keyboard shortcuts: left/right arrows navigate, letter keys select option,
+// M toggles "mark for review", Esc closes the review overlay or pauses
 document.addEventListener('keydown', (e) => {
+  // keystrokes aimed at a text field (e.g. the lab-values search box) must
+  // never drive the exam
+  const t = e.target;
+  if(t && t.matches &&
+     t.matches('input:not([type=checkbox]):not([type=radio]), textarea, select')) return;
+
   if(state.paused){
     // nothing but resuming while the exam is paused
     if(e.key === 'Escape' || e.key === 'Enter'){ resumeExam(); }
     return;
   }
+  if(e.key === 'Escape' &&
+     document.getElementById('reviewOverlay').classList.contains('show')){
+    closeReview();
+    return;
+  }
   if(document.getElementById('resultsScreen').style.display === 'block') return;
   if(e.key === 'Escape'){ pauseExam(); return; }
-  if(e.key === 'ArrowRight'){ goNext(); }
-  else if(e.key === 'ArrowLeft'){ goPrev(); }
+  if(e.ctrlKey || e.metaKey || e.altKey) return;   // browser shortcuts stay browser shortcuts
+  if(e.key === 'ArrowRight'){ e.preventDefault(); goNext(); }
+  else if(e.key === 'ArrowLeft'){ e.preventDefault(); goPrev(); }
+  else if(e.key === 'm' || e.key === 'M'){
+    const q = currentQ();
+    state.marked[q.n] = !state.marked[q.n];
+    saveState();
+    document.getElementById('markChk').checked = !!state.marked[q.n];
+  }
   else if(!state.graded){
     const letter = e.key.toUpperCase();
     const q = currentQ();
@@ -641,6 +680,7 @@ document.getElementById('beginBtn').addEventListener('click', enterExam);
 document.getElementById('resumeBtn').addEventListener('click', enterExam);
 document.getElementById('startOverBtn').addEventListener('click', () => {
   state.idx = 0; state.answers = {}; state.marked = {}; state.struck = {}; state.highlights = {};
+  state.score = null;
   state.elapsedMs = 0; state.runningSince = null; state.paused = false; state.graded = false;
   saveState();
   enterExam();

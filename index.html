@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A9%BA%3C/text%3E%3C/svg%3E">
 <title>Shelf Practice Exams</title>
 <style>
   :root{
@@ -51,6 +53,14 @@
   }
   a.exam-link .name{font-weight:600;color:var(--navy);font-size:16px;}
   a.exam-link .meta{font-size:13px;color:var(--muted);margin-top:3px;}
+  a.exam-link .status{
+    display:inline-flex;align-items:center;gap:6px;
+    margin-top:8px;padding:3px 10px;border-radius:999px;
+    font-size:12.5px;font-weight:600;
+  }
+  .status .dot{width:7px;height:7px;border-radius:50%;background:currentColor;}
+  .status.in-progress{background:#fff6e0;color:#8a5a00;border:1px solid #ecd9a6;}
+  .status.completed{background:#e5f4ec;color:#1f6b41;border:1px solid #bfe0cd;}
   li.empty{color:var(--muted);font-size:14px;}
   li.empty code{background:#eef2f5;padding:1px 5px;border-radius:3px;}
 </style>
@@ -73,6 +83,29 @@
                    + '<code>exams/manifest.js</code> yet.</li>';
   }
 
+  // Saved progress lives in localStorage under the same key the engine uses,
+  // so each card can say where that exam stands without loading its data.js.
+  function examStatus(e){
+    try{
+      const raw = localStorage.getItem(e.storageKey || ('exam_state_' + e.id));
+      if(!raw) return null;
+      const s = JSON.parse(raw);
+      if(s.graded){
+        const pct = s.score && s.score.total
+          ? ' · ' + Math.round((s.score.correct / s.score.total) * 100) + '%'
+          : '';
+        return {cls: 'completed', text: 'Completed' + pct};
+      }
+      const answered = Object.keys(s.answers || {}).length;
+      if(answered > 0 || s.elapsedMs > 0 || s.startTime){
+        return {cls: 'in-progress',
+                text: 'In progress · ' + answered
+                    + (e.items ? ' of ' + e.items : '') + ' answered'};
+      }
+    }catch(err){}
+    return null;
+  }
+
   exams.forEach(e => {
     const meta = [e.label, e.items ? e.items + ' items' : null, 'untimed']
       .filter(Boolean).join(' · ');
@@ -87,6 +120,15 @@
     sub.className = 'meta';
     sub.textContent = meta;
     a.append(name, sub);
+    const st = examStatus(e);
+    if(st){
+      const badge = document.createElement('div');
+      badge.className = 'status ' + st.cls;
+      const dot = document.createElement('span');
+      dot.className = 'dot';
+      badge.append(dot, document.createTextNode(st.text));
+      a.append(badge);
+    }
     li.append(a);
     list.append(li);
   });
