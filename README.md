@@ -40,11 +40,15 @@ survives a reload, and the clock stops for good once the block is graded.
 
 Keyboard shortcuts on the exam page: <kbd>←</kbd>/<kbd>→</kbd> change items,
 <kbd>A</kbd>–<kbd>E</kbd> select an answer, <kbd>M</kbd> toggles "mark for
-review", and <kbd>Esc</kbd> closes the review overlay when it is open (and
-pauses otherwise). Keystrokes aimed at a text field — like the Lab Values
-search box — are left alone. The landing page reads each exam's saved
-progress and shows a status badge: in progress with the answered count, or
-completed with the score.
+review", <kbd>Enter</kbd> begins or resumes from the start screen, and
+<kbd>Esc</kbd> closes the topmost layer (enlarged exhibit, then the review
+overlay) before pausing. Keystrokes aimed at a text field — like the Lab
+Values search box — are left alone. Right-clicking an answer choice crosses
+it out (same as the <b>ab</b> tab), and clicking an exhibit image enlarges
+it. The results screen can filter its table to incorrect, unanswered or
+marked items. The landing page reads each exam's saved progress and shows a
+status badge: in progress with the answered count, or completed with the
+score.
 
 The exam page also loads `assets/labvalues.js` / `assets/labvalues.css`, which add a **Lab Values** button to the toolbar. It opens a searchable, tabbed reference panel (Serum / Cerebrospinal / Blood / Urine and BMI) that splits the screen beside the question. The lab-value data is shared across all exams — edit it once in `assets/labvalues.js`.
 

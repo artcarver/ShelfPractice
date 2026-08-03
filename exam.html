@@ -32,7 +32,8 @@
     <p class="sub" id="examSub"></p>
     <ul class="instructions">
       <li>Click an answer choice to select it.</li>
-      <li>Click the <b>ab</b> tab on the right of a choice to cross it out; click it again to restore the choice.</li>
+      <li>Click the <b>ab</b> tab on the right of a choice (or right-click the choice) to cross it out; repeat to restore it.</li>
+      <li>Click an exhibit image to enlarge it.</li>
       <li>Click and drag across any part of a question to highlight it; click a highlight to remove it.</li>
       <li>Use "Mark for review" to flag an item, and "Review / Item List" to jump to any item.</li>
       <li>Hit <b>Pause</b> (or press <b>Esc</b>) to stop the clock and hide the question; press it again to pick up where you left off.</li>
@@ -62,10 +63,22 @@
       <button class="nav-btn" id="nextBtn"><span class="nav-circle">&#8594;</span>Next</button>
     </div>
     <div class="topbar-right">
-      <button type="button" class="tb-item" id="labValuesBtn">&#129514;<div>Lab Values</div></button>
-      <button type="button" class="tb-item" id="reviewOpenBtn">&#9635;<div>Review</div></button>
-      <button type="button" class="tb-item" id="pauseBtn" title="Pause the exam and stop the clock (Esc)"><span class="tb-pause">&#10074;&#10074;</span><div>Pause</div></button>
-      <button type="button" class="tb-item" id="restartBtn">&#8635;<div>Restart</div></button>
+      <button type="button" class="tb-item" id="labValuesBtn">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6M10 3v6l-5.6 9.6A2 2 0 0 0 6.1 21h11.8a2 2 0 0 0 1.7-2.4L14 9V3"/><path d="M7.2 15.5h9.6"/></svg>
+        <div>Lab Values</div>
+      </button>
+      <button type="button" class="tb-item" id="reviewOpenBtn">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7.5" height="7.5" rx="1"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1"/></svg>
+        <div>Review</div>
+      </button>
+      <button type="button" class="tb-item" id="pauseBtn" title="Pause the exam and stop the clock (Esc)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
+        <div>Pause</div>
+      </button>
+      <button type="button" class="tb-item" id="restartBtn">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3.2-6.9"/><path d="M3 4v5h5"/></svg>
+        <div>Restart</div>
+      </button>
     </div>
   </header>
 
@@ -78,9 +91,10 @@
           <div class="timer" id="timer">Elapsed: 00:00:00</div>
         </div>
       </div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
 
       <main id="quizMain">
-        <div class="graded-banner" id="gradedBanner"></div>
+        <div class="graded-banner" id="gradedBanner" aria-live="polite"></div>
         <div class="qimg-wrap" id="qimgWrap" style="display:none"><img id="qimg" src="" alt="Exhibit"></div>
         <div class="stem" id="qstem"></div>
         <div class="options" id="qoptions"></div>
@@ -102,6 +116,7 @@
           <div>
             <div class="score-percent" id="scorePercent">0%</div>
             <div class="score-frac" id="scoreFrac"></div>
+            <div class="score-time" id="scoreTime"></div>
           </div>
           <div class="score-breakdown">
             <div class="b-correct"><b id="bCorrect">0</b><span>Correct</span></div>
@@ -112,6 +127,7 @@
 
         <button class="btn secondary" id="downloadBtn">Download My Results (.txt)</button>
         <button class="btn secondary" id="backToExamBtn">Back to Exam</button>
+        <div class="filter-row" id="resultsFilters"></div>
         <div class="table-wrap">
           <table class="results-table">
             <thead><tr><th>Item</th><th>Your Answer</th><th>Correct Answer</th><th>Result</th><th>Marked for Review</th></tr></thead>
@@ -124,9 +140,9 @@
 
   <!-- Review overlay -->
   <div class="overlay" id="reviewOverlay">
-    <div class="modal">
-      <button class="close-x" id="closeReview">&times;</button>
-      <h2>Item Review</h2>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="reviewTitle">
+      <button class="close-x" id="closeReview" aria-label="Close item review">&times;</button>
+      <h2 id="reviewTitle">Item Review</h2>
       <div class="legend" id="reviewLegend">
         <span><span class="dot a"></span> Answered</span>
         <span><span class="dot u"></span> Unanswered</span>
@@ -134,9 +150,15 @@
       </div>
       <div class="summary-row" id="summaryRow"></div>
       <div class="grid-nav" id="gridNav"></div>
-      <button class="btn" id="finishBtn">End Block &amp; See Results</button>
+      <div class="modal-actions">
+        <button class="btn secondary" id="firstUnansweredBtn">Go to first unanswered</button>
+        <button class="btn" id="finishBtn">End Block &amp; See Results</button>
+      </div>
     </div>
   </div>
+
+  <!-- Enlarged exhibit -->
+  <div class="overlay" id="imgOverlay"><img id="imgZoom" src="" alt="Exhibit (enlarged)"></div>
 
 </div>
 

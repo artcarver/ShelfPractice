@@ -177,6 +177,13 @@ function render(){
         saveState();
         render();
       });
+      // right-click anywhere on the choice also toggles the cross-out
+      row.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        state.struck[strikeKey] = !state.struck[strikeKey];
+        saveState();
+        render();
+      });
       const st = row.querySelector('.strike-toggle');
       if(st){
         st.addEventListener('click', (e) => {
@@ -212,6 +219,7 @@ function render(){
       note.textContent = `${Object.keys(state.answers).length} of ${QUESTIONS.length} answered`;
     }
   }
+  updateProgress();
 
   document.getElementById('prevBtn').disabled = state.idx === 0;
   document.getElementById('prevBtn2').disabled = state.idx === 0;
@@ -221,11 +229,27 @@ function render(){
   document.getElementById('nextBtn2').textContent = isLast ? 'Review / Finish' : 'Next';
 
   renderPause();
+  closeLightbox();
   window.scrollTo(0,0);
 }
 
 function escapeHtml(s){
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* Thin bar under the subbar: answered fraction while testing, then the
+   correct fraction (in green) once the block is graded. */
+function updateProgress(){
+  const fill = document.getElementById('progressFill');
+  if(!fill) return;
+  if(state.graded){
+    const s = state.score || computeScore();
+    fill.style.width = (s.correct / s.total) * 100 + '%';
+    fill.classList.add('graded');
+  }else{
+    fill.style.width = (Object.keys(state.answers).length / QUESTIONS.length) * 100 + '%';
+    fill.classList.remove('graded');
+  }
 }
 
 /* ---------- text highlighting ---------- */
@@ -410,6 +434,8 @@ document.getElementById('restartBtn').addEventListener('click', () => {
   }
 });
 
+let reviewReturnFocus = null;
+
 function openReview(){
   const grid = document.getElementById('gridNav');
   grid.innerHTML = '';
@@ -430,6 +456,11 @@ function openReview(){
     }
     cell.className = cls;
     cell.textContent = q.n;
+    const bits = [answered ? 'answered' : 'unanswered'];
+    if(state.graded && answered) bits.push(isCorrect(q.n) ? 'correct' : 'incorrect');
+    if(state.marked[q.n]) bits.push('marked for review');
+    cell.setAttribute('aria-label', 'Item ' + q.n + ' — ' + bits.join(', '));
+    cell.title = bits.join(', ');
     cell.addEventListener('click', () => {
       state.idx = i;
       saveState();
@@ -459,11 +490,30 @@ function openReview(){
   }
   document.getElementById('summaryRow').innerHTML = summary;
   document.getElementById('finishBtn').style.display = state.graded ? 'none' : '';
+  document.getElementById('firstUnansweredBtn').style.display =
+    (!state.graded && answeredCount < QUESTIONS.length) ? '' : 'none';
+  reviewReturnFocus = document.activeElement;
   document.getElementById('reviewOverlay').classList.add('show');
+  document.getElementById('closeReview').focus();
 }
 function closeReview(){
-  document.getElementById('reviewOverlay').classList.remove('show');
+  const overlay = document.getElementById('reviewOverlay');
+  if(!overlay.classList.contains('show')) return;
+  overlay.classList.remove('show');
+  if(reviewReturnFocus && document.contains(reviewReturnFocus)){
+    try{ reviewReturnFocus.focus(); }catch(e){}
+  }
+  reviewReturnFocus = null;
 }
+document.getElementById('firstUnansweredBtn').addEventListener('click', () => {
+  const i = QUESTIONS.findIndex(q => !state.answers[q.n]);
+  if(i >= 0){
+    state.idx = i;
+    saveState();
+    closeReview();
+    render();
+  }
+});
 document.getElementById('reviewBtn').addEventListener('click', openReview);
 document.getElementById('reviewOpenBtn').addEventListener('click', openReview);
 document.getElementById('closeReview').addEventListener('click', closeReview);
@@ -495,20 +545,53 @@ function computeScore(){
   return {correct, incorrect, unanswered, total: QUESTIONS.length};
 }
 
+/* Filter chips above the results table: All / Incorrect / Unanswered / Marked. */
+function buildResultFilters(score){
+  const wrap = document.getElementById('resultsFilters');
+  wrap.innerHTML = '';
+  const markedCount = QUESTIONS.filter(q => state.marked[q.n]).length;
+  const defs = [
+    ['all',        `All (${score.total})`],
+    ['incorrect',  `Incorrect (${score.incorrect})`],
+    ['unanswered', `Unanswered (${score.unanswered})`],
+    ['marked',     `Marked (${markedCount})`]
+  ];
+  defs.forEach(([key, label]) => {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'filter-chip' + (key === 'all' ? ' active' : '');
+    chip.textContent = label;
+    chip.addEventListener('click', () => {
+      wrap.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      document.querySelectorAll('#resultsBody tr').forEach(tr => {
+        const show = key === 'all' ||
+          (key === 'marked' ? tr.dataset.marked === '1' : tr.dataset.result === key);
+        tr.style.display = show ? '' : 'none';
+      });
+    });
+    wrap.appendChild(chip);
+  });
+}
+
 function showResults(){
   renderPause();      // the block is over: no pause control on the results screen
   document.getElementById('quizMain').style.display = 'none';
   document.querySelector('footer.botbar').style.display = 'none';
   document.getElementById('resultsScreen').style.display = 'block';
 
-  const {correct, incorrect, unanswered, total} = computeScore();
+  const score = computeScore();
+  const {correct, incorrect, unanswered, total} = score;
   const pct = Math.round((correct/total)*100);
 
   document.getElementById('scorePercent').textContent = pct + '%';
   document.getElementById('scoreFrac').textContent = `${correct} of ${total} correct`;
+  document.getElementById('scoreTime').textContent = 'Time on block: ' + formatDuration(elapsedMs());
   document.getElementById('bCorrect').textContent = correct;
   document.getElementById('bIncorrect').textContent = incorrect;
   document.getElementById('bUnanswered').textContent = unanswered;
+  buildResultFilters(score);
+  updateProgress();
 
   const body = document.getElementById('resultsBody');
   body.innerHTML = '';
@@ -516,11 +599,13 @@ function showResults(){
     const tr = document.createElement('tr');
     const ans = state.answers[q.n] || '—';
     const correctLetter = ANSWER_KEY[q.n] || '—';
-    let rowCls, badge;
-    if(!state.answers[q.n]){ rowCls = 'row-unanswered'; badge = 'Unanswered'; }
-    else if(state.answers[q.n] === ANSWER_KEY[q.n]){ rowCls = 'row-correct'; badge = 'Correct'; }
-    else { rowCls = 'row-incorrect'; badge = 'Incorrect'; }
+    let rowCls, badge, result;
+    if(!state.answers[q.n]){ rowCls = 'row-unanswered'; badge = 'Unanswered'; result = 'unanswered'; }
+    else if(state.answers[q.n] === ANSWER_KEY[q.n]){ rowCls = 'row-correct'; badge = 'Correct'; result = 'correct'; }
+    else { rowCls = 'row-incorrect'; badge = 'Incorrect'; result = 'incorrect'; }
     tr.className = rowCls;
+    tr.dataset.result = result;
+    tr.dataset.marked = state.marked[q.n] ? '1' : '';
     tr.innerHTML = `<td>${q.n}</td><td>${ans}</td><td>${correctLetter}</td><td class="result-badge">${badge}</td><td>${state.marked[q.n] ? 'Yes' : ''}</td>`;
     tr.style.cursor = 'pointer';
     tr.addEventListener('click', () => {
@@ -603,6 +688,7 @@ function pauseExam(){
   stopClock();
   state.paused = true;
   closeReview();
+  closeLightbox();   // no part of the question may stay readable while paused
   saveState();
   renderPause();
 }
@@ -619,6 +705,24 @@ function resumeExam(){
 document.getElementById('pauseBtn').addEventListener('click', pauseExam);
 document.getElementById('resumeExamBtn').addEventListener('click', resumeExam);
 
+/* ---------- enlarged exhibit ---------- */
+
+function openLightbox(){
+  const src = document.getElementById('qimg').src;
+  if(!src) return;
+  document.getElementById('imgZoom').src = src;
+  document.getElementById('imgOverlay').classList.add('show');
+}
+function closeLightbox(){
+  document.getElementById('imgOverlay').classList.remove('show');
+  document.getElementById('imgZoom').src = '';
+}
+function lightboxOpen(){
+  return document.getElementById('imgOverlay').classList.contains('show');
+}
+document.getElementById('qimg').addEventListener('click', openLightbox);
+document.getElementById('imgOverlay').addEventListener('click', closeLightbox);
+
 // keyboard shortcuts: left/right arrows navigate, letter keys select option,
 // M toggles "mark for review", Esc closes the review overlay or pauses
 document.addEventListener('keydown', (e) => {
@@ -628,9 +732,23 @@ document.addEventListener('keydown', (e) => {
   if(t && t.matches &&
      t.matches('input:not([type=checkbox]):not([type=radio]), textarea, select')) return;
 
+  if(!enteredExam){
+    // on the start screen only Enter does anything: begin, or resume
+    if(e.key === 'Enter' && !(t && t.closest && t.closest('button')) &&
+       document.getElementById('startScreen').style.display !== 'none'){
+      const resuming = document.getElementById('resumeRow').style.display !== 'none';
+      document.getElementById(resuming ? 'resumeBtn' : 'beginBtn').click();
+    }
+    return;
+  }
+
   if(state.paused){
     // nothing but resuming while the exam is paused
     if(e.key === 'Escape' || e.key === 'Enter'){ resumeExam(); }
+    return;
+  }
+  if(e.key === 'Escape' && lightboxOpen()){
+    closeLightbox();
     return;
   }
   if(e.key === 'Escape' &&
