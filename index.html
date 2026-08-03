@@ -25,52 +25,85 @@
     align-items:center;
     justify-content:center;
     padding:24px;
+    overflow-y:auto;
   }
+  :focus-visible{outline:2px solid var(--navy);outline-offset:2px;}
   .card{
     background:#fff;
-    border-radius:10px;
-    padding:36px 40px;
-    max-width:560px;
+    border-radius:12px;
+    padding:36px 40px 32px;
+    max-width:620px;
     width:100%;
     box-shadow:0 10px 40px rgba(0,0,0,.25);
+    margin:auto;
   }
-  h1{margin:0 0 6px;font-size:26px;color:var(--navy);}
-  p.sub{margin:0 0 24px;color:var(--muted);font-size:14.5px;}
-  ul.exam-list{list-style:none;margin:0;padding:0;}
-  ul.exam-list li + li{margin-top:12px;}
-  a.exam-link{
-    display:block;
-    padding:16px 18px;
+  h1{margin:0 0 6px;font-size:25px;color:var(--navy-dark);}
+  p.sub{margin:0;color:var(--muted);font-size:14px;line-height:1.5;}
+
+  .group-title{
+    margin:26px 0 10px;
+    font-size:12.5px;
+    font-weight:700;
+    letter-spacing:.07em;
+    text-transform:uppercase;
+    color:var(--muted);
+  }
+  .group{
     border:1px solid var(--border);
-    border-radius:8px;
+    border-radius:10px;
+    overflow:hidden;
+  }
+  a.exam-row{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:15px 18px;
     text-decoration:none;
     color:var(--text);
-    transition:border-color .15s, box-shadow .15s;
+    background:#fff;
+    transition:background .12s;
   }
-  a.exam-link:hover{
-    border-color:var(--navy);
-    box-shadow:0 2px 10px rgba(11,74,115,.15);
-  }
-  a.exam-link .name{font-weight:600;color:var(--navy);font-size:16px;}
-  a.exam-link .meta{font-size:13px;color:var(--muted);margin-top:3px;}
-  a.exam-link .status{
+  a.exam-row + a.exam-row{border-top:1px solid var(--border);}
+  a.exam-row:hover{background:#f4f8fb;}
+  .row-main{flex:1 1 auto;min-width:0;}
+  .row-name{font-weight:600;color:var(--navy);font-size:15.5px;}
+  .row-meta{font-size:13px;color:var(--muted);margin-top:2px;}
+  .chev{flex:0 0 auto;color:#9fb0bc;transition:color .12s, transform .12s;}
+  a.exam-row:hover .chev{color:var(--navy);transform:translateX(2px);}
+
+  .status{
+    flex:0 0 auto;
     display:inline-flex;align-items:center;gap:6px;
-    margin-top:8px;padding:3px 10px;border-radius:999px;
-    font-size:12.5px;font-weight:600;
+    padding:3px 10px;border-radius:999px;
+    font-size:12px;font-weight:600;
+    white-space:nowrap;
   }
   .status .dot{width:7px;height:7px;border-radius:50%;background:currentColor;}
   .status.in-progress{background:#fff6e0;color:#8a5a00;border:1px solid #ecd9a6;}
   .status.completed{background:#e5f4ec;color:#1f6b41;border:1px solid #bfe0cd;}
-  li.empty{color:var(--muted);font-size:14px;}
-  li.empty code{background:#eef2f5;padding:1px 5px;border-radius:3px;}
+
+  .foot{
+    margin-top:24px;
+    font-size:12.5px;
+    color:var(--muted);
+    text-align:center;
+  }
+  .empty{color:var(--muted);font-size:14px;margin-top:20px;}
+  .empty code{background:#eef2f5;padding:1px 5px;border-radius:3px;}
+
+  @media (max-width:480px){
+    .card{padding:28px 22px 24px;}
+    .status{display:none;}   /* rows stay one clean line on small phones */
+  }
 </style>
 </head>
 <body>
   <div class="card">
     <h1>Shelf Practice Exams</h1>
-    <p class="sub">Choose an exam to begin. Progress is saved automatically in your browser.</p>
+    <p class="sub">Choose a form to begin. Progress is saved automatically in this browser.</p>
     <!-- Built from exams/manifest.js — add an exam there, not here. -->
-    <ul class="exam-list" id="examList"></ul>
+    <div id="examList"></div>
+    <p class="foot">Runs entirely in your browser &mdash; nothing is uploaded, no account needed.</p>
   </div>
 
 <script src="exams/manifest.js"></script>
@@ -79,12 +112,12 @@
   const exams = window.EXAMS || [];
 
   if(!exams.length){
-    list.innerHTML = '<li class="empty">No exams are registered in '
-                   + '<code>exams/manifest.js</code> yet.</li>';
+    list.innerHTML = '<p class="empty">No exams are registered in '
+                   + '<code>exams/manifest.js</code> yet.</p>';
   }
 
   // Saved progress lives in localStorage under the same key the engine uses,
-  // so each card can say where that exam stands without loading its data.js.
+  // so each row can say where that exam stands without loading its data.js.
   function examStatus(e){
     try{
       const raw = localStorage.getItem(e.storageKey || ('exam_state_' + e.id));
@@ -106,31 +139,57 @@
     return null;
   }
 
+  // Sibling forms of one exam share a title ("Surgery Practice Exam" ×3), so
+  // the page groups by title and lets each row lead with what distinguishes
+  // it — the form label.
+  const groups = new Map();
   exams.forEach(e => {
-    const meta = [e.label, e.items ? e.items + ' items' : null, 'untimed']
-      .filter(Boolean).join(' · ');
-    const li = document.createElement('li');
-    const a = document.createElement('a');
-    a.className = 'exam-link';
-    a.href = 'exam.html?exam=' + encodeURIComponent(e.slug);
-    const name = document.createElement('div');
-    name.className = 'name';
-    name.textContent = e.title;
-    const sub = document.createElement('div');
-    sub.className = 'meta';
-    sub.textContent = meta;
-    a.append(name, sub);
-    const st = examStatus(e);
-    if(st){
-      const badge = document.createElement('div');
-      badge.className = 'status ' + st.cls;
-      const dot = document.createElement('span');
-      dot.className = 'dot';
-      badge.append(dot, document.createTextNode(st.text));
-      a.append(badge);
-    }
-    li.append(a);
-    list.append(li);
+    if(!groups.has(e.title)) groups.set(e.title, []);
+    groups.get(e.title).push(e);
+  });
+
+  groups.forEach((members, title) => {
+    const h = document.createElement('h2');
+    h.className = 'group-title';
+    h.textContent = title;
+    const box = document.createElement('div');
+    box.className = 'group';
+
+    members.forEach(e => {
+      const a = document.createElement('a');
+      a.className = 'exam-row';
+      a.href = 'exam.html?exam=' + encodeURIComponent(e.slug);
+
+      const main = document.createElement('div');
+      main.className = 'row-main';
+      const name = document.createElement('div');
+      name.className = 'row-name';
+      name.textContent = e.label || e.title;
+      const meta = document.createElement('div');
+      meta.className = 'row-meta';
+      meta.textContent = [e.items ? e.items + ' items' : null, 'untimed']
+        .filter(Boolean).join(' · ');
+      main.append(name, meta);
+      a.append(main);
+
+      const st = examStatus(e);
+      if(st){
+        const badge = document.createElement('span');
+        badge.className = 'status ' + st.cls;
+        const dot = document.createElement('span');
+        dot.className = 'dot';
+        badge.append(dot, document.createTextNode(st.text));
+        a.append(badge);
+      }
+
+      a.insertAdjacentHTML('beforeend',
+        '<svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" ' +
+        'stroke="currentColor" stroke-width="2.4" stroke-linecap="round" ' +
+        'stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>');
+      box.append(a);
+    });
+
+    list.append(h, box);
   });
 </script>
 </body>

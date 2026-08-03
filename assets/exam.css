@@ -174,7 +174,8 @@
     margin:auto;
     flex-shrink:0;
   }
-  .pause-card .pause-icon{font-size:38px;line-height:1;margin-bottom:10px;}
+  .pause-card .pause-icon{color:var(--navy);margin-bottom:10px;}
+  .pause-card .pause-icon svg{display:inline-block;}
   .pause-card h1{margin:0 0 8px;font-size:23px;color:var(--navy-dark);}
   .pause-card p.sub{margin:0 0 20px;color:var(--muted);font-size:14px;line-height:1.6;}
   .pause-time{
