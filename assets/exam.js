@@ -38,7 +38,12 @@ const state = {
   marked: {},    // n -> bool
   struck: {},    // "n_letter" -> bool
   highlights: {}, // n -> [[start,end], ...] character offsets into stem text
-  startTime: Date.now(),
+  /* Timekeeping: `elapsedMs` banks completed running time and `runningSince`
+     timestamps the current running stretch (null whenever the clock is stopped),
+     so pausing is just stopping the clock. */
+  elapsedMs: 0,
+  runningSince: null,
+  paused: false,
   graded: false
 };
 
@@ -54,8 +59,16 @@ function loadState(){
       state.marked = saved.marked || {};
       state.struck = saved.struck || {};
       state.highlights = saved.highlights || {};
-      state.startTime = saved.startTime || Date.now();
       state.graded = !!saved.graded;
+      state.paused = !!saved.paused;
+      if(typeof saved.elapsedMs === 'number'){
+        state.elapsedMs = saved.elapsedMs;
+        state.runningSince = saved.runningSince || null;
+      }else if(saved.startTime){
+        // progress saved before the clock could be paused: carry the time over
+        state.elapsedMs = Math.max(0, Date.now() - saved.startTime);
+        state.runningSince = null;
+      }
     }
   }catch(e){}
 }
@@ -63,9 +76,25 @@ function saveState(){
   try{
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       idx: state.idx, answers: state.answers, marked: state.marked, struck: state.struck,
-      highlights: state.highlights, startTime: state.startTime, graded: state.graded
+      highlights: state.highlights, graded: state.graded, paused: state.paused,
+      elapsedMs: state.elapsedMs, runningSince: state.runningSince
     }));
   }catch(e){}
+}
+
+/* ---------- the clock ---------- */
+
+function elapsedMs(){
+  return state.elapsedMs + (state.runningSince ? Date.now() - state.runningSince : 0);
+}
+function startClock(){
+  if(!state.runningSince && !state.paused && !state.graded) state.runningSince = Date.now();
+}
+function stopClock(){
+  if(state.runningSince){
+    state.elapsedMs += Date.now() - state.runningSince;
+    state.runningSince = null;
+  }
 }
 
 function currentQ(){ return QUESTIONS[state.idx]; }
@@ -177,6 +206,7 @@ function render(){
   nb.innerHTML = '<span class="nav-circle">&#8594;</span>' + (isLast ? 'Review' : 'Next');
   document.getElementById('nextBtn2').textContent = isLast ? 'Review / Finish' : 'Next';
 
+  renderPause();
   window.scrollTo(0,0);
 }
 
@@ -354,11 +384,13 @@ document.getElementById('markChk').addEventListener('change', (e) => {
 
 document.getElementById('restartBtn').addEventListener('click', () => {
   if(confirm('Restart the exam? This will clear all your selected answers and your score.')){
-    state.idx = 0; state.answers = {}; state.marked = {}; state.struck = {}; state.highlights = {}; state.startTime = Date.now(); state.graded = false;
+    state.idx = 0; state.answers = {}; state.marked = {}; state.struck = {}; state.highlights = {}; state.graded = false;
+    state.elapsedMs = 0; state.runningSince = Date.now(); state.paused = false;
     saveState();
     document.getElementById('resultsScreen').style.display = 'none';
     document.getElementById('quizMain').style.display = '';
     document.querySelector('footer.botbar').style.display = '';
+    renderPause();
     render();
   }
 });
@@ -426,6 +458,7 @@ document.getElementById('finishBtn').addEventListener('click', () => {
     if(!confirm(`You have ${unanswered} unanswered item(s). End the block and see your score anyway?`)) return;
   }
   state.graded = true;
+  stopClock();            // the block is over; the clock stops with it
   saveState();
   closeReview();
   showResults();
@@ -443,6 +476,7 @@ function computeScore(){
 }
 
 function showResults(){
+  renderPause();      // the block is over: no pause control on the results screen
   document.getElementById('quizMain').style.display = 'none';
   document.querySelector('footer.botbar').style.display = 'none';
   document.getElementById('resultsScreen').style.display = 'block';
@@ -512,16 +546,68 @@ document.getElementById('downloadBtn').addEventListener('click', () => {
 
 // timer
 function pad(n){ return String(n).padStart(2,'0'); }
-function tickTimer(){
-  const secs = Math.floor((Date.now() - state.startTime)/1000);
+function formatDuration(ms){
+  const secs = Math.floor(ms/1000);
   const h = Math.floor(secs/3600), m = Math.floor((secs%3600)/60), s = secs%60;
-  document.getElementById('timer').textContent = `Elapsed: ${pad(h)}:${pad(m)}:${pad(s)}`;
+  return `${pad(h)}:${pad(m)}:${pad(s)}`;
+}
+function tickTimer(){
+  const label = formatDuration(elapsedMs());
+  document.getElementById('timer').textContent =
+    (state.paused ? 'Paused: ' : 'Elapsed: ') + label;
+  document.getElementById('timer').classList.toggle('is-paused', state.paused);
+  if(state.paused){
+    const el = document.getElementById('pausedElapsed');
+    if(el) el.textContent = label;
+  }
 }
 setInterval(tickTimer, 1000);
 
+/* ---------- pause ---------- */
+
+let enteredExam = false;   // the overlay belongs to the exam, not the start screen
+
+function renderPause(){
+  const screen = document.getElementById('pauseScreen');
+  if(!screen) return;
+  screen.style.display = (state.paused && enteredExam) ? 'flex' : 'none';
+  // the question must not be readable while the clock is stopped
+  document.getElementById('examBody').style.visibility = state.paused ? 'hidden' : '';
+  const btn = document.getElementById('pauseBtn');
+  if(btn) btn.style.display = state.graded ? 'none' : '';
+  tickTimer();
+}
+
+function pauseExam(){
+  if(state.paused || state.graded) return;
+  stopClock();
+  state.paused = true;
+  closeReview();
+  saveState();
+  renderPause();
+}
+
+function resumeExam(){
+  if(!state.paused) return;
+  state.paused = false;
+  startClock();
+  saveState();
+  renderPause();
+  render();
+}
+
+document.getElementById('pauseBtn').addEventListener('click', pauseExam);
+document.getElementById('resumeExamBtn').addEventListener('click', resumeExam);
+
 // keyboard shortcuts: left/right arrows navigate, letter keys select option
 document.addEventListener('keydown', (e) => {
+  if(state.paused){
+    // nothing but resuming while the exam is paused
+    if(e.key === 'Escape' || e.key === 'Enter'){ resumeExam(); }
+    return;
+  }
   if(document.getElementById('resultsScreen').style.display === 'block') return;
+  if(e.key === 'Escape'){ pauseExam(); return; }
   if(e.key === 'ArrowRight'){ goNext(); }
   else if(e.key === 'ArrowLeft'){ goPrev(); }
   else if(!state.graded){
@@ -540,6 +626,10 @@ document.addEventListener('keydown', (e) => {
 function enterExam(){
   document.getElementById('startScreen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
+  enteredExam = true;
+  startClock();          // no-op if the exam is paused or already graded
+  saveState();
+  renderPause();
   if(state.graded){
     showResults();
   }else{
@@ -551,7 +641,7 @@ document.getElementById('beginBtn').addEventListener('click', enterExam);
 document.getElementById('resumeBtn').addEventListener('click', enterExam);
 document.getElementById('startOverBtn').addEventListener('click', () => {
   state.idx = 0; state.answers = {}; state.marked = {}; state.struck = {}; state.highlights = {};
-  state.startTime = Date.now(); state.graded = false;
+  state.elapsedMs = 0; state.runningSince = null; state.paused = false; state.graded = false;
   saveState();
   enterExam();
 });
@@ -587,12 +677,13 @@ const labBtn = document.getElementById('labValuesBtn');
 if(labBtn) labBtn.addEventListener('click', openLabValues);
 
 loadState();
-tickTimer();
+renderPause();
 
 setTimeout(() => {
   document.getElementById('loadingScreen').style.display = 'none';
   document.getElementById('startScreen').style.display = 'flex';
-  const hasProgress = Object.keys(state.answers).length > 0 || state.graded;
+  const hasProgress = Object.keys(state.answers).length > 0 || state.graded ||
+                      state.paused || elapsedMs() > 0;
   if(hasProgress){
     document.getElementById('resumeRow').style.display = 'flex';
     document.getElementById('resumeItem').textContent = state.graded ? 'Results' : (state.idx + 1);

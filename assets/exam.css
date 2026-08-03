@@ -102,6 +102,8 @@
   .topbar-right{display:flex;align-items:center;gap:18px;font-size:12px;}
   .topbar-right .tb-item{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;opacity:.95;}
   .topbar-right .tb-item:hover{opacity:1;}
+  /* the pause glyph is thin at label size; the heavy bars need tightening up */
+  .topbar-right .tb-pause{font-size:15px;line-height:1;letter-spacing:-1px;}
 
   .subbar{
     display:flex;
@@ -115,6 +117,30 @@
   .mark-flag{display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none;color:var(--text);}
   .mark-flag input{accent-color:var(--marked);width:15px;height:15px;}
   .timer{color:var(--muted);font-variant-numeric:tabular-nums;}
+  .timer.is-paused{color:var(--marked);font-weight:600;}
+
+  /* paused overlay */
+  #pauseScreen{z-index:300;}
+  .pause-card{
+    background:#fff;color:var(--text);
+    border-radius:10px;
+    max-width:460px;width:92%;
+    padding:34px 38px;
+    text-align:center;
+    box-shadow:0 12px 40px rgba(0,0,0,.35);
+  }
+  .pause-card .pause-icon{font-size:38px;line-height:1;margin-bottom:10px;}
+  .pause-card h1{margin:0 0 8px;font-size:23px;color:var(--navy-dark);}
+  .pause-card p.sub{margin:0 0 20px;color:var(--muted);font-size:14px;line-height:1.6;}
+  .pause-time{
+    font-size:14.5px;
+    margin-bottom:22px;
+    padding:10px 14px;
+    background:#f0f4f7;
+    border-radius:6px;
+  }
+  .pause-time b{font-variant-numeric:tabular-nums;color:var(--navy-dark);}
+  .pause-card .btn{padding:11px 26px;}
 
   main{padding:24px 28px 40px;}
 

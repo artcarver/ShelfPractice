@@ -13,6 +13,17 @@
   <div class="splash-text" id="loadingText">Loading&hellip;</div>
 </div>
 
+<div class="splash" id="pauseScreen" style="display:none">
+  <div class="pause-card">
+    <div class="pause-icon">&#9208;</div>
+    <h1>Exam paused</h1>
+    <p class="sub">The clock is stopped and the question is hidden. Your answers,
+       highlights and cross-outs are all saved.</p>
+    <div class="pause-time">Time on this block: <b id="pausedElapsed">00:00:00</b></div>
+    <button class="btn" id="resumeExamBtn">Resume Exam</button>
+  </div>
+</div>
+
 <div class="splash" id="startScreen" style="display:none">
   <div class="start-card">
     <h1 id="examName"></h1>
@@ -22,6 +33,7 @@
       <li>Click the <b>ab</b> tab on the right of a choice to cross it out; click it again to restore the choice.</li>
       <li>Click and drag across any part of a question to highlight it; click a highlight to remove it.</li>
       <li>Use "Mark for review" to flag an item, and "Review / Item List" to jump to any item.</li>
+      <li>Hit <b>Pause</b> (or press <b>Esc</b>) to stop the clock and hide the question; press it again to pick up where you left off.</li>
       <li>Your progress, highlights, and crossed-out choices are all saved automatically in this browser.</li>
     </ul>
     <div class="start-actions" id="resumeRow" style="display:none">
@@ -49,6 +61,7 @@
     <div class="topbar-right">
       <div class="tb-item" id="labValuesBtn">&#129514;<div>Lab Values</div></div>
       <div class="tb-item" id="reviewOpenBtn">&#9635;<div>Review</div></div>
+      <div class="tb-item" id="pauseBtn" title="Pause the exam and stop the clock (Esc)"><span class="tb-pause">&#10074;&#10074;</span><div>Pause</div></div>
       <div class="tb-item" id="restartBtn">&#8635;<div>Restart</div></div>
     </div>
   </header>

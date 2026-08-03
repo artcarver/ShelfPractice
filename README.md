@@ -33,6 +33,11 @@ Everything under `exams/` is content. `exam.html` merges an exam's catalog entry
 from `manifest.js` with its `data.js` into `window.EXAM`, then hands that to the
 engine — so the engine has no knowledge of any particular exam.
 
+A **Pause** button in the toolbar (or the <kbd>Esc</kbd> key) stops the clock and
+hides the question behind an overlay until you resume. The elapsed time is banked
+rather than derived from a start timestamp, so paused time is excluded, the pause
+survives a reload, and the clock stops for good once the block is graded.
+
 The exam page also loads `assets/labvalues.js` / `assets/labvalues.css`, which add a **Lab Values** button to the toolbar. It opens a searchable, tabbed reference panel (Serum / Cerebrospinal / Blood / Urine and BMI) that splits the screen beside the question. The lab-value data is shared across all exams — edit it once in `assets/labvalues.js`.
 
 ## Adding a new exam
