@@ -19,14 +19,16 @@ const IMAGES = (() => {
   return out;
 })();
 
-const SUBTITLE = [EXAM.label, QUESTIONS.length + ' items', 'untimed']
-  .filter(Boolean).join(' · ');
-
 document.title = EXAM.title;
 document.getElementById('loadingText').textContent = 'Loading ' + EXAM.title + '…';
 document.getElementById('examName').textContent = EXAM.title;
-document.getElementById('examSub').textContent = SUBTITLE;
+document.getElementById('examSub').textContent = QUESTIONS.length + ' items · untimed';
 document.getElementById('examTitleBar').textContent = EXAM.title;
+if(EXAM.label){
+  const chip = document.getElementById('examLabel');
+  chip.textContent = EXAM.label;
+  chip.style.display = '';
+}
 
 if(EXAM.items && EXAM.items !== QUESTIONS.length){
   console.warn(`manifest lists ${EXAM.items} items for "${EXAM.slug}", data.js has ${QUESTIONS.length}`);
@@ -224,8 +226,7 @@ function render(){
   document.getElementById('prevBtn').disabled = state.idx === 0;
   document.getElementById('prevBtn2').disabled = state.idx === 0;
   const isLast = state.idx === QUESTIONS.length - 1;
-  const nb = document.getElementById('nextBtn');
-  nb.innerHTML = '<span class="nav-circle">&#8594;</span>' + (isLast ? 'Review' : 'Next');
+  document.getElementById('nextBtnLabel').textContent = isLast ? 'Review' : 'Next';
   document.getElementById('nextBtn2').textContent = isLast ? 'Review / Finish' : 'Next';
 
   renderPause();

@@ -48,7 +48,7 @@
   .start-card{
     background:#fff;color:var(--text);
     border-radius:10px;
-    max-width:580px;width:92%;
+    max-width:620px;width:92%;
     padding:36px 38px;
     box-shadow:0 12px 40px rgba(0,0,0,.35);
     /* auto margins keep the card centred yet let it scroll instead of
@@ -56,12 +56,39 @@
     margin:auto;
     flex-shrink:0;
   }
-  .start-card h1{margin:0 0 6px;font-size:24px;color:var(--navy-dark);}
+  .start-card h1{margin:0 0 4px;font-size:26px;color:var(--navy-dark);}
   .start-card > p.sub{margin:0 0 20px;color:var(--muted);font-size:14px;}
-  .instructions{margin:0 0 26px;padding-left:20px;font-size:14px;line-height:1.75;color:var(--text);}
-  .instructions li{margin-bottom:5px;}
+  .form-chip{
+    display:inline-block;
+    font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--navy);background:#e8f0f6;
+    border-radius:999px;padding:4px 12px;margin-bottom:12px;
+  }
+  .start-how{
+    display:grid;grid-template-columns:1fr 1fr;gap:14px 24px;
+    padding:20px 0;
+    border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+    margin-bottom:16px;
+  }
+  .how-item{display:flex;gap:10px;font-size:13.5px;line-height:1.5;color:var(--text);}
+  .how-item svg{flex:0 0 auto;color:var(--navy);margin-top:3px;}
+  .start-keys{
+    display:flex;flex-wrap:wrap;gap:8px 18px;
+    font-size:12.5px;color:var(--muted);
+    margin-bottom:24px;
+  }
+  .start-keys span{display:inline-flex;align-items:center;gap:5px;}
+  .start-keys kbd{
+    display:inline-block;min-width:20px;padding:2px 6px;
+    border:1px solid var(--border);border-bottom-width:2px;border-radius:5px;
+    background:#f7f9fa;color:var(--text);
+    font-family:inherit;font-size:11.5px;font-weight:600;text-align:center;
+  }
   .start-actions{display:flex;gap:12px;flex-wrap:wrap;}
   .start-actions .btn{padding:11px 22px;}
+  @media (max-width:560px){
+    .start-how{grid-template-columns:1fr;}
+  }
 
   header.topbar{
     background:var(--navy);
@@ -105,8 +132,8 @@
     width:30px;height:30px;border-radius:50%;
     border:2px solid #fff;
     display:flex;align-items:center;justify-content:center;
-    font-size:16px;
   }
+  .nav-circle svg{display:block;}
   .counter{font-size:15px;font-weight:600;min-width:64px;text-align:center;}
   .topbar-right{display:flex;align-items:center;justify-content:flex-end;gap:18px;font-size:12px;flex:1 1 0;}
   .topbar-right .tb-item{
