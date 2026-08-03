@@ -268,11 +268,12 @@ function renderLabValues(root, opts){
       const tr = document.createElement('tr');
       const isHeader = value === '';
       tr.className = 'lv-row' + (isHeader ? ' lv-group' : '') + (meta.bold ? ' lv-bold' : '');
-      const pad = 4 + level * 22;
+      // indent from the panel's gutter rather than replacing it
+      const pad = `calc(var(--lv-gutter) + ${level} * var(--lv-nest))`;
       if(isHeader){
-        tr.innerHTML = `<td class="lv-label" colspan="2" style="padding-left:${pad}px">${highlightHtml(label, q)}</td>`;
+        tr.innerHTML = `<td class="lv-label" colspan="2" style="padding-left:${pad}">${highlightHtml(label, q)}</td>`;
       }else{
-        tr.innerHTML = `<td class="lv-label" style="padding-left:${pad}px">${highlightHtml(label, q)}</td>` +
+        tr.innerHTML = `<td class="lv-label" style="padding-left:${pad}">${highlightHtml(label, q)}</td>` +
           `<td class="lv-val">${highlightHtml(value, q)}</td>`;
       }
       tbody.appendChild(tr);

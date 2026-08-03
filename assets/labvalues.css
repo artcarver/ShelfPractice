@@ -11,6 +11,10 @@
   --lv-tint:#eef4f8;
   --lv-hover:#f5f9fb;
   --lv-hit:#ffe37a;
+  /* Horizontal gutter shared by the header, controls and table, so nested lab
+     rows indent from it instead of starting at the panel edge. */
+  --lv-gutter:20px;
+  --lv-nest:22px;
   display:flex;
   flex-direction:column;
   width:100%;
@@ -121,7 +125,7 @@
   min-height:0;
   overflow-y:auto;
   overflow-x:hidden;
-  background:#fff;
+  background:var(--lv-tint);
 }
 .lv-table{
   width:100%;
@@ -138,27 +142,22 @@
   letter-spacing:.07em;
   text-transform:uppercase;
   color:var(--lv-muted);
-  background:#fff;
-  padding:14px 20px 10px;
-  border-bottom:2px solid var(--lv-line-strong);
+  background:var(--lv-tint);   /* sticky: must match the body it scrolls over */
+  padding:14px var(--lv-gutter) 10px;
+  /* a border on a sticky cell scrolls away with the row; an inset shadow stays */
+  box-shadow:inset 0 -2px 0 var(--lv-line-strong);
 }
 .lv-table thead th:last-child{width:40%;}
 .lv-row td{
-  padding:9px 20px;
+  padding:9px var(--lv-gutter);
   vertical-align:top;
   border-bottom:1px solid var(--lv-line);
 }
 .lv-row:hover td{background:var(--lv-hover);}
 .lv-label{color:var(--lv-ink);}
 .lv-val{color:#42535f;white-space:nowrap;}
-.lv-group td{
-  background:var(--lv-tint);
-  color:var(--lv-navy);
-  font-weight:700;
-  border-bottom:1px solid var(--lv-line-strong);
-}
-.lv-group:hover td{background:var(--lv-tint);}
-.lv-bold .lv-label,.lv-bold .lv-val{font-weight:700;color:var(--lv-navy);}
+/* Group rows carry no styling of their own: the table is one flat colour and
+   nesting reads from indentation alone. */
 
 /* search match highlight */
 mark.lv-hit{
