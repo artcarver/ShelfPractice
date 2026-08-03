@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A9%BA%3C/text%3E%3C/svg%3E">
 <title>Practice Exam</title>
 <link rel="stylesheet" href="assets/exam.css">
 <link rel="stylesheet" href="assets/labvalues.css">
@@ -34,6 +36,7 @@
       <li>Click and drag across any part of a question to highlight it; click a highlight to remove it.</li>
       <li>Use "Mark for review" to flag an item, and "Review / Item List" to jump to any item.</li>
       <li>Hit <b>Pause</b> (or press <b>Esc</b>) to stop the clock and hide the question; press it again to pick up where you left off.</li>
+      <li>Keyboard: <b>&#8592;</b> / <b>&#8594;</b> change items, <b>A</b>&ndash;<b>E</b> selects an answer, <b>M</b> marks for review.</li>
       <li>Your progress, highlights, and crossed-out choices are all saved automatically in this browser.</li>
     </ul>
     <div class="start-actions" id="resumeRow" style="display:none">
@@ -59,10 +62,10 @@
       <button class="nav-btn" id="nextBtn"><span class="nav-circle">&#8594;</span>Next</button>
     </div>
     <div class="topbar-right">
-      <div class="tb-item" id="labValuesBtn">&#129514;<div>Lab Values</div></div>
-      <div class="tb-item" id="reviewOpenBtn">&#9635;<div>Review</div></div>
-      <div class="tb-item" id="pauseBtn" title="Pause the exam and stop the clock (Esc)"><span class="tb-pause">&#10074;&#10074;</span><div>Pause</div></div>
-      <div class="tb-item" id="restartBtn">&#8635;<div>Restart</div></div>
+      <button type="button" class="tb-item" id="labValuesBtn">&#129514;<div>Lab Values</div></button>
+      <button type="button" class="tb-item" id="reviewOpenBtn">&#9635;<div>Review</div></button>
+      <button type="button" class="tb-item" id="pauseBtn" title="Pause the exam and stop the clock (Esc)"><span class="tb-pause">&#10074;&#10074;</span><div>Pause</div></button>
+      <button type="button" class="tb-item" id="restartBtn">&#8635;<div>Restart</div></button>
     </div>
   </header>
 
@@ -70,7 +73,10 @@
     <div id="examMain">
       <div class="subbar">
         <label class="mark-flag"><input type="checkbox" id="markChk"> Mark for review</label>
-        <div class="timer" id="timer">Elapsed: 00:00:00</div>
+        <div class="subbar-status">
+          <span class="answered-note" id="answeredNote"></span>
+          <div class="timer" id="timer">Elapsed: 00:00:00</div>
+        </div>
       </div>
 
       <main id="quizMain">
@@ -106,10 +112,12 @@
 
         <button class="btn secondary" id="downloadBtn">Download My Results (.txt)</button>
         <button class="btn secondary" id="backToExamBtn">Back to Exam</button>
-        <table class="results-table">
-          <thead><tr><th>Item</th><th>Your Answer</th><th>Correct Answer</th><th>Result</th><th>Marked for Review</th></tr></thead>
-          <tbody id="resultsBody"></tbody>
-        </table>
+        <div class="table-wrap">
+          <table class="results-table">
+            <thead><tr><th>Item</th><th>Your Answer</th><th>Correct Answer</th><th>Result</th><th>Marked for Review</th></tr></thead>
+            <tbody id="resultsBody"></tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
