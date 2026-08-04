@@ -207,12 +207,13 @@
 
   .stem{font-size:15.5px;line-height:1.6;margin-bottom:20px;white-space:pre-line;user-select:text;cursor:text;}
   .stem b{font-weight:600;}
+  /* No horizontal padding: padding on an inline mark widens the text run, so
+     highlighting would nudge the surrounding words sideways and reflow the line. */
   .stem mark.hl{
     background:#fff59d;
     color:inherit;
     cursor:pointer;
     border-radius:2px;
-    padding:0 1px;
     box-decoration-break:clone;
     -webkit-box-decoration-break:clone;
   }
@@ -256,7 +257,7 @@
     display:flex;
     align-items:flex-start;
     gap:12px;
-    padding:12px 16px;
+    padding:16px 18px;
     border-bottom:1px solid var(--border);
     cursor:pointer;
     font-size:15px;

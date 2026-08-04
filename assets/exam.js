@@ -231,6 +231,15 @@ function render(){
 
   renderPause();
   closeLightbox();
+}
+
+/* Moving to a different item starts you at the top of the question; updating
+   the item in place (answering, crossing out, highlighting) must leave the
+   page where it is. Only the callers that change item call this.
+   With the Lab Values panel open the question column scrolls, not the window. */
+function scrollQuestionTop(){
+  const main = document.getElementById('examMain');
+  if(main) main.scrollTop = 0;
   window.scrollTo(0,0);
 }
 
@@ -404,10 +413,10 @@ stemEl.addEventListener('mouseup', (e) => {
 });
 
 function goPrev(){
-  if(state.idx > 0){ state.idx--; saveState(); render(); }
+  if(state.idx > 0){ state.idx--; saveState(); render(); scrollQuestionTop(); }
 }
 function goNext(){
-  if(state.idx < QUESTIONS.length - 1){ state.idx++; saveState(); render(); }
+  if(state.idx < QUESTIONS.length - 1){ state.idx++; saveState(); render(); scrollQuestionTop(); }
   else { openReview(); }
 }
 
@@ -432,6 +441,7 @@ document.getElementById('restartBtn').addEventListener('click', () => {
     document.querySelector('footer.botbar').style.display = '';
     renderPause();
     render();
+    scrollQuestionTop();
   }
 });
 
@@ -467,6 +477,7 @@ function openReview(){
       saveState();
       closeReview();
       render();
+      scrollQuestionTop();
     });
     grid.appendChild(cell);
   });
@@ -513,9 +524,9 @@ document.getElementById('firstUnansweredBtn').addEventListener('click', () => {
     saveState();
     closeReview();
     render();
+    scrollQuestionTop();
   }
 });
-document.getElementById('reviewBtn').addEventListener('click', openReview);
 document.getElementById('reviewOpenBtn').addEventListener('click', openReview);
 document.getElementById('closeReview').addEventListener('click', closeReview);
 document.getElementById('reviewOverlay').addEventListener('click', (e) => {
@@ -616,6 +627,7 @@ function showResults(){
       document.getElementById('quizMain').style.display = '';
       document.querySelector('footer.botbar').style.display = '';
       render();
+      scrollQuestionTop();
     });
     body.appendChild(tr);
   });
@@ -626,6 +638,7 @@ document.getElementById('backToExamBtn').addEventListener('click', () => {
   document.getElementById('quizMain').style.display = '';
   document.querySelector('footer.botbar').style.display = '';
   render();
+  scrollQuestionTop();
 });
 
 document.getElementById('downloadBtn').addEventListener('click', () => {
