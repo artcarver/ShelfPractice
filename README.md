@@ -50,7 +50,11 @@ marked items. Once a block is graded the toolbar's Pause slot becomes
 **Results**, which returns to the score screen from anywhere, and the item
 review overlay gains "Back to Results" and "Go to first incorrect". A
 **Next incorrect** button in the bottom bar steps through just the items
-you missed (blanks included), wrapping at the end. The landing page reads
+you missed (blanks included), wrapping at the end. The results table
+remembers which filter you left it on, and its rows are keyboard-operable.
+Chrome that describes the current question — the item counter, Previous /
+Next, the subbar and Lab Values — is hidden on the results screen, where
+there is no question for it to refer to. The landing page reads
 each exam's saved progress and shows a status badge: in progress with the
 answered count, or completed with the score.
 
