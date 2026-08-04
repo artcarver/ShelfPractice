@@ -247,10 +247,13 @@
   #imgOverlay{z-index:150;cursor:zoom-out;background:rgba(10,20,28,.8);}
   #imgOverlay img{max-width:95vw;max-height:92vh;border-radius:4px;box-shadow:0 10px 50px rgba(0,0,0,.5);}
 
+  /* Answer texts are short — a median of ~22 characters — so a narrow column
+     reads better than a full-width box. 680px keeps all but the rare very long
+     choice on one line. */
   .options{
     border:1px solid var(--navy);
     border-radius:2px;
-    max-width:820px;
+    max-width:680px;
     overflow:hidden;
   }
   .opt{
