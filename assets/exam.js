@@ -47,8 +47,9 @@ const state = {
   runningSince: null,
   paused: false,
   graded: false,
-  score: null    // {correct, incorrect, unanswered, total}; saved at grading so
+  score: null,   // {correct, incorrect, unanswered, total}; saved at grading so
                  // the landing page can show the result without the answer key
+  onResults: false  // which view was showing, so a reload comes back to it
 };
 
 const STORAGE_KEY = EXAM.storageKey || ('exam_state_' + EXAM.id);
@@ -66,6 +67,7 @@ function loadState(){
       state.graded = !!saved.graded;
       state.paused = !!saved.paused;
       state.score = saved.score || null;
+      state.onResults = !!saved.onResults;
       if(typeof saved.elapsedMs === 'number'){
         state.elapsedMs = saved.elapsedMs;
         state.runningSince = saved.runningSince || null;
@@ -82,7 +84,7 @@ function saveState(){
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       idx: state.idx, answers: state.answers, marked: state.marked, struck: state.struck,
       highlights: state.highlights, graded: state.graded, paused: state.paused,
-      score: state.score,
+      score: state.score, onResults: state.onResults,
       elapsedMs: state.elapsedMs, runningSince: state.runningSince
     }));
   }catch(e){}
@@ -259,6 +261,8 @@ function showQuestionView(){
   document.getElementById('resultsScreen').style.display = 'none';
   document.getElementById('quizMain').style.display = '';
   document.querySelector('footer.botbar').style.display = '';
+  state.onResults = false;
+  saveState();
 }
 
 /* The one way to move to an item: it always ends with that item on screen. */
@@ -461,7 +465,7 @@ document.getElementById('markChk').addEventListener('change', (e) => {
 document.getElementById('restartBtn').addEventListener('click', () => {
   if(confirm('Restart the exam? This will clear all your selected answers and your score.')){
     state.idx = 0; state.answers = {}; state.marked = {}; state.struck = {}; state.highlights = {}; state.graded = false;
-    state.score = null;
+    state.score = null; state.onResults = false;
     resultsFilter = 'all';
     state.elapsedMs = 0; state.runningSince = Date.now(); state.paused = false;
     saveState();
@@ -648,6 +652,8 @@ function showResults(){
   document.querySelector('footer.botbar').style.display = 'none';
   document.getElementById('resultsScreen').style.display = 'block';
   renderToolbar();    // after the switch, so it sees the results screen
+  state.onResults = true;
+  saveState();
 
   const score = computeScore();
   const {correct, incorrect, unanswered, total} = score;
@@ -897,9 +903,11 @@ function enterExam(){
   startClock();          // no-op if the exam is paused or already graded
   saveState();
   renderPause();
-  if(state.graded){
+  // come back to whichever view was showing, not always the score
+  if(state.graded && state.onResults){
     showResults();
   }else{
+    showQuestionView();
     render();
   }
 }
@@ -908,7 +916,7 @@ document.getElementById('beginBtn').addEventListener('click', enterExam);
 document.getElementById('resumeBtn').addEventListener('click', enterExam);
 document.getElementById('startOverBtn').addEventListener('click', () => {
   state.idx = 0; state.answers = {}; state.marked = {}; state.struck = {}; state.highlights = {};
-  state.score = null;
+  state.score = null; state.onResults = false;
   resultsFilter = 'all';
   state.elapsedMs = 0; state.runningSince = null; state.paused = false; state.graded = false;
   saveState();
@@ -948,15 +956,19 @@ if(labBtn) labBtn.addEventListener('click', openLabValues);
 loadState();
 renderPause();
 
-setTimeout(() => {
-  document.getElementById('loadingScreen').style.display = 'none';
-  document.getElementById('startScreen').style.display = 'flex';
-  const hasProgress = Object.keys(state.answers).length > 0 || state.graded ||
-                      state.paused || elapsedMs() > 0;
-  if(hasProgress){
-    document.getElementById('resumeRow').style.display = 'flex';
-    document.getElementById('resumeItem').textContent = state.graded ? 'Results' : (state.idx + 1);
-  }else{
-    document.getElementById('beginRow').style.display = 'flex';
-  }
-}, 900);
+/* The splash covers the real work — the manifest, this exam's data.js and the
+   lab values all have to load before we get here. There is nothing left to
+   wait for at this point, so show the start screen straight away rather than
+   holding it behind a timer. */
+document.getElementById('loadingScreen').style.display = 'none';
+document.getElementById('startScreen').style.display = 'flex';
+
+const hasProgress = Object.keys(state.answers).length > 0 || state.graded ||
+                    state.paused || elapsedMs() > 0;
+if(hasProgress){
+  document.getElementById('resumeRow').style.display = 'flex';
+  document.getElementById('resumeItem').textContent =
+    (state.graded && state.onResults) ? 'Results' : ('Item ' + (state.idx + 1));
+}else{
+  document.getElementById('beginRow').style.display = 'flex';
+}

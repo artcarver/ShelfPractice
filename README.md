@@ -54,7 +54,9 @@ you missed (blanks included), wrapping at the end. The results table
 remembers which filter you left it on, and its rows are keyboard-operable.
 Chrome that describes the current question — the item counter, Previous /
 Next, the subbar and Lab Values — is hidden on the results screen, where
-there is no question for it to refer to. The landing page reads
+there is no question for it to refer to. Saved progress records which of
+the two views was showing, so reloading mid-review returns to the item you
+were reading rather than jumping to the score. The landing page reads
 each exam's saved progress and shows a status badge: in progress with the
 answered count, or completed with the score.
 
