@@ -229,6 +229,14 @@ function render(){
   document.getElementById('nextBtnLabel').textContent = isLast ? 'Review' : 'Next';
   document.getElementById('nextBtn2').textContent = isLast ? 'Review / Finish' : 'Next';
 
+  // stepping through only the items you got wrong, once the block is graded
+  const ni = document.getElementById('nextIncorrectBtn');
+  if(ni){
+    const wrong = state.graded ? incorrectIndexes() : [];
+    ni.style.display = wrong.length ? '' : 'none';
+    ni.textContent = 'Next incorrect (' + wrong.length + ')';
+  }
+
   renderPause();
   closeLightbox();
 }
@@ -504,6 +512,11 @@ function openReview(){
   document.getElementById('finishBtn').style.display = state.graded ? 'none' : '';
   document.getElementById('firstUnansweredBtn').style.display =
     (!state.graded && answeredCount < QUESTIONS.length) ? '' : 'none';
+  // graded: the overlay is a review tool, so it offers the way back to the
+  // score and a jump straight to the first item you got wrong
+  document.getElementById('backToResultsBtn').style.display = state.graded ? '' : 'none';
+  document.getElementById('reviewIncorrectBtn').style.display =
+    (state.graded && incorrectIndexes().length) ? '' : 'none';
   reviewReturnFocus = document.activeElement;
   document.getElementById('reviewOverlay').classList.add('show');
   document.getElementById('closeReview').focus();
@@ -527,6 +540,25 @@ document.getElementById('firstUnansweredBtn').addEventListener('click', () => {
     scrollQuestionTop();
   }
 });
+document.getElementById('reviewIncorrectBtn').addEventListener('click', () => {
+  const list = incorrectIndexes();
+  if(!list.length) return;
+  state.idx = list[0];
+  saveState();
+  closeReview();
+  render();
+  scrollQuestionTop();
+});
+document.getElementById('backToResultsBtn').addEventListener('click', () => {
+  closeReview();
+  showResults();
+  scrollQuestionTop();
+});
+document.getElementById('resultsBtn').addEventListener('click', () => {
+  showResults();
+  scrollQuestionTop();
+});
+document.getElementById('nextIncorrectBtn').addEventListener('click', goToNextIncorrect);
 document.getElementById('reviewOpenBtn').addEventListener('click', openReview);
 document.getElementById('closeReview').addEventListener('click', closeReview);
 document.getElementById('reviewOverlay').addEventListener('click', (e) => {
@@ -587,10 +619,12 @@ function buildResultFilters(score){
 }
 
 function showResults(){
-  renderPause();      // the block is over: no pause control on the results screen
+  renderPause();
+  closeLabValues();   // the split layout has no question to sit beside now
   document.getElementById('quizMain').style.display = 'none';
   document.querySelector('footer.botbar').style.display = 'none';
   document.getElementById('resultsScreen').style.display = 'block';
+  renderToolbar();    // after the switch, so it sees the results screen
 
   const score = computeScore();
   const {correct, incorrect, unanswered, total} = score;
@@ -686,14 +720,45 @@ setInterval(tickTimer, 1000);
 
 let enteredExam = false;   // the overlay belongs to the exam, not the start screen
 
+/* The toolbar tracks what is on screen: no clock control once the block is
+   graded, and no Lab Values on the results screen, where there is no question
+   to read them against. */
+function renderToolbar(){
+  const onResults = document.getElementById('resultsScreen').style.display === 'block';
+  const pause = document.getElementById('pauseBtn');
+  if(pause) pause.style.display = state.graded ? 'none' : '';
+  const lab = document.getElementById('labValuesBtn');
+  if(lab) lab.style.display = onResults ? 'none' : '';
+  // once graded, the Pause slot becomes the way back to the score
+  const results = document.getElementById('resultsBtn');
+  if(results) results.style.display = (state.graded && !onResults) ? '' : 'none';
+}
+
+/* Items that were not answered correctly — wrong answers and blanks alike,
+   which together are what "review my incorrects" means. */
+function incorrectIndexes(){
+  const out = [];
+  QUESTIONS.forEach((q, i) => { if(!isCorrect(q.n)) out.push(i); });
+  return out;
+}
+
+function goToNextIncorrect(){
+  const list = incorrectIndexes();
+  if(!list.length) return;
+  const next = list.find(i => i > state.idx);
+  state.idx = next === undefined ? list[0] : next;   // wrap around
+  saveState();
+  render();
+  scrollQuestionTop();
+}
+
 function renderPause(){
+  renderToolbar();
   const screen = document.getElementById('pauseScreen');
   if(!screen) return;
   screen.style.display = (state.paused && enteredExam) ? 'flex' : 'none';
   // the question must not be readable while the clock is stopped
   document.getElementById('examBody').style.visibility = state.paused ? 'hidden' : '';
-  const btn = document.getElementById('pauseBtn');
-  if(btn) btn.style.display = state.graded ? 'none' : '';
   tickTimer();
 }
 

@@ -101,6 +101,10 @@
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7.5" height="7.5" rx="1"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1"/></svg>
         <div>Review</div>
       </button>
+      <button type="button" class="tb-item" id="resultsBtn" style="display:none" title="Back to your score and the item list">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10"/><path d="M12 20V4"/><path d="M20 20v-7"/></svg>
+        <div>Results</div>
+      </button>
       <button type="button" class="tb-item" id="pauseBtn" title="Pause the exam and stop the clock (Esc)">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
         <div>Pause</div>
@@ -133,6 +137,8 @@
 
       <footer class="botbar">
         <button class="btn secondary" id="prevBtn2">Previous</button>
+        <button class="btn secondary" id="nextIncorrectBtn" style="display:none"
+                title="Jump to the next item you did not get right">Next incorrect</button>
         <button class="btn" id="nextBtn2">Next</button>
       </footer>
 
@@ -181,6 +187,8 @@
       <div class="grid-nav" id="gridNav"></div>
       <div class="modal-actions">
         <button class="btn secondary" id="firstUnansweredBtn">Go to first unanswered</button>
+        <button class="btn secondary" id="reviewIncorrectBtn" style="display:none">Go to first incorrect</button>
+        <button class="btn" id="backToResultsBtn" style="display:none">Back to Results</button>
         <button class="btn" id="finishBtn">End Block &amp; See Results</button>
       </div>
     </div>

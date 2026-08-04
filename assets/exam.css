@@ -7,7 +7,11 @@
     --text:#1c2b36;
     --muted:#5b6b76;
     --answered:#2f8f5b;
-    --marked:#c0392b;
+    /* A distinct hue, not the incorrect red: "marked" and "incorrect" can be
+       true of the same item, so they must never read as the same signal.
+       Violet also stays separable from the red/green pair for the common
+       forms of colour blindness. */
+    --marked:#6b3fa0;
     --unanswered:#8a97a1;
     --correct:#2f8f5b;
     --correct-bg:#e5f4ec;
@@ -348,8 +352,10 @@
   }
   .grid-cell:hover{border-color:var(--navy);box-shadow:0 1px 4px rgba(11,74,115,.2);}
   .grid-cell.answered{background:#e5f4ec;border-color:var(--answered);color:#1f6b41;}
+  /* the ring keeps the dot legible on the tinted correct/incorrect cells */
   .grid-cell.marked::after{
-    content:"";position:absolute;top:2px;right:2px;width:7px;height:7px;border-radius:50%;background:var(--marked);
+    content:"";position:absolute;top:2px;right:2px;width:8px;height:8px;border-radius:50%;
+    background:var(--marked);box-shadow:0 0 0 1.5px #fff;
   }
   .grid-cell.current{outline:2px solid var(--navy);}
   .grid-cell.correct{background:var(--correct-bg);border-color:var(--correct);color:#1f6b41;}
