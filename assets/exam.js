@@ -235,7 +235,6 @@ function render(){
   if(ni){
     const wrong = state.graded ? incorrectIndexes() : [];
     ni.style.display = wrong.length ? '' : 'none';
-    ni.textContent = 'Next incorrect (' + wrong.length + ')';
   }
 
   renderPause();
