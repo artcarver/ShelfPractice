@@ -896,10 +896,24 @@ document.addEventListener('keydown', (e) => {
 
 /* ---------- loading / start screen ---------- */
 
+/* Reloading a tab you are already working in should drop you straight back
+   into the exam: the start screen's resume / start-over choice only means
+   anything when you arrive fresh. sessionStorage is per-tab and dies with the
+   tab, which is exactly that distinction — a reload keeps it, a new tab or a
+   later visit does not. */
+const SESSION_KEY = 'exam_session_' + EXAM.id;
+function markSessionEntered(){
+  try{ sessionStorage.setItem(SESSION_KEY, '1'); }catch(e){}
+}
+function enteredThisSession(){
+  try{ return sessionStorage.getItem(SESSION_KEY) === '1'; }catch(e){ return false; }
+}
+
 function enterExam(){
   document.getElementById('startScreen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
   enteredExam = true;
+  markSessionEntered();
   startClock();          // no-op if the exam is paused or already graded
   saveState();
   renderPause();
@@ -915,6 +929,8 @@ function enterExam(){
 document.getElementById('beginBtn').addEventListener('click', enterExam);
 document.getElementById('resumeBtn').addEventListener('click', enterExam);
 document.getElementById('startOverBtn').addEventListener('click', () => {
+  // this throws away everything, so it asks first — the same guard Restart has
+  if(!confirm('Start this exam over? This clears your answers, highlights and score.')) return;
   state.idx = 0; state.answers = {}; state.marked = {}; state.struck = {}; state.highlights = {};
   state.score = null; state.onResults = false;
   resultsFilter = 'all';
@@ -961,14 +977,20 @@ renderPause();
    wait for at this point, so show the start screen straight away rather than
    holding it behind a timer. */
 document.getElementById('loadingScreen').style.display = 'none';
-document.getElementById('startScreen').style.display = 'flex';
 
-const hasProgress = Object.keys(state.answers).length > 0 || state.graded ||
-                    state.paused || elapsedMs() > 0;
-if(hasProgress){
-  document.getElementById('resumeRow').style.display = 'flex';
-  document.getElementById('resumeItem').textContent =
-    (state.graded && state.onResults) ? 'Results' : ('Item ' + (state.idx + 1));
+if(enteredThisSession()){
+  // same tab, already working here: a reload should not interrupt
+  enterExam();
 }else{
-  document.getElementById('beginRow').style.display = 'flex';
+  document.getElementById('startScreen').style.display = 'flex';
+  const hasProgress = Object.keys(state.answers).length > 0 || state.graded ||
+                      state.paused || elapsedMs() > 0;
+  if(hasProgress){
+    document.getElementById('resumeRow').style.display = 'flex';
+    document.getElementById('startOverRow').style.display = 'block';
+    document.getElementById('resumeItem').textContent =
+      (state.graded && state.onResults) ? 'Results' : ('Item ' + (state.idx + 1));
+  }else{
+    document.getElementById('beginRow').style.display = 'flex';
+  }
 }
