@@ -160,10 +160,11 @@
    nesting reads from indentation alone. */
 
 /* search match highlight */
+/* No horizontal padding — it would widen the matched run and shift the
+   surrounding text as you type in the search box. */
 mark.lv-hit{
   background:var(--lv-hit);
   color:inherit;
-  padding:0 1px;
   border-radius:3px;
 }
 
