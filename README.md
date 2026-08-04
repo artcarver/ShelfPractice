@@ -56,7 +56,14 @@ Chrome that describes the current question — the item counter, Previous /
 Next, the subbar and Lab Values — is hidden on the results screen, where
 there is no question for it to refer to. Saved progress records which of
 the two views was showing, so reloading mid-review returns to the item you
-were reading rather than jumping to the score. The landing page reads
+were reading rather than jumping to the score.
+
+The start screen only appears when you arrive fresh. Reloading a tab you
+are already working in goes straight back into the exam — the per-tab flag
+lives in `sessionStorage`, so a reload keeps it while a new tab or a later
+visit does not, and those still get the resume / start-over choice. Start
+Over is a quiet text link rather than a button beside Resume, and it asks
+for confirmation, since it throws away every answer. The landing page reads
 each exam's saved progress and shows a status badge: in progress with the
 answered count, or completed with the score.
 
