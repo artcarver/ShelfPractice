@@ -227,7 +227,8 @@ function render(){
   document.getElementById('prevBtn2').disabled = state.idx === 0;
   const isLast = state.idx === QUESTIONS.length - 1;
   document.getElementById('nextBtnLabel').textContent = isLast ? 'Review' : 'Next';
-  document.getElementById('nextBtn2').textContent = isLast ? 'Review / Finish' : 'Next';
+  document.getElementById('nextBtn2').textContent =
+    isLast ? (state.graded ? 'Item List' : 'Review / Finish') : 'Next';
 
   // stepping through only the items you got wrong, once the block is graded
   const ni = document.getElementById('nextIncorrectBtn');
@@ -249,6 +250,26 @@ function scrollQuestionTop(){
   const main = document.getElementById('examMain');
   if(main) main.scrollTop = 0;
   window.scrollTo(0,0);
+}
+
+/* Swap the results screen out for the question view. Item navigation can be
+   triggered from the review overlay while Exam Complete is on screen, and
+   rendering the question underneath it would otherwise change nothing the
+   user can see. */
+function showQuestionView(){
+  document.getElementById('resultsScreen').style.display = 'none';
+  document.getElementById('quizMain').style.display = '';
+  document.querySelector('footer.botbar').style.display = '';
+}
+
+/* The one way to move to an item: it always ends with that item on screen. */
+function goToItem(i){
+  if(i < 0 || i >= QUESTIONS.length) return;
+  state.idx = i;
+  saveState();
+  showQuestionView();
+  render();
+  scrollQuestionTop();
 }
 
 function escapeHtml(s){
@@ -442,11 +463,10 @@ document.getElementById('restartBtn').addEventListener('click', () => {
   if(confirm('Restart the exam? This will clear all your selected answers and your score.')){
     state.idx = 0; state.answers = {}; state.marked = {}; state.struck = {}; state.highlights = {}; state.graded = false;
     state.score = null;
+    resultsFilter = 'all';
     state.elapsedMs = 0; state.runningSince = Date.now(); state.paused = false;
     saveState();
-    document.getElementById('resultsScreen').style.display = 'none';
-    document.getElementById('quizMain').style.display = '';
-    document.querySelector('footer.botbar').style.display = '';
+    showQuestionView();
     renderPause();
     render();
     scrollQuestionTop();
@@ -481,11 +501,8 @@ function openReview(){
     cell.setAttribute('aria-label', 'Item ' + q.n + ' — ' + bits.join(', '));
     cell.title = bits.join(', ');
     cell.addEventListener('click', () => {
-      state.idx = i;
-      saveState();
       closeReview();
-      render();
-      scrollQuestionTop();
+      goToItem(i);
     });
     grid.appendChild(cell);
   });
@@ -533,21 +550,15 @@ function closeReview(){
 document.getElementById('firstUnansweredBtn').addEventListener('click', () => {
   const i = QUESTIONS.findIndex(q => !state.answers[q.n]);
   if(i >= 0){
-    state.idx = i;
-    saveState();
     closeReview();
-    render();
-    scrollQuestionTop();
+    goToItem(i);
   }
 });
 document.getElementById('reviewIncorrectBtn').addEventListener('click', () => {
   const list = incorrectIndexes();
   if(!list.length) return;
-  state.idx = list[0];
-  saveState();
   closeReview();
-  render();
-  scrollQuestionTop();
+  goToItem(list[0]);
 });
 document.getElementById('backToResultsBtn').addEventListener('click', () => {
   closeReview();
@@ -589,7 +600,27 @@ function computeScore(){
   return {correct, incorrect, unanswered, total: QUESTIONS.length};
 }
 
-/* Filter chips above the results table: All / Incorrect / Unanswered / Marked. */
+/* Filter chips above the results table: All / Incorrect / Unanswered / Marked.
+   The choice sticks, so stepping out to an item and back does not drop you
+   from "Incorrect" back to the full list every time. */
+let resultsFilter = 'all';
+
+function applyResultsFilter(key){
+  resultsFilter = key;
+  document.querySelectorAll('#resultsFilters .filter-chip').forEach(c => {
+    c.classList.toggle('active', c.dataset.key === key);
+  });
+  let shown = 0;
+  document.querySelectorAll('#resultsBody tr').forEach(tr => {
+    const show = key === 'all' ||
+      (key === 'marked' ? tr.dataset.marked === '1' : tr.dataset.result === key);
+    tr.style.display = show ? '' : 'none';
+    if(show) shown++;
+  });
+  // an empty table under a filter reads as a glitch without a word of explanation
+  document.getElementById('resultsEmpty').style.display = shown ? 'none' : '';
+}
+
 function buildResultFilters(score){
   const wrap = document.getElementById('resultsFilters');
   wrap.innerHTML = '';
@@ -603,17 +634,10 @@ function buildResultFilters(score){
   defs.forEach(([key, label]) => {
     const chip = document.createElement('button');
     chip.type = 'button';
-    chip.className = 'filter-chip' + (key === 'all' ? ' active' : '');
+    chip.className = 'filter-chip';
+    chip.dataset.key = key;
     chip.textContent = label;
-    chip.addEventListener('click', () => {
-      wrap.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      document.querySelectorAll('#resultsBody tr').forEach(tr => {
-        const show = key === 'all' ||
-          (key === 'marked' ? tr.dataset.marked === '1' : tr.dataset.result === key);
-        tr.style.display = show ? '' : 'none';
-      });
-    });
+    chip.addEventListener('click', () => applyResultsFilter(key));
     wrap.appendChild(chip);
   });
 }
@@ -653,24 +677,24 @@ function showResults(){
     tr.dataset.result = result;
     tr.dataset.marked = state.marked[q.n] ? '1' : '';
     tr.innerHTML = `<td>${q.n}</td><td>${ans}</td><td>${correctLetter}</td><td class="result-badge">${badge}</td><td>${state.marked[q.n] ? 'Yes' : ''}</td>`;
+    // the row is a control: reachable and operable from the keyboard too
     tr.style.cursor = 'pointer';
-    tr.addEventListener('click', () => {
-      state.idx = QUESTIONS.findIndex(x => x.n === q.n);
-      saveState();
-      document.getElementById('resultsScreen').style.display = 'none';
-      document.getElementById('quizMain').style.display = '';
-      document.querySelector('footer.botbar').style.display = '';
-      render();
-      scrollQuestionTop();
+    tr.tabIndex = 0;
+    tr.setAttribute('role', 'button');
+    tr.setAttribute('aria-label', `Item ${q.n}, ${badge}. Go to this item.`);
+    const open = () => goToItem(QUESTIONS.findIndex(x => x.n === q.n));
+    tr.addEventListener('click', open);
+    tr.addEventListener('keydown', e => {
+      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); open(); }
     });
     body.appendChild(tr);
   });
+
+  applyResultsFilter(resultsFilter);   // rows exist now, so the filter can bite
 }
 
 document.getElementById('backToExamBtn').addEventListener('click', () => {
-  document.getElementById('resultsScreen').style.display = 'none';
-  document.getElementById('quizMain').style.display = '';
-  document.querySelector('footer.botbar').style.display = '';
+  showQuestionView();
   render();
   scrollQuestionTop();
 });
@@ -678,8 +702,11 @@ document.getElementById('backToExamBtn').addEventListener('click', () => {
 document.getElementById('downloadBtn').addEventListener('click', () => {
   const {correct, incorrect, unanswered, total} = computeScore();
   const pct = Math.round((correct/total)*100);
-  let lines = [EXAM.title + ' - Results', `Score: ${correct} of ${total} correct (${pct}%)`,
-    `Incorrect: ${incorrect}    Unanswered: ${unanswered}`, ''];
+  let lines = [EXAM.title + ' - Results',
+    EXAM.label ? EXAM.label : null,
+    `Score: ${correct} of ${total} correct (${pct}%)`,
+    `Incorrect: ${incorrect}    Unanswered: ${unanswered}`,
+    `Time on block: ${formatDuration(elapsedMs())}`, ''].filter(l => l !== null);
   QUESTIONS.forEach(q => {
     const ans = state.answers[q.n] || '(unanswered)';
     const correctLetter = ANSWER_KEY[q.n] || '?';
@@ -732,6 +759,14 @@ function renderToolbar(){
   // once graded, the Pause slot becomes the way back to the score
   const results = document.getElementById('resultsBtn');
   if(results) results.style.display = (state.graded && !onResults) ? '' : 'none';
+  /* The item counter, Previous/Next and the subbar all describe the current
+     question. On the results screen there is none, so they are at best inert
+     and at worst misleading: the subbar's "Mark for review" box would flag a
+     question the user cannot see, and its answered count goes stale the
+     moment the block is graded. */
+  document.querySelector('.topbar-center').style.display = onResults ? 'none' : '';
+  document.querySelector('.item-box').style.display = onResults ? 'none' : '';
+  document.querySelector('.subbar').style.display = onResults ? 'none' : '';
 }
 
 /* Items that were not answered correctly — wrong answers and blanks alike,
@@ -746,10 +781,7 @@ function goToNextIncorrect(){
   const list = incorrectIndexes();
   if(!list.length) return;
   const next = list.find(i => i > state.idx);
-  state.idx = next === undefined ? list[0] : next;   // wrap around
-  saveState();
-  render();
-  scrollQuestionTop();
+  goToItem(next === undefined ? list[0] : next);   // wrap around
 }
 
 function renderPause(){
@@ -878,6 +910,7 @@ document.getElementById('resumeBtn').addEventListener('click', enterExam);
 document.getElementById('startOverBtn').addEventListener('click', () => {
   state.idx = 0; state.answers = {}; state.marked = {}; state.struck = {}; state.highlights = {};
   state.score = null;
+  resultsFilter = 'all';
   state.elapsedMs = 0; state.runningSince = null; state.paused = false; state.graded = false;
   saveState();
   enterExam();

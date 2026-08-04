@@ -403,6 +403,10 @@
   .filter-chip:hover{border-color:var(--navy);color:var(--navy);}
   .filter-chip.active{background:var(--navy);border-color:var(--navy);color:#fff;}
   .table-wrap{overflow-x:auto;margin-top:14px;}
+  .results-empty{
+    padding:22px 4px;color:var(--muted);font-size:14px;font-style:italic;
+  }
+  .results-table tr:focus-visible{outline:2px solid var(--navy);outline-offset:-2px;}
   .results-table{width:100%;border-collapse:collapse;font-size:14px;}
   .results-table th,.results-table td{border:1px solid var(--border);padding:8px 10px;text-align:left;}
   .results-table th{background:#f0f4f7;}
