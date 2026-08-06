@@ -495,6 +495,68 @@
     }
   }
 
+  /* ---------- per-item notes ---------- */
+  /* The panel lives in the question column, directly under the choices: it is
+     a scratchpad for the item you are reading, so it stays with it rather than
+     floating over it. Open/closed is remembered, so it follows you from item
+     to item once you start using it. */
+  .notes-panel{
+    margin:22px 0 4px;
+    max-width:680px;   /* lines up with the answer choices above it */
+    border:1px solid var(--border);
+    border-left:5px solid var(--navy);
+    border-radius:8px;
+    background:#fbfdff;
+    padding:14px 16px 12px;
+  }
+  .notes-head{display:flex;align-items:center;gap:10px;margin-bottom:9px;}
+  .notes-title{
+    font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--navy);
+  }
+  .notes-status{
+    font-size:12px;color:var(--answered);margin-left:auto;
+    opacity:0;transition:opacity .2s;
+  }
+  .notes-status.show{opacity:1;}
+  .notes-x{
+    background:none;border:none;cursor:pointer;
+    font-size:21px;line-height:1;color:var(--muted);padding:0 2px;
+  }
+  .notes-x:hover{color:var(--text);}
+  #notesText{
+    display:block;width:100%;
+    font-family:inherit;font-size:14.5px;line-height:1.5;color:var(--text);
+    padding:10px 12px;
+    border:1px solid var(--border);border-radius:6px;
+    background:#fff;
+    resize:vertical;min-height:96px;
+  }
+  #notesText:focus{outline:2px solid var(--navy);outline-offset:1px;}
+  .notes-foot{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    margin-top:8px;font-size:12px;color:var(--muted);
+  }
+  .notes-foot .text-link{font-size:12px;}
+  /* a dot on the toolbar button when the item you are on already has a note */
+  .topbar-right .tb-item{position:relative;}
+  .tb-dot{
+    display:none;position:absolute;top:0;right:-2px;
+    width:7px;height:7px;border-radius:50%;background:#ffd166;
+  }
+  .tb-item.has-note .tb-dot{display:block;}
+  /* and a corner fold on its cell in the item grid, opposite the marked dot */
+  .grid-cell.has-note::before{
+    content:"";position:absolute;bottom:2px;left:2px;
+    width:0;height:0;border-left:7px solid var(--navy);
+    border-bottom:7px solid transparent;opacity:.75;
+  }
+  .dot.n{background:var(--navy);border-radius:0;
+    clip-path:polygon(0 0, 0 100%, 100% 100%);}
+  @media (max-width:640px){
+    .notes-foot{flex-direction:column;align-items:flex-start;gap:6px;}
+  }
+
   /* ---------- answer explanation (shown during review) ---------- */
   .explanation{
     margin:26px 0 10px;

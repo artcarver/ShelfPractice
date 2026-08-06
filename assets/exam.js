@@ -40,6 +40,8 @@ const state = {
   marked: {},    // n -> bool
   struck: {},    // "n_letter" -> bool
   highlights: {}, // n -> [[start,end], ...] character offsets into stem text
+  notes: {},        // n -> the note you typed while working that item
+  notesOpen: false, // whether the notes panel is showing; kept across items
   /* Timekeeping: `elapsedMs` banks completed running time and `runningSince`
      timestamps the current running stretch (null whenever the clock is stopped),
      so pausing is just stopping the clock. */
@@ -64,6 +66,8 @@ function loadState(){
       state.marked = saved.marked || {};
       state.struck = saved.struck || {};
       state.highlights = saved.highlights || {};
+      state.notes = saved.notes || {};
+      state.notesOpen = !!saved.notesOpen;
       state.graded = !!saved.graded;
       state.paused = !!saved.paused;
       state.score = saved.score || null;
@@ -83,7 +87,8 @@ function saveState(){
   try{
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       idx: state.idx, answers: state.answers, marked: state.marked, struck: state.struck,
-      highlights: state.highlights, graded: state.graded, paused: state.paused,
+      highlights: state.highlights, notes: state.notes, notesOpen: state.notesOpen,
+      graded: state.graded, paused: state.paused,
       score: state.score, onResults: state.onResults,
       elapsedMs: state.elapsedMs, runningSince: state.runningSince
     }));
@@ -211,6 +216,8 @@ function render(){
     expEl.innerHTML = '';
     expEl.style.display = 'none';
   }
+
+  renderNotes();
 
   document.getElementById('markChk').checked = !!state.marked[q.n];
 
@@ -465,6 +472,7 @@ document.getElementById('markChk').addEventListener('change', (e) => {
 document.getElementById('restartBtn').addEventListener('click', () => {
   if(confirm('Restart the exam? This will clear all your selected answers and your score.')){
     state.idx = 0; state.answers = {}; state.marked = {}; state.struck = {}; state.highlights = {}; state.graded = false;
+    state.notes = {};
     state.score = null; state.onResults = false;
     resultsFilter = 'all';
     state.elapsedMs = 0; state.runningSince = Date.now(); state.paused = false;
@@ -496,11 +504,13 @@ function openReview(){
     }else if(answered){
       cls += ' answered';
     }
+    if(hasNote(q.n)) cls += ' has-note';
     cell.className = cls;
     cell.textContent = q.n;
     const bits = [answered ? 'answered' : 'unanswered'];
     if(state.graded && answered) bits.push(isCorrect(q.n) ? 'correct' : 'incorrect');
     if(state.marked[q.n]) bits.push('marked for review');
+    if(hasNote(q.n)) bits.push('has a note');
     cell.setAttribute('aria-label', 'Item ' + q.n + ' — ' + bits.join(', '));
     cell.title = bits.join(', ');
     cell.addEventListener('click', () => {
@@ -515,11 +525,13 @@ function openReview(){
     legend.innerHTML = `<span><span class="dot c"></span> Correct</span>
       <span><span class="dot x"></span> Incorrect</span>
       <span><span class="dot u"></span> Unanswered</span>
-      <span><span class="dot m" style="border-radius:50%"></span> Marked for review</span>`;
+      <span><span class="dot m" style="border-radius:50%"></span> Marked for review</span>
+      <span><span class="dot n"></span> Has a note</span>`;
   }else{
     legend.innerHTML = `<span><span class="dot a"></span> Answered</span>
       <span><span class="dot u"></span> Unanswered</span>
-      <span><span class="dot m" style="border-radius:50%"></span> Marked for review</span>`;
+      <span><span class="dot m" style="border-radius:50%"></span> Marked for review</span>
+      <span><span class="dot n"></span> Has a note</span>`;
   }
 
   let summary = `<span><b>${answeredCount}</b> of ${QUESTIONS.length} answered</span>
@@ -718,6 +730,16 @@ document.getElementById('downloadBtn').addEventListener('click', () => {
     const result = !state.answers[q.n] ? 'UNANSWERED' : (state.answers[q.n] === correctLetter ? 'CORRECT' : 'INCORRECT');
     lines.push(`Item ${q.n}: your answer = ${ans}, correct = ${correctLetter}  [${result}]`);
   });
+  // your own notes are the part of a block worth keeping, so they come along
+  const noted = QUESTIONS.filter(q => hasNote(q.n));
+  if(noted.length){
+    lines.push('', 'My notes', '--------');
+    noted.forEach(q => {
+      lines.push(`Item ${q.n}:`);
+      noteFor(q.n).split('\n').forEach(l => lines.push('  ' + l));
+      lines.push('');
+    });
+  }
   const blob = new Blob([lines.join('\n')], {type:'text/plain'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -761,6 +783,9 @@ function renderToolbar(){
   if(pause) pause.style.display = state.graded ? 'none' : '';
   const lab = document.getElementById('labValuesBtn');
   if(lab) lab.style.display = onResults ? 'none' : '';
+  // notes belong to an item, so they go away with the question view
+  const notes = document.getElementById('notesBtn');
+  if(notes) notes.style.display = onResults ? 'none' : '';
   // once graded, the Pause slot becomes the way back to the score
   const results = document.getElementById('resultsBtn');
   if(results) results.style.display = (state.graded && !onResults) ? '' : 'none';
@@ -883,6 +908,13 @@ document.addEventListener('keydown', (e) => {
     saveState();
     document.getElementById('markChk').checked = !!state.marked[q.n];
   }
+  // N opens/closes the notes panel — no exam here has an option N to shadow,
+  // but the guard keeps that true if one ever does
+  else if((e.key === 'n' || e.key === 'N') &&
+          !currentQ().options.some(o => o[0] === 'N')){
+    e.preventDefault();
+    toggleNotes();
+  }
   else if(!state.graded){
     const letter = e.key.toUpperCase();
     const q = currentQ();
@@ -932,12 +964,121 @@ document.getElementById('startOverBtn').addEventListener('click', () => {
   // this throws away everything, so it asks first — the same guard Restart has
   if(!confirm('Start this exam over? This clears your answers, highlights and score.')) return;
   state.idx = 0; state.answers = {}; state.marked = {}; state.struck = {}; state.highlights = {};
+  state.notes = {};
   state.score = null; state.onResults = false;
   resultsFilter = 'all';
   state.elapsedMs = 0; state.runningSince = null; state.paused = false; state.graded = false;
   saveState();
   enterExam();
 });
+
+/* ---------- per-item notes ---------- */
+
+/* A note belongs to an item, not to the block, so the panel always shows the
+   note for whatever item is on screen. Typing writes straight into state and
+   only the localStorage write is debounced, so every other path that saves
+   (navigating, answering, grading) already persists what you have typed. */
+
+const notesPanel = document.getElementById('notesPanel');
+const notesText = document.getElementById('notesText');
+const notesBtn = document.getElementById('notesBtn');
+
+function noteFor(n){ return state.notes[n] || ''; }
+function hasNote(n){ return !!noteFor(n).trim(); }
+
+function renderNotes(){
+  if(!notesPanel) return;
+  const q = currentQ();
+  notesPanel.style.display = state.notesOpen ? '' : 'none';
+  document.getElementById('notesItem').textContent = q.n;
+  // never overwrite what is being typed; this also keeps the caret put
+  if(notesText.value !== noteFor(q.n)) notesText.value = noteFor(q.n);
+  if(notesBtn) notesBtn.classList.toggle('has-note', hasNote(q.n));
+}
+
+let notesSaveTimer = null;
+let notesStatusTimer = null;
+
+function flashNotesSaved(){
+  const el = document.getElementById('notesStatus');
+  if(!el) return;
+  el.textContent = 'Saved';
+  el.classList.add('show');
+  clearTimeout(notesStatusTimer);
+  notesStatusTimer = setTimeout(() => el.classList.remove('show'), 1400);
+}
+
+if(notesText){
+  notesText.addEventListener('input', () => {
+    const q = currentQ();
+    if(notesText.value.trim()) state.notes[q.n] = notesText.value;
+    else delete state.notes[q.n];        // an emptied note is no note at all
+    if(notesBtn) notesBtn.classList.toggle('has-note', hasNote(q.n));
+    clearTimeout(notesSaveTimer);
+    notesSaveTimer = setTimeout(() => {
+      notesSaveTimer = null;
+      saveState();
+      flashNotesSaved();
+    }, 400);
+  });
+  /* Leaving the field, the page or the tab must not lose the last keystrokes —
+     but only ever write when a keystroke is actually pending. An unconditional
+     write here would push this tab's state over whatever another tab has saved
+     since, just for navigating away. */
+  const flushNotes = () => {
+    if(!notesSaveTimer) return;
+    clearTimeout(notesSaveTimer);
+    notesSaveTimer = null;
+    saveState();
+  };
+  notesText.addEventListener('blur', flushNotes);
+  window.addEventListener('pagehide', flushNotes);
+  document.addEventListener('visibilitychange', () => {
+    if(document.visibilityState === 'hidden') flushNotes();
+  });
+}
+
+function openNotes(focus){
+  state.notesOpen = true;
+  saveState();
+  renderNotes();
+  if(focus !== false){
+    notesText.focus();
+    // typing continues where you left off rather than at the start
+    const end = notesText.value.length;
+    notesText.setSelectionRange(end, end);
+  }
+}
+function closeNotes(){
+  clearTimeout(notesSaveTimer);
+  notesSaveTimer = null;      // the saveState below covers the pending write
+  state.notesOpen = false;
+  saveState();
+  renderNotes();
+}
+function toggleNotes(){
+  if(state.notesOpen && document.activeElement !== notesText){ notesText.focus(); return; }
+  state.notesOpen ? closeNotes() : openNotes();
+}
+
+if(notesBtn) notesBtn.addEventListener('click', toggleNotes);
+const notesCloseBtn = document.getElementById('notesClose');
+if(notesCloseBtn) notesCloseBtn.addEventListener('click', closeNotes);
+const notesClearBtn = document.getElementById('notesClear');
+if(notesClearBtn){
+  notesClearBtn.addEventListener('click', () => {
+    const q = currentQ();
+    if(!hasNote(q.n)){ notesText.focus(); return; }
+    if(!confirm('Clear your note on item ' + q.n + '?')) return;
+    delete state.notes[q.n];
+    notesText.value = '';
+    clearTimeout(notesSaveTimer);
+    notesSaveTimer = null;
+    saveState();
+    renderNotes();
+    notesText.focus();
+  });
+}
 
 /* ---------- Lab Values panel (splits the layout, reflowing the question) ---------- */
 

@@ -49,6 +49,10 @@
         <span>Mark items for review and jump to any item from <b>Review</b></span>
       </div>
       <div class="how-item">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h9l5 5v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14 3v5h5"/><path d="M8 12h8M8 16h5"/></svg>
+        <span><b>Notes</b> &mdash; or <b>N</b> &mdash; opens a note for the item you are on</span>
+      </div>
+      <div class="how-item">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
         <span><b>Pause</b> stops the clock and hides the question</span>
       </div>
@@ -61,6 +65,7 @@
       <span><kbd>&#8592;</kbd><kbd>&#8594;</kbd> change item</span>
       <span><kbd>A</kbd>&ndash;<kbd>E</kbd> answer</span>
       <span><kbd>M</kbd> mark</span>
+      <span><kbd>N</kbd> notes</span>
       <span><kbd>Esc</kbd> pause</span>
       <span><kbd>Enter</kbd> begin</span>
     </div>
@@ -100,6 +105,11 @@
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6M10 3v6l-5.6 9.6A2 2 0 0 0 6.1 21h11.8a2 2 0 0 0 1.7-2.4L14 9V3"/><path d="M7.2 15.5h9.6"/></svg>
         <div>Lab Values</div>
       </button>
+      <button type="button" class="tb-item" id="notesBtn" title="Write a note about this item (N)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h9l5 5v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14 3v5h5"/><path d="M8 12h8M8 16h5"/></svg>
+        <div>Notes</div>
+        <span class="tb-dot" id="notesDot" aria-hidden="true"></span>
+      </button>
       <button type="button" class="tb-item" id="reviewOpenBtn">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7.5" height="7.5" rx="1"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1"/></svg>
         <div>Review</div>
@@ -135,6 +145,22 @@
         <div class="qimg-wrap" id="qimgWrap" style="display:none"><img id="qimg" src="" alt="Exhibit"></div>
         <div class="stem" id="qstem"></div>
         <div class="options" id="qoptions"></div>
+
+        <section class="notes-panel" id="notesPanel" style="display:none"
+                 aria-label="Your notes on this item">
+          <div class="notes-head">
+            <span class="notes-title">My notes &mdash; item <span id="notesItem"></span></span>
+            <span class="notes-status" id="notesStatus" aria-live="polite"></span>
+            <button type="button" class="notes-x" id="notesClose" aria-label="Close notes">&times;</button>
+          </div>
+          <textarea id="notesText" rows="5" spellcheck="true"
+                    placeholder="Why you picked what you picked, what to look up later&hellip;"></textarea>
+          <div class="notes-foot">
+            <span class="notes-hint">Kept per item, in this browser, alongside your answers.</span>
+            <button type="button" class="text-link" id="notesClear">Clear this note</button>
+          </div>
+        </section>
+
         <div class="explanation" id="explanation" style="display:none"></div>
       </main>
 
