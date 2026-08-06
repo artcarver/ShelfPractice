@@ -25,6 +25,9 @@ exams/
   surgery-form7/
     data.js
     images/
+  surgery-form6/
+    data.js
+    images/
 ```
 
 **Rendering and exam content are fully separate.** Everything under `assets/`
