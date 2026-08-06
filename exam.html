@@ -146,21 +146,6 @@
         <div class="stem" id="qstem"></div>
         <div class="options" id="qoptions"></div>
 
-        <section class="notes-panel" id="notesPanel" style="display:none"
-                 aria-label="Your notes on this item">
-          <div class="notes-head">
-            <span class="notes-title">My notes &mdash; item <span id="notesItem"></span></span>
-            <span class="notes-status" id="notesStatus" aria-live="polite"></span>
-            <button type="button" class="notes-x" id="notesClose" aria-label="Close notes">&times;</button>
-          </div>
-          <textarea id="notesText" rows="5" spellcheck="true"
-                    placeholder="Why you picked what you picked, what to look up later&hellip;"></textarea>
-          <div class="notes-foot">
-            <span class="notes-hint">Kept per item, in this browser, alongside your answers.</span>
-            <button type="button" class="text-link" id="notesClear">Clear this note</button>
-          </div>
-        </section>
-
         <div class="explanation" id="explanation" style="display:none"></div>
       </main>
 
@@ -202,6 +187,25 @@
       </div>
     </div>
   </div>
+
+  <!-- Notes: a small window you can drag anywhere and leave open while you
+       work. It floats over the question rather than sitting in the column,
+       so it never reflows what you are reading. -->
+  <section class="notes-pop" id="notesPanel" style="display:none"
+           aria-label="Your notes on this item">
+    <div class="notes-head" id="notesHead" title="Drag to move">
+      <svg class="notes-grip" width="12" height="14" viewBox="0 0 12 14" aria-hidden="true"><circle cx="3" cy="3" r="1.3"/><circle cx="9" cy="3" r="1.3"/><circle cx="3" cy="7" r="1.3"/><circle cx="9" cy="7" r="1.3"/><circle cx="3" cy="11" r="1.3"/><circle cx="9" cy="11" r="1.3"/></svg>
+      <span class="notes-title">Item <span id="notesItem"></span></span>
+      <span class="notes-status" id="notesStatus" aria-live="polite"></span>
+      <button type="button" class="notes-x" id="notesClose" aria-label="Close notes">&times;</button>
+    </div>
+    <textarea id="notesText" spellcheck="true"
+              placeholder="Why you picked what you picked, what to look up later&hellip;"></textarea>
+    <div class="notes-foot">
+      <button type="button" class="text-link" id="notesClear">Clear</button>
+      <span class="notes-hint">Saved per item</span>
+    </div>
+  </section>
 
   <!-- Review overlay -->
   <div class="overlay" id="reviewOverlay">

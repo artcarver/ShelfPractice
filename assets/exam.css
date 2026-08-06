@@ -496,48 +496,74 @@
   }
 
   /* ---------- per-item notes ---------- */
-  /* The panel lives in the question column, directly under the choices: it is
-     a scratchpad for the item you are reading, so it stays with it rather than
-     floating over it. Open/closed is remembered, so it follows you from item
-     to item once you start using it. */
-  .notes-panel{
-    margin:22px 0 4px;
-    max-width:680px;   /* lines up with the answer choices above it */
+  /* A small window that floats over the question and can be dragged anywhere,
+     so it never reflows what you are reading. Its position, size and
+     open/closed state are remembered, so it stays where you put it as you move
+     between items. It sits under the review overlay and the enlarged exhibit,
+     which are modal and should cover it. */
+  .notes-pop{
+    position:fixed;
+    z-index:40;
+    width:340px;
+    height:260px;
+    min-width:240px;
+    min-height:170px;
+    max-width:96vw;
+    max-height:88vh;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;                 /* required for the resize handle */
+    resize:both;
     border:1px solid var(--border);
-    border-left:5px solid var(--navy);
-    border-radius:8px;
-    background:#fbfdff;
-    padding:14px 16px 12px;
+    border-radius:10px;
+    background:var(--panel);
+    box-shadow:0 8px 30px rgba(10,30,45,.28);
   }
-  .notes-head{display:flex;align-items:center;gap:10px;margin-bottom:9px;}
+  .notes-head{
+    display:flex;align-items:center;gap:8px;
+    padding:8px 8px 8px 10px;
+    background:var(--navy);
+    color:#fff;
+    cursor:move;
+    user-select:none;
+    touch-action:none;               /* pointer drag, not a page scroll */
+    flex:0 0 auto;
+  }
+  .notes-head.dragging{cursor:grabbing;}
+  .notes-grip{fill:rgba(255,255,255,.6);flex:0 0 auto;}
   .notes-title{
-    font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
-    color:var(--navy);
+    font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+    white-space:nowrap;
   }
   .notes-status{
-    font-size:12px;color:var(--answered);margin-left:auto;
+    font-size:11.5px;color:#bfe3cd;margin-left:auto;
     opacity:0;transition:opacity .2s;
   }
   .notes-status.show{opacity:1;}
   .notes-x{
     background:none;border:none;cursor:pointer;
-    font-size:21px;line-height:1;color:var(--muted);padding:0 2px;
+    font-size:20px;line-height:1;color:rgba(255,255,255,.85);padding:0 2px;
   }
-  .notes-x:hover{color:var(--text);}
+  .notes-x:hover{color:#fff;}
   #notesText{
-    display:block;width:100%;
-    font-family:inherit;font-size:14.5px;line-height:1.5;color:var(--text);
+    flex:1 1 auto;
+    width:100%;
+    font-family:inherit;font-size:14px;line-height:1.5;color:var(--text);
     padding:10px 12px;
-    border:1px solid var(--border);border-radius:6px;
+    border:none;border-top:1px solid var(--border);
     background:#fff;
-    resize:vertical;min-height:96px;
+    resize:none;                     /* the window resizes, not the field */
   }
-  #notesText:focus{outline:2px solid var(--navy);outline-offset:1px;}
+  #notesText:focus{outline:2px solid var(--navy);outline-offset:-2px;}
   .notes-foot{
-    display:flex;align-items:center;justify-content:space-between;gap:12px;
-    margin-top:8px;font-size:12px;color:var(--muted);
+    flex:0 0 auto;
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:6px 10px 8px;
+    border-top:1px solid var(--border);
+    font-size:11.5px;color:var(--muted);
+    background:#f7fafc;
   }
-  .notes-foot .text-link{font-size:12px;}
+  .notes-foot .text-link{font-size:11.5px;}
   /* a dot on the toolbar button when the item you are on already has a note */
   .topbar-right .tb-item{position:relative;}
   .tb-dot{
@@ -553,8 +579,17 @@
   }
   .dot.n{background:var(--navy);border-radius:0;
     clip-path:polygon(0 0, 0 100%, 100% 100%);}
+  /* On a phone there is nowhere to drag to, so it docks to the bottom of the
+     screen instead. The engine drops its inline geometry at this width. */
   @media (max-width:640px){
-    .notes-foot{flex-direction:column;align-items:flex-start;gap:6px;}
+    .notes-pop{
+      left:0 !important;right:0 !important;bottom:0 !important;top:auto !important;
+      width:auto !important;max-width:none;height:46vh !important;
+      border-radius:12px 12px 0 0;
+      resize:none;
+    }
+    .notes-head{cursor:default;}
+    .notes-grip{display:none;}
   }
 
   /* ---------- answer explanation (shown during review) ---------- */

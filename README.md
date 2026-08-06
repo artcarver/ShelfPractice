@@ -41,16 +41,22 @@ hides the question behind an overlay until you resume. The elapsed time is banke
 rather than derived from a start timestamp, so paused time is excluded, the pause
 survives a reload, and the clock stops for good once the block is graded.
 
-A **Notes** button in the toolbar (or the <kbd>N</kbd> key) opens a notepad for
-the item you are on, under the answer choices — somewhere to write out your
-reasoning while you work the question. Notes are per item and are saved with the
-rest of your progress, so they survive a reload and are still there during
-review; the toolbar button carries a dot when the current item has one, the item
-grid marks noted items with a corner fold, and **Download My Results** appends
-your notes to the file. Whether the panel is open is remembered too, so it
-follows you from item to item once you start using it. Keystrokes typed into the
-notepad never reach the exam — <kbd>A</kbd>–<kbd>E</kbd>, <kbd>M</kbd> and
-<kbd>Esc</kbd> all stay ordinary text while you are writing.
+A **Notes** button in the toolbar (or the <kbd>N</kbd> key) opens a small notes
+window for the item you are on — somewhere to write out your reasoning while you
+work the question. It floats over the question rather than sitting in the
+column, so it never reflows what you are reading: drag it anywhere by its title
+bar, resize it from the corner, and it stays where you put it as you move
+between items and across reloads. On a phone it docks to the bottom of the
+screen instead, since there is nowhere useful to drag to.
+
+Notes are per item and are saved with the rest of your progress, so they survive
+a reload and are still there during review; the toolbar button carries a dot
+when the current item has one, the item grid marks noted items with a corner
+fold, and **Download My Results** appends your notes to the file. Keystrokes
+typed into the notepad never reach the exam — <kbd>A</kbd>–<kbd>E</kbd>,
+<kbd>M</kbd> and <kbd>Esc</kbd> all stay ordinary text while you are writing.
+The window stands down for the two screens it cannot belong to: the pause
+overlay and the results screen.
 
 Keyboard shortcuts on the exam page: <kbd>←</kbd>/<kbd>→</kbd> change items,
 <kbd>A</kbd>–<kbd>E</kbd> select an answer, <kbd>M</kbd> toggles "mark for

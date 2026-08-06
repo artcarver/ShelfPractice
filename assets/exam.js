@@ -41,7 +41,8 @@ const state = {
   struck: {},    // "n_letter" -> bool
   highlights: {}, // n -> [[start,end], ...] character offsets into stem text
   notes: {},        // n -> the note you typed while working that item
-  notesOpen: false, // whether the notes panel is showing; kept across items
+  notesOpen: false, // whether the notes window is showing; kept across items
+  notesPos: null,   // {x,y,w,h} of the notes window, so it stays where you put it
   /* Timekeeping: `elapsedMs` banks completed running time and `runningSince`
      timestamps the current running stretch (null whenever the clock is stopped),
      so pausing is just stopping the clock. */
@@ -68,6 +69,7 @@ function loadState(){
       state.highlights = saved.highlights || {};
       state.notes = saved.notes || {};
       state.notesOpen = !!saved.notesOpen;
+      state.notesPos = saved.notesPos || null;
       state.graded = !!saved.graded;
       state.paused = !!saved.paused;
       state.score = saved.score || null;
@@ -87,7 +89,8 @@ function saveState(){
   try{
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       idx: state.idx, answers: state.answers, marked: state.marked, struck: state.struck,
-      highlights: state.highlights, notes: state.notes, notesOpen: state.notesOpen,
+      highlights: state.highlights, notes: state.notes,
+      notesOpen: state.notesOpen, notesPos: state.notesPos,
       graded: state.graded, paused: state.paused,
       score: state.score, onResults: state.onResults,
       elapsedMs: state.elapsedMs, runningSince: state.runningSince
@@ -269,6 +272,7 @@ function showQuestionView(){
   document.getElementById('quizMain').style.display = '';
   document.querySelector('footer.botbar').style.display = '';
   state.onResults = false;
+  renderNotes();
   saveState();
 }
 
@@ -664,6 +668,7 @@ function showResults(){
   document.querySelector('footer.botbar').style.display = 'none';
   document.getElementById('resultsScreen').style.display = 'block';
   renderToolbar();    // after the switch, so it sees the results screen
+  renderNotes();      // no item on screen, so the notes window goes too
   state.onResults = true;
   saveState();
 
@@ -821,6 +826,7 @@ function renderPause(){
   screen.style.display = (state.paused && enteredExam) ? 'flex' : 'none';
   // the question must not be readable while the clock is stopped
   document.getElementById('examBody').style.visibility = state.paused ? 'hidden' : '';
+  if(typeof renderNotes === 'function') renderNotes();   // it floats outside examBody
   tickTimer();
 }
 
@@ -986,15 +992,127 @@ const notesBtn = document.getElementById('notesBtn');
 function noteFor(n){ return state.notes[n] || ''; }
 function hasNote(n){ return !!noteFor(n).trim(); }
 
+/* The window floats over everything, so unlike the rest of the question view
+   it is not hidden for free: it has to stand down for the pause screen and for
+   the results screen, neither of which has an item it could belong to. */
+function notesShouldShow(){
+  return state.notesOpen && !state.paused &&
+         document.getElementById('resultsScreen').style.display !== 'block';
+}
+
 function renderNotes(){
   if(!notesPanel) return;
   const q = currentQ();
-  notesPanel.style.display = state.notesOpen ? '' : 'none';
+  notesPanel.style.display = notesShouldShow() ? '' : 'none';
+  if(notesShouldShow()) placeNotes();
   document.getElementById('notesItem').textContent = q.n;
   // never overwrite what is being typed; this also keeps the caret put
   if(notesText.value !== noteFor(q.n)) notesText.value = noteFor(q.n);
   if(notesBtn) notesBtn.classList.toggle('has-note', hasNote(q.n));
 }
+
+/* ---------- where the window sits ---------- */
+
+/* Geometry is remembered so the window stays where you put it, across items
+   and across reloads. Below the phone breakpoint the stylesheet docks it to
+   the bottom of the screen and the inline geometry is dropped, because there
+   is nowhere useful to drag to on a small screen. */
+
+const NOTES_MIN_W = 240, NOTES_MIN_H = 170;
+
+function notesDocked(){ return window.innerWidth <= 640; }
+
+function topbarBottom(){
+  const bar = document.querySelector('header.topbar');
+  return bar ? bar.getBoundingClientRect().bottom : 0;
+}
+
+/* Keep the window on screen and clear of the toolbar, whatever the viewport
+   has done since it was last positioned (resized, rotated, zoomed). */
+function clampNotes(pos){
+  const w = Math.min(Math.max(pos.w || 340, NOTES_MIN_W), window.innerWidth - 8);
+  const h = Math.min(Math.max(pos.h || 260, NOTES_MIN_H), window.innerHeight - 8);
+  const minY = topbarBottom() + 6;
+  return {
+    x: Math.min(Math.max(pos.x, 4), Math.max(4, window.innerWidth - w - 4)),
+    y: Math.min(Math.max(pos.y, minY), Math.max(minY, window.innerHeight - h - 4)),
+    w, h
+  };
+}
+
+/* Opens in the top right of the question area — clear of the toolbar and of
+   the subbar's answered count and clock, which you want to keep an eye on. */
+function defaultNotesPos(){
+  const w = 340, h = 260;
+  const track = document.querySelector('.progress-track');
+  const top = track ? track.getBoundingClientRect().bottom : topbarBottom();
+  return {x: Math.max(4, window.innerWidth - w - 24), y: top + 18, w, h};
+}
+
+function placeNotes(){
+  if(notesDocked()){
+    // the stylesheet owns the docked layout; inline geometry would fight it
+    notesPanel.style.left = notesPanel.style.top = '';
+    notesPanel.style.width = notesPanel.style.height = '';
+    return;
+  }
+  const pos = clampNotes(state.notesPos || defaultNotesPos());
+  state.notesPos = pos;
+  notesPanel.style.left = pos.x + 'px';
+  notesPanel.style.top = pos.y + 'px';
+  notesPanel.style.width = pos.w + 'px';
+  notesPanel.style.height = pos.h + 'px';
+}
+
+/* Dragging by the title bar. Pointer capture keeps the drag alive even when
+   the pointer outruns the window. */
+const notesHead = document.getElementById('notesHead');
+if(notesHead){
+  let drag = null;
+  notesHead.addEventListener('pointerdown', (e) => {
+    if(notesDocked() || e.target.closest('button')) return;
+    const r = notesPanel.getBoundingClientRect();
+    drag = {dx: e.clientX - r.left, dy: e.clientY - r.top, id: e.pointerId};
+    notesHead.setPointerCapture(e.pointerId);
+    notesHead.classList.add('dragging');
+    e.preventDefault();              // no text selection while dragging
+  });
+  notesHead.addEventListener('pointermove', (e) => {
+    if(!drag || e.pointerId !== drag.id) return;
+    const r = notesPanel.getBoundingClientRect();
+    state.notesPos = clampNotes({x: e.clientX - drag.dx, y: e.clientY - drag.dy,
+                                 w: r.width, h: r.height});
+    notesPanel.style.left = state.notesPos.x + 'px';
+    notesPanel.style.top = state.notesPos.y + 'px';
+  });
+  const endDrag = (e) => {
+    if(!drag || (e && e.pointerId !== drag.id)) return;
+    drag = null;
+    notesHead.classList.remove('dragging');
+    saveState();                     // remember where it was let go
+  };
+  notesHead.addEventListener('pointerup', endDrag);
+  notesHead.addEventListener('pointercancel', endDrag);
+}
+
+/* The window is CSS-resizable; record the size the browser gives it. */
+if(window.ResizeObserver && notesPanel){
+  let sizeTimer = null;
+  new ResizeObserver(() => {
+    if(!state.notesOpen || notesDocked() || notesPanel.style.display === 'none') return;
+    const r = notesPanel.getBoundingClientRect();
+    if(!r.width || !r.height) return;
+    const pos = state.notesPos || defaultNotesPos();
+    if(Math.round(r.width) === pos.w && Math.round(r.height) === pos.h) return;
+    state.notesPos = {x: pos.x, y: pos.y, w: Math.round(r.width), h: Math.round(r.height)};
+    clearTimeout(sizeTimer);
+    sizeTimer = setTimeout(saveState, 400);
+  }).observe(notesPanel);
+}
+
+window.addEventListener('resize', () => {
+  if(state.notesOpen && notesPanel.style.display !== 'none') placeNotes();
+});
 
 let notesSaveTimer = null;
 let notesStatusTimer = null;
