@@ -88,9 +88,16 @@ are already working in goes straight back into the exam — the per-tab flag
 lives in `sessionStorage`, so a reload keeps it while a new tab or a later
 visit does not, and those still get the resume / start-over choice. Start
 Over is a quiet text link rather than a button beside Resume, and it asks
-for confirmation, since it throws away every answer. The landing page reads
-each exam's saved progress and shows a status badge: in progress with the
-answered count, or completed with the score.
+for confirmation, since it throws away every answer.
+
+The landing page is a dashboard rather than a list: exams are grouped by
+subject, and each form is a card showing its question count, a progress bar,
+and where it stands — not started, part-answered, or scored with the number
+correct, the percentage and the time it took. The card's action reads Start,
+Resume or Review answers to match. Once something is under way, a summary
+strip above the sections counts what is in progress, what is finished, and the
+average score. All of it is read from the same saved progress the engine
+writes, so no exam's `data.js` is loaded to draw it.
 
 The exam page also loads `assets/labvalues.js` / `assets/labvalues.css`, which add a **Lab Values** button to the toolbar. It opens a searchable, tabbed reference panel (Serum / Cerebrospinal / Blood / Urine and BMI) that splits the screen beside the question. The lab-value data is shared across all exams — edit it once in `assets/labvalues.js`.
 

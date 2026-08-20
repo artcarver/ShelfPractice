@@ -9,106 +9,172 @@
   :root{
     --navy:#0b4a73;
     --navy-dark:#083958;
-    --border:#c7d2da;
+    --border:#d5dee5;
     --bg:#eef2f5;
     --text:#1c2b36;
     --muted:#5b6b76;
+    --faint:#8a97a1;
+    --correct:#2f8f5b;
+    --progress:#c08a1e;
   }
   *{box-sizing:border-box;}
   body{
     margin:0;
     font-family:"Segoe UI",Arial,Helvetica,sans-serif;
-    background:linear-gradient(160deg, var(--navy) 0%, var(--navy-dark) 100%);
+    background:var(--bg);
     color:var(--text);
     min-height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:24px;
-    overflow-y:auto;
   }
   :focus-visible{outline:2px solid var(--navy);outline-offset:2px;}
-  .card{
-    background:#fff;
-    border-radius:12px;
-    padding:36px 40px 32px;
-    max-width:620px;
-    width:100%;
-    box-shadow:0 10px 40px rgba(0,0,0,.25);
-    margin:auto;
-  }
-  h1{margin:0 0 6px;font-size:25px;color:var(--navy-dark);}
-  p.sub{margin:0;color:var(--muted);font-size:14px;line-height:1.5;}
 
-  .group-title{
-    margin:26px 0 10px;
-    font-size:12.5px;
-    font-weight:700;
-    letter-spacing:.07em;
-    text-transform:uppercase;
-    color:var(--muted);
+  /* ---- top bar: the same navy chrome the exam page wears, so moving
+         between the two does not feel like two different products ---- */
+  header.topbar{
+    background:var(--navy);
+    color:#fff;
+    padding:0 22px;
+    height:52px;
+    display:flex;align-items:center;gap:12px;
   }
-  .group{
+  header.topbar :focus-visible{outline-color:#fff;}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:600;font-size:15.5px;letter-spacing:.2px;}
+  .brand .mark{
+    width:24px;height:24px;border-radius:5px;
+    background:rgba(255,255,255,.16);
+    display:grid;place-items:center;font-size:13px;
+  }
+  .topbar .spacer{flex:1 1 auto;}
+  .topbar .note{font-size:12.5px;color:rgba(255,255,255,.75);}
+
+  main{max-width:1060px;margin:0 auto;padding:30px 22px 56px;}
+
+  .page-head{margin-bottom:22px;}
+  h1{margin:0 0 6px;font-size:24px;color:var(--navy-dark);letter-spacing:-.2px;}
+  .lede{margin:0;color:var(--muted);font-size:14.5px;line-height:1.55;max-width:62ch;}
+
+  /* ---- summary strip ---- */
+  .stats{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:12px;
+    margin:22px 0 30px;
+  }
+  /* display:grid would otherwise win over the hidden attribute and leave a
+     gap on a first visit, when there is nothing to summarise */
+  .stats[hidden]{display:none;}
+  .stat{
+    background:#fff;
     border:1px solid var(--border);
-    border-radius:10px;
-    overflow:hidden;
+    border-radius:8px;
+    padding:13px 15px;
   }
-  a.exam-row{
-    display:flex;
-    align-items:center;
+  .stat .num{font-size:21px;font-weight:700;color:var(--navy-dark);line-height:1.2;}
+  .stat .lab{font-size:12px;color:var(--muted);margin-top:3px;letter-spacing:.02em;}
+
+  /* ---- one section per subject ---- */
+  .section{margin-bottom:30px;}
+  .section-head{
+    display:flex;align-items:baseline;gap:10px;
+    padding-bottom:9px;margin-bottom:14px;
+    border-bottom:1px solid var(--border);
+  }
+  .section-head h2{margin:0;font-size:15px;color:var(--navy-dark);letter-spacing:.01em;}
+  .section-head .count{font-size:12.5px;color:var(--faint);}
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(268px,1fr));
     gap:14px;
-    padding:15px 18px;
-    text-decoration:none;
-    color:var(--text);
+  }
+  a.exam-card{
+    display:flex;flex-direction:column;
     background:#fff;
-    transition:background .12s;
+    border:1px solid var(--border);
+    border-radius:9px;
+    padding:16px 17px 15px;
+    text-decoration:none;
+    color:inherit;
+    transition:border-color .12s, box-shadow .12s, transform .12s;
   }
-  a.exam-row + a.exam-row{border-top:1px solid var(--border);}
-  a.exam-row:hover{background:#f4f8fb;}
-  .row-main{flex:1 1 auto;min-width:0;}
-  .row-name{font-weight:600;color:var(--navy);font-size:15.5px;}
-  .row-meta{font-size:13px;color:var(--muted);margin-top:2px;}
-  .chev{flex:0 0 auto;color:#9fb0bc;transition:color .12s, transform .12s;}
-  a.exam-row:hover .chev{color:var(--navy);transform:translateX(2px);}
-
-  .status{
-    flex:0 0 auto;
-    display:inline-flex;align-items:center;gap:6px;
-    padding:3px 10px;border-radius:999px;
-    font-size:12px;font-weight:600;
-    white-space:nowrap;
+  a.exam-card:hover{
+    border-color:#a9bcc9;
+    box-shadow:0 3px 14px rgba(11,74,115,.12);
+    transform:translateY(-1px);
   }
-  .status .dot{width:7px;height:7px;border-radius:50%;background:currentColor;}
-  .status.in-progress{background:#fff6e0;color:#8a5a00;border:1px solid #ecd9a6;}
-  .status.completed{background:#e5f4ec;color:#1f6b41;border:1px solid #bfe0cd;}
+  .card-form{font-size:17px;font-weight:700;color:var(--navy);letter-spacing:-.1px;}
+  .card-meta{font-size:12.5px;color:var(--muted);margin-top:3px;}
 
-  .foot{
-    margin-top:24px;
-    font-size:12.5px;
-    color:var(--muted);
-    text-align:center;
+  .card-status{margin-top:14px;}
+  .bar{
+    height:5px;border-radius:3px;background:#e6ecf0;overflow:hidden;
+    display:flex;
   }
-  .empty{color:var(--muted);font-size:14px;margin-top:20px;}
-  .empty code{background:#eef2f5;padding:1px 5px;border-radius:3px;}
+  .bar span{display:block;height:100%;}
+  .bar .done{background:var(--progress);}
+  .bar .right{background:var(--correct);}
+  .bar .wrong{background:#d8dfe4;}
+  .status-line{
+    display:flex;align-items:center;gap:7px;
+    margin-top:8px;font-size:12.5px;color:var(--muted);
+  }
+  .status-line .dot{width:7px;height:7px;border-radius:50%;flex:0 0 auto;}
+  .dot.new{background:#b6c2cb;}
+  .dot.going{background:var(--progress);}
+  .dot.done{background:var(--correct);}
+  .status-line b{color:var(--text);font-weight:600;}
 
+  .card-foot{
+    margin-top:14px;padding-top:12px;
+    border-top:1px solid #edf1f4;
+    display:flex;align-items:center;justify-content:space-between;gap:8px;
+  }
+  .cta{font-size:13px;font-weight:600;color:var(--navy);}
+  .card-foot .chev{color:#9fb0bc;transition:transform .12s,color .12s;}
+  a.exam-card:hover .chev{color:var(--navy);transform:translateX(2px);}
+
+  .foot-note{
+    margin:34px 0 0;
+    font-size:12.5px;color:var(--faint);text-align:center;
+  }
+  .empty{
+    background:#fff;border:1px solid var(--border);border-radius:9px;
+    padding:20px;color:var(--muted);font-size:14px;
+  }
+  .empty code{background:var(--bg);padding:1px 5px;border-radius:3px;}
+
+  @media (max-width:720px){
+    .stats{grid-template-columns:repeat(2,1fr);}
+  }
   @media (max-width:480px){
-    .card{padding:28px 22px 24px;}
-    .status{display:none;}   /* rows stay one clean line on small phones */
+    main{padding:22px 14px 40px;}
+    header.topbar .note{display:none;}
   }
 </style>
 </head>
 <body>
-  <div class="card">
-    <h1>Shelf Practice Exams</h1>
-    <p class="sub">Choose a form to begin. Progress is saved automatically in this browser.</p>
+  <header class="topbar">
+    <span class="brand"><span class="mark" aria-hidden="true">🩺</span>Shelf Practice</span>
+    <span class="spacer"></span>
+    <span class="note">Progress saves in this browser</span>
+  </header>
+
+  <main>
+    <div class="page-head">
+      <h1>Practice exams</h1>
+      <p class="lede">Self-assessment blocks with an answer explanation on every item.
+        Pick up where you left off &mdash; answers, highlights and notes are kept on this device.</p>
+    </div>
+
     <!-- Built from exams/manifest.js — add an exam there, not here. -->
+    <div id="stats" class="stats" hidden></div>
     <div id="examList"></div>
-    <p class="foot">Runs entirely in your browser &mdash; nothing is uploaded, no account needed.</p>
-  </div>
+
+    <p class="foot-note">Runs entirely in your browser &mdash; nothing is uploaded, and no account is needed.</p>
+  </main>
 
 <script src="exams/manifest.js"></script>
 <script>
-  const list = document.getElementById('examList');
+  const list  = document.getElementById('examList');
   const exams = window.EXAMS || [];
 
   if(!exams.length){
@@ -116,81 +182,126 @@
                    + '<code>exams/manifest.js</code> yet.</p>';
   }
 
-  // Saved progress lives in localStorage under the same key the engine uses,
-  // so each row can say where that exam stands without loading its data.js.
-  function examStatus(e){
+  /* Saved progress lives in localStorage under the same key the engine uses,
+     so each card can say where that exam stands without loading its data.js. */
+  function readState(e){
     try{
       const raw = localStorage.getItem(e.storageKey || ('exam_state_' + e.id));
-      if(!raw) return null;
-      const s = JSON.parse(raw);
-      if(s.graded){
-        const pct = s.score && s.score.total
-          ? ' · ' + Math.round((s.score.correct / s.score.total) * 100) + '%'
-          : '';
-        return {cls: 'completed', text: 'Completed' + pct};
-      }
-      const answered = Object.keys(s.answers || {}).length;
-      if(answered > 0 || s.elapsedMs > 0 || s.startTime){
-        return {cls: 'in-progress',
-                text: 'In progress · ' + answered
-                    + (e.items ? ' of ' + e.items : '') + ' answered'};
-      }
-    }catch(err){}
-    return null;
+      return raw ? JSON.parse(raw) : null;
+    }catch(err){ return null; }
   }
 
-  // Sibling forms of one exam share a title ("Surgery Practice Exam" ×3), so
-  // the page groups by title and lets each row lead with what distinguishes
-  // it — the form label.
+  /* One place decides what an exam's state means, so the card, the stat strip
+     and the call to action can never disagree with each other. */
+  function progressOf(e){
+    const s = readState(e);
+    const total = e.items || 0;
+    if(!s) return {kind:'new', answered:0, total:total};
+    if(s.graded){
+      const sc = s.score || {};
+      return {kind:'done', total: sc.total || total,
+              correct: sc.correct || 0,
+              pct: sc.total ? Math.round((sc.correct / sc.total) * 100) : null,
+              elapsedMs: s.elapsedMs || 0};
+    }
+    const answered = Object.keys(s.answers || {}).length;
+    if(answered || s.elapsedMs || s.runningSince)
+      return {kind:'going', answered: answered, total: total};
+    return {kind:'new', answered:0, total: total};
+  }
+
+  function hhmm(ms){
+    const m = Math.round(ms / 60000);
+    return m < 60 ? m + ' min' : Math.floor(m/60) + ' hr ' + (m%60) + ' min';
+  }
+
+  const CHEV = '<svg class="chev" width="15" height="15" viewBox="0 0 24 24" fill="none" '
+             + 'stroke="currentColor" stroke-width="2.4" stroke-linecap="round" '
+             + 'stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>';
+
+  function card(e){
+    const p = progressOf(e);
+    const a = document.createElement('a');
+    a.className = 'exam-card';
+    a.href = 'exam.html?exam=' + encodeURIComponent(e.slug);
+
+    let bar, line, cta;
+    if(p.kind === 'done'){
+      const wrong = Math.max(0, p.total - p.correct);
+      bar  = '<div class="bar"><span class="right" style="width:' + (p.correct / p.total * 100)
+           + '%"></span><span class="wrong" style="width:' + (wrong / p.total * 100) + '%"></span></div>';
+      line = '<span class="dot done"></span><span><b>' + p.correct + ' of ' + p.total
+           + ' correct</b> · ' + p.pct + '%'
+           + (p.elapsedMs ? ' · ' + hhmm(p.elapsedMs) : '') + '</span>';
+      cta  = 'Review answers';
+    }else if(p.kind === 'going'){
+      const pct = p.total ? (p.answered / p.total * 100) : 0;
+      bar  = '<div class="bar"><span class="done" style="width:' + pct + '%"></span></div>';
+      line = '<span class="dot going"></span><span><b>' + p.answered + ' of ' + p.total
+           + ' answered</b> · not yet scored</span>';
+      cta  = 'Resume exam';
+    }else{
+      bar  = '<div class="bar"></div>';
+      line = '<span class="dot new"></span><span>Not started</span>';
+      cta  = 'Start exam';
+    }
+
+    a.innerHTML =
+      '<div class="card-form">' + (e.label || e.title) + '</div>' +
+      '<div class="card-meta">' + (e.items ? e.items + ' questions' : 'Practice block')
+        + ' · Untimed</div>' +
+      '<div class="card-status">' + bar + '<div class="status-line">' + line + '</div></div>' +
+      '<div class="card-foot"><span class="cta">' + cta + '</span>' + CHEV + '</div>';
+    return a;
+  }
+
+  /* Sibling forms of one exam share a title ("Surgery Practice Exam" ×4), so
+     the page groups by subject and lets each card lead with what distinguishes
+     it — the form label. */
   const groups = new Map();
   exams.forEach(e => {
     if(!groups.has(e.title)) groups.set(e.title, []);
     groups.get(e.title).push(e);
   });
 
+  /* Every form under a subject already sits beneath the page's own "Practice
+     exams" heading, so the section only needs to name the subject. */
+  const subjectOf = t => t.replace(/\s*practice exams?\s*$/i, '') || t;
+
   groups.forEach((members, title) => {
-    const h = document.createElement('h2');
-    h.className = 'group-title';
-    h.textContent = title;
-    const box = document.createElement('div');
-    box.className = 'group';
-
-    members.forEach(e => {
-      const a = document.createElement('a');
-      a.className = 'exam-row';
-      a.href = 'exam.html?exam=' + encodeURIComponent(e.slug);
-
-      const main = document.createElement('div');
-      main.className = 'row-main';
-      const name = document.createElement('div');
-      name.className = 'row-name';
-      name.textContent = e.label || e.title;
-      const meta = document.createElement('div');
-      meta.className = 'row-meta';
-      meta.textContent = [e.items ? e.items + ' items' : null, 'untimed']
-        .filter(Boolean).join(' · ');
-      main.append(name, meta);
-      a.append(main);
-
-      const st = examStatus(e);
-      if(st){
-        const badge = document.createElement('span');
-        badge.className = 'status ' + st.cls;
-        const dot = document.createElement('span');
-        dot.className = 'dot';
-        badge.append(dot, document.createTextNode(st.text));
-        a.append(badge);
-      }
-
-      a.insertAdjacentHTML('beforeend',
-        '<svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" ' +
-        'stroke="currentColor" stroke-width="2.4" stroke-linecap="round" ' +
-        'stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>');
-      box.append(a);
-    });
-
-    list.append(h, box);
+    const sec = document.createElement('section');
+    sec.className = 'section';
+    const head = document.createElement('div');
+    head.className = 'section-head';
+    head.innerHTML = '<h2>' + subjectOf(title) + '</h2><span class="count">'
+                   + members.length + (members.length === 1 ? ' form' : ' forms') + '</span>';
+    const grid = document.createElement('div');
+    grid.className = 'grid';
+    members.forEach(e => grid.append(card(e)));
+    sec.append(head, grid);
+    list.append(sec);
   });
+
+  /* The strip is only worth the space once there is something to summarise. */
+  const all  = exams.map(progressOf);
+  const done = all.filter(p => p.kind === 'done');
+  const going= all.filter(p => p.kind === 'going');
+  if(exams.length && (done.length || going.length)){
+    const avg = done.length
+      ? Math.round(done.reduce((t,p) => t + (p.pct || 0), 0) / done.length) + '%'
+      : '—';
+    const tiles = [
+      [exams.length, exams.length === 1 ? 'Exam available' : 'Exams available'],
+      [going.length, 'In progress'],
+      [done.length,  'Completed'],
+      [avg,          'Average score']
+    ];
+    const strip = document.getElementById('stats');
+    strip.hidden = false;
+    strip.innerHTML = tiles.map(t =>
+      '<div class="stat"><div class="num">' + t[0] + '</div><div class="lab">' + t[1] + '</div></div>'
+    ).join('');
+  }
 </script>
 </body>
 </html>
