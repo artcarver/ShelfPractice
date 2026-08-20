@@ -18,6 +18,8 @@ exams/
   manifest.js       The catalog: one entry per exam
   psychiatry-form8/
     data.js         Questions, answer key, explanations (no exhibits)
+  psychiatry-form7/
+    data.js
   surgery-form9/
     data.js         Questions, images, answer key, explanations
     images/         Exhibit images, referenced by relative path
