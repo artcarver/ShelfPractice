@@ -25,6 +25,7 @@ exams/
     data.js
   psychiatry-form5/
     data.js
+    images/         The Figure 1 / Figure 2 exhibit for item 48
   surgery-form9/
     data.js         Questions, images, answer key, explanations
     images/         Exhibit images, referenced by relative path
