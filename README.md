@@ -21,6 +21,10 @@ exams/
     data.js         Questions, answer key, explanations (no exhibits)
   psychiatry-form7/
     data.js
+  psychiatry-form6/
+    data.js
+  psychiatry-form5/
+    data.js
   surgery-form9/
     data.js         Questions, images, answer key, explanations
     images/         Exhibit images, referenced by relative path

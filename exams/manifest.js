@@ -27,6 +27,20 @@ window.EXAMS = [
     items: 50
   },
   {
+    slug: "psychiatry-form6",
+    id: "psychiatry_practice_exam_form6",
+    title: "Psychiatry Practice Exam",
+    label: "CMS Form 6",
+    items: 50
+  },
+  {
+    slug: "psychiatry-form5",
+    id: "psychiatry_practice_exam_form5",
+    title: "Psychiatry Practice Exam",
+    label: "CMS Form 5",
+    items: 50
+  },
+  {
     slug: "surgery-form9",
     id: "surgery_practice_exam_v4",
     title: "Surgery Practice Exam",
