@@ -16,6 +16,8 @@ assets/
   labvalues.js      Lab Values data + panel (searchable, tabbed)
 exams/
   manifest.js       The catalog: one entry per exam
+  psychiatry-form8/
+    data.js         Questions, answer key, explanations (no exhibits)
   surgery-form9/
     data.js         Questions, images, answer key, explanations
     images/         Exhibit images, referenced by relative path
@@ -151,7 +153,7 @@ The landing page picks it up automatically, and it is reachable at
 collide between exams; the engine logs a console warning if `items` disagrees
 with the number of questions actually in `data.js`.
 
-Both exams keep their exhibits as image files under their own `images/` folder,
+The surgery exams keep their exhibits as image files under their own `images/` folder,
 referenced by relative path. The engine also accepts inline `data:` URIs, but
 files are preferred: they keep `data.js` small enough to read and diff, avoid
 the ~33% base64 overhead, and let git store each image once instead of rewriting
