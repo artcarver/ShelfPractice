@@ -9,7 +9,8 @@ index.html          Landing page; builds its list from exams/manifest.js
 exam.html           The exam page — one shell shared by every exam,
                     selected with ?exam=<slug>
 assets/
-  exam.css          Shared styles
+  theme.css         Design tokens shared by every page
+  exam.css          Exam page styles
   exam.js           Shared engine (navigation, grading, highlighting,
                     cross-outs, lab tables, saved progress)
   labvalues.css     Styles for the Lab Values reference panel
@@ -33,6 +34,23 @@ exams/
     data.js
     images/
 ```
+
+## Design
+
+`assets/theme.css` holds the tokens both pages load first: colour, four corner
+radii, six type sizes, and the two or three primitives that appear on every
+screen (the navy top bar and its brand, buttons, the keyboard caps). The
+landing page and the exam page then describe only what is particular to them.
+The scales are short on purpose — when something new needs a value it takes the
+nearest step rather than adding one, which is what keeps the screens looking
+like one product.
+
+A few conventions ride along with the tokens: panels and grouped lists use the
+medium radius and a hairline `--divider` between rows, overlays use the large
+one; buttons and headings are sentence case; and colour carries a fixed
+meaning — green for correct, red for incorrect, grey for unanswered, violet
+for marked. Unanswered is never shown in red, since it is not the same signal
+as a missed answer.
 
 **Rendering and exam content are fully separate.** Everything under `assets/`
 plus `exam.html` is shared machinery and never changes when you add an exam.

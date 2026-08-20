@@ -5,53 +5,34 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A9%BA%3C/text%3E%3C/svg%3E">
 <title>Shelf Practice Exams</title>
+<link rel="stylesheet" href="assets/theme.css">
 <style>
-  :root{
-    --navy:#0b4a73;
-    --navy-dark:#083958;
-    --border:#d5dee5;
-    --bg:#eef2f5;
-    --text:#1c2b36;
-    --muted:#5b6b76;
-    --faint:#8a97a1;
-    --correct:#2f8f5b;
-  }
-  *{box-sizing:border-box;}
-  body{
-    margin:0;
-    font-family:"Segoe UI",Arial,Helvetica,sans-serif;
-    background:var(--bg);
-    color:var(--text);
-    min-height:100vh;
-  }
-  :focus-visible{outline:2px solid var(--navy);outline-offset:2px;}
+  body{min-height:100vh;}
 
   /* The same navy chrome the exam page wears, so moving between the two does
      not feel like two different products. */
   header.topbar{
     background:var(--navy);
-    color:#fff;
     height:52px;
-    display:flex;align-items:center;gap:9px;
+    display:flex;align-items:center;
     padding:0 22px;
-    font-weight:600;font-size:15.5px;letter-spacing:.2px;
   }
   header.topbar :focus-visible{outline-color:#fff;}
 
   main{max-width:760px;margin:0 auto;padding:32px 22px 56px;}
-  h1{margin:0 0 6px;font-size:23px;color:var(--navy-dark);letter-spacing:-.2px;}
-  .lede{margin:0;color:var(--muted);font-size:14px;line-height:1.55;}
+  h1{margin:0 0 6px;font-size:var(--fs-xl);color:var(--navy-dark);letter-spacing:-.2px;}
+  .lede{margin:0;color:var(--muted);font-size:var(--fs-base);line-height:1.55;}
 
   h2.subject{
     margin:28px 0 9px;
-    font-size:12.5px;font-weight:700;
+    font-size:var(--fs-xs);font-weight:700;
     letter-spacing:.07em;text-transform:uppercase;
     color:var(--faint);
   }
   .group{
     background:#fff;
     border:1px solid var(--border);
-    border-radius:9px;
+    border-radius:var(--r-md);
     overflow:hidden;
   }
   a.row{
@@ -60,32 +41,32 @@
     text-decoration:none;color:inherit;
     transition:background .12s;
   }
-  a.row + a.row{border-top:1px solid #e8eef2;}
-  a.row:hover{background:#f6f9fb;}
+  a.row + a.row{border-top:1px solid var(--divider);}
+  a.row:hover{background:var(--navy-tint);}
   .row-main{flex:1 1 auto;min-width:0;}
-  .row-form{font-weight:600;color:var(--navy);font-size:15.5px;}
-  .row-len{font-size:12.5px;color:var(--faint);margin-top:2px;}
+  .row-form{font-weight:600;color:var(--navy);font-size:var(--fs-md);}
+  .row-len{font-size:var(--fs-xs);color:var(--faint);margin-top:2px;}
 
   /* Status earns a line only when there is one — an untouched exam says
      nothing rather than repeating "Not started" down the whole list. */
-  .row-state{font-size:13px;color:var(--muted);white-space:nowrap;}
+  .row-state{font-size:var(--fs-sm);color:var(--muted);white-space:nowrap;}
   .row-state b{color:var(--text);font-weight:600;}
   .row-state .pct{color:var(--correct);font-weight:600;}
 
   .row-go{
     display:flex;align-items:center;gap:5px;
-    font-size:13px;font-weight:600;color:var(--navy);
+    font-size:var(--fs-sm);font-weight:600;color:var(--navy);
     white-space:nowrap;
   }
   .row-go svg{color:#b3c1cb;transition:color .12s, transform .12s;}
   a.row:hover .row-go svg{color:var(--navy);transform:translateX(2px);}
 
-  .foot{margin-top:30px;font-size:12.5px;color:var(--faint);text-align:center;}
+  .foot{margin-top:30px;font-size:var(--fs-xs);color:var(--faint);text-align:center;}
   .empty{
-    background:#fff;border:1px solid var(--border);border-radius:9px;
-    padding:20px;color:var(--muted);font-size:14px;
+    background:#fff;border:1px solid var(--border);border-radius:var(--r-md);
+    padding:20px;color:var(--muted);font-size:var(--fs-base);
   }
-  .empty code{background:var(--bg);padding:1px 5px;border-radius:3px;}
+  .empty code{background:var(--bg);padding:1px 5px;border-radius:var(--r-xs);}
 
   @media (max-width:520px){
     main{padding:24px 14px 40px;}
@@ -94,7 +75,9 @@
 </style>
 </head>
 <body>
-  <header class="topbar">🩺 Shelf Practice</header>
+  <header class="topbar">
+    <a class="brand" href="index.html"><span class="mark" aria-hidden="true">🩺</span><span class="brand-name">Shelf Practice</span></a>
+  </header>
 
   <main>
     <h1>Practice exams</h1>

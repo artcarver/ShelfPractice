@@ -1,0 +1,115 @@
+/* Shared design tokens.
+ *
+ * Both the landing page and the exam page load this first, so the two screens
+ * agree on colour, corner radius, type size and elevation instead of each
+ * inventing its own. Page-specific rules live in index.html and exam.css and
+ * are expected to reach for these variables rather than raw values.
+ *
+ * The scales are deliberately short — four radii, six type sizes. When a new
+ * piece of UI needs a value, it takes the nearest step rather than adding one.
+ */
+:root{
+  /* --- brand and surface --- */
+  --navy:#0b4a73;          /* chrome, links, primary buttons */
+  --navy-dark:#083958;     /* headings, gradient foot */
+  --navy-tint:#f6f9fb;     /* hover wash on white rows */
+  --bg:#eef2f5;            /* page behind the panels */
+  --panel:#ffffff;
+
+  /* --- text --- */
+  --text:#1c2b36;
+  --muted:#5b6b76;         /* secondary prose */
+  --faint:#8a97a1;         /* metadata, captions, disabled */
+
+  /* --- lines --- */
+  --border:#d5dee5;        /* box edges */
+  --divider:#e8eef2;       /* rules inside a box */
+
+  /* --- state --- */
+  --correct:#2f8f5b;
+  --correct-bg:#e5f4ec;
+  --incorrect:#c0392b;
+  --incorrect-bg:#fbe9e7;
+  --answered:#2f8f5b;
+  --unanswered:#8a97a1;
+  /* A distinct hue, not the incorrect red: "marked" and "incorrect" can be
+     true of the same item, so they must never read as the same signal.
+     Violet also stays separable from the red/green pair for the common
+     forms of colour blindness. */
+  --marked:#6b3fa0;
+
+  /* --- radius --- */
+  --r-xs:4px;              /* bars, kbd caps, tiny chips */
+  --r-sm:6px;              /* buttons, inputs */
+  --r-md:9px;              /* panels, cards, grouped lists */
+  --r-lg:12px;             /* overlays and modals */
+  --r-pill:999px;
+
+  /* --- type --- */
+  --font:"Segoe UI",Arial,Helvetica,sans-serif;
+  --fs-xs:12px;            /* captions, toolbar labels */
+  --fs-sm:13px;            /* dense UI text */
+  --fs-base:14.5px;        /* body and question text */
+  --fs-md:15.5px;          /* row titles, emphasised UI */
+  --fs-lg:20px;            /* section headings */
+  --fs-xl:23px;            /* page headings */
+
+  /* --- elevation --- */
+  --shadow-sm:0 1px 3px rgba(11,74,115,.08);
+  --shadow-md:0 3px 14px rgba(11,74,115,.12);
+  --shadow-lg:0 12px 40px rgba(0,0,0,.30);
+}
+
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  font-family:var(--font);
+  background:var(--bg);
+  color:var(--text);
+}
+:focus-visible{outline:2px solid var(--navy);outline-offset:2px;}
+
+/* --- the chrome both pages wear --- */
+.brand{
+  display:inline-flex;align-items:center;gap:9px;
+  color:#fff;text-decoration:none;
+  font-weight:600;font-size:var(--fs-md);letter-spacing:.2px;
+}
+a.brand:hover{color:#fff;}
+a.brand:hover .brand-name{text-decoration:underline;}
+.brand .mark{font-size:16px;line-height:1;}
+
+/* --- buttons --- */
+.btn{
+  font-family:inherit;
+  font-size:var(--fs-sm);font-weight:600;
+  padding:9px 16px;
+  border-radius:var(--r-sm);
+  border:1px solid var(--navy);
+  background:var(--navy);color:#fff;
+  cursor:pointer;
+  transition:background .12s, border-color .12s, color .12s;
+}
+.btn:hover{background:var(--navy-dark);border-color:var(--navy-dark);}
+.btn.secondary{background:#fff;color:var(--navy);}
+.btn.secondary:hover{background:var(--navy-tint);}
+.btn:disabled{background:#eef2f5;border-color:var(--border);color:var(--faint);cursor:default;}
+
+.text-link{
+  font-family:inherit;font-size:inherit;
+  background:none;border:none;padding:0;
+  color:var(--navy);text-decoration:underline;cursor:pointer;
+}
+
+/* --- small shared pieces --- */
+.chip{
+  display:inline-block;
+  padding:3px 10px;border-radius:var(--r-pill);
+  font-size:var(--fs-xs);font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+}
+kbd{
+  font-family:inherit;font-size:var(--fs-xs);
+  padding:2px 6px;border-radius:var(--r-xs);
+  border:1px solid var(--border);border-bottom-width:2px;
+  background:#fff;color:var(--muted);
+}

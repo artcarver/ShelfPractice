@@ -22,7 +22,7 @@ const IMAGES = (() => {
 document.title = EXAM.title;
 document.getElementById('loadingText').textContent = 'Loading ' + EXAM.title + '…';
 document.getElementById('examName').textContent = EXAM.title;
-document.getElementById('examSub').textContent = QUESTIONS.length + ' items · untimed';
+document.getElementById('examSub').textContent = QUESTIONS.length + ' questions · untimed';
 document.getElementById('examTitleBar').textContent = EXAM.title;
 if(EXAM.label){
   const chip = document.getElementById('examLabel');
@@ -264,7 +264,7 @@ function scrollQuestionTop(){
 }
 
 /* Swap the results screen out for the question view. Item navigation can be
-   triggered from the review overlay while Exam Complete is on screen, and
+   triggered from the review overlay while Exam complete is on screen, and
    rendering the question underneath it would otherwise change nothing the
    user can see. */
 function showQuestionView(){

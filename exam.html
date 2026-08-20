@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A9%BA%3C/text%3E%3C/svg%3E">
 <title>Practice Exam</title>
+<link rel="stylesheet" href="assets/theme.css">
 <link rel="stylesheet" href="assets/exam.css">
 <link rel="stylesheet" href="assets/labvalues.css">
 </head>
@@ -22,7 +23,7 @@
     <p class="sub">The clock is stopped and the question is hidden. Your answers,
        highlights and cross-outs are all saved.</p>
     <div class="pause-time">Time on this block: <b id="pausedElapsed">00:00:00</b></div>
-    <button class="btn" id="resumeExamBtn">Resume Exam</button>
+    <button class="btn" id="resumeExamBtn">Resume exam</button>
   </div>
 </div>
 
@@ -77,7 +78,7 @@
       &mdash; that clears your answers, highlights and score.
     </p>
     <div class="start-actions" id="beginRow" style="display:none">
-      <button class="btn" id="beginBtn">Begin Exam</button>
+      <button class="btn" id="beginBtn">Begin exam</button>
     </div>
   </div>
 </div>
@@ -86,7 +87,8 @@
 
   <header class="topbar">
     <div class="topbar-left">
-      <div class="item-box">Item: <span id="curItem">1</span> of <span id="totalItems"></span></div>
+      <a class="brand" href="index.html" title="All practice exams"><span class="mark" aria-hidden="true">🩺</span><span class="brand-name">Shelf Practice</span></a>
+      <div class="item-box">Item <span id="curItem">1</span> of <span id="totalItems"></span></div>
       <div class="exam-title" id="examTitleBar"></div>
     </div>
     <div class="topbar-center">
@@ -158,7 +160,7 @@
 
       <!-- Results screen -->
       <div id="resultsScreen">
-        <h1>Exam Complete</h1>
+        <h1>Exam complete</h1>
         <p>Here is how you scored, and which items you got wrong. Go back to the exam to page through your answers &mdash; incorrect items are marked so you can review them.</p>
 
         <div class="score-card">
@@ -174,8 +176,10 @@
           </div>
         </div>
 
-        <button class="btn secondary" id="downloadBtn">Download My Results (.txt)</button>
-        <button class="btn secondary" id="backToExamBtn">Back to Exam</button>
+        <div class="results-actions">
+          <button class="btn" id="backToExamBtn">Back to exam</button>
+          <button class="btn secondary" id="downloadBtn">Download my results (.txt)</button>
+        </div>
         <div class="filter-row" id="resultsFilters"></div>
         <div class="table-wrap">
           <table class="results-table">
@@ -211,7 +215,7 @@
   <div class="overlay" id="reviewOverlay">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="reviewTitle">
       <button class="close-x" id="closeReview" aria-label="Close item review">&times;</button>
-      <h2 id="reviewTitle">Item Review</h2>
+      <h2 id="reviewTitle">Item review</h2>
       <div class="legend" id="reviewLegend">
         <span><span class="dot a"></span> Answered</span>
         <span><span class="dot u"></span> Unanswered</span>
@@ -222,8 +226,8 @@
       <div class="modal-actions">
         <button class="btn secondary" id="firstUnansweredBtn">Go to first unanswered</button>
         <button class="btn secondary" id="reviewIncorrectBtn" style="display:none">Go to first incorrect</button>
-        <button class="btn" id="backToResultsBtn" style="display:none">Back to Results</button>
-        <button class="btn" id="finishBtn">End Block &amp; See Results</button>
+        <button class="btn" id="backToResultsBtn" style="display:none">Back to results</button>
+        <button class="btn" id="finishBtn">End block and see results</button>
       </div>
     </div>
   </div>
