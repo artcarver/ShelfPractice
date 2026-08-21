@@ -13,6 +13,20 @@
 */
 window.EXAMS = [
   {
+    slug: "obgyn-form5",
+    id: "obgyn_practice_exam_form5",
+    title: "Obstetrics and Gynecology Practice Exam",
+    label: "CMS Form 5",
+    items: 50
+  },
+  {
+    slug: "obgyn-form4",
+    id: "obgyn_practice_exam_form4",
+    title: "Obstetrics and Gynecology Practice Exam",
+    label: "CMS Form 4",
+    items: 50
+  },
+  {
     slug: "psychiatry-form8",
     id: "psychiatry_practice_exam_form8",
     title: "Psychiatry Practice Exam",

@@ -17,6 +17,10 @@ assets/
   labvalues.js      Lab Values data + panel (searchable, tabbed)
 exams/
   manifest.js       The catalog: one entry per exam
+  obgyn-form5/
+    data.js
+  obgyn-form4/
+    data.js
   psychiatry-form8/
     data.js         Questions, answer key, explanations (no exhibits)
   psychiatry-form7/
