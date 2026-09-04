@@ -77,7 +77,12 @@ body{
 }
 a.brand:hover{color:#fff;}
 a.brand:hover .brand-name{text-decoration:underline;}
-.brand .mark{font-size:16px;line-height:1;}
+/* The mark is a solid shape rather than a line drawing: at 18px on the bar
+   — and at 16px in a browser tab — hairlines silt up, so the heart carries
+   the weight and the pulse is cut out of it in the bar colour. */
+.brand .mark{width:18px;height:18px;flex:none;fill:currentColor;}
+.brand .mark-pulse{fill:none;stroke:var(--navy);stroke-width:1.9;
+  stroke-linecap:round;stroke-linejoin:round;}
 
 /* --- buttons --- */
 .btn{
