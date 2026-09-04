@@ -148,10 +148,10 @@
     return a;
   }
 
-  /* Sibling forms of one exam share a title ("Surgery Practice Exam" ×4), so
-     the page groups by subject and lets each row lead with what distinguishes
-     it — the form label. Under a page called Practice exams, the heading only
-     needs the subject. */
+  /* Sibling forms of one exam share a title — every surgery form is called
+     "Surgery Practice Exam" — so the page groups by subject and lets each row
+     lead with what distinguishes it: the form label. Under a page called
+     Practice exams, the heading only needs the subject. */
   const groups = new Map();
   exams.forEach(e => {
     const subject = e.title.replace(/\s*practice exams?\s*$/i, '') || e.title;

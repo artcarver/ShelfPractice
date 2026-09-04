@@ -48,6 +48,9 @@ exams/
   surgery-form6/
     data.js
     images/
+  surgery-form5/
+    data.js
+    images/
 ```
 
 ## Design
