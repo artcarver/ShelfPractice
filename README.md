@@ -66,6 +66,14 @@ The scales are short on purpose — when something new needs a value it takes th
 nearest step rather than adding one, which is what keeps the screens looking
 like one product.
 
+The brand mark is drawn inline in both pages rather than set as an emoji, and
+it is a solid shape rather than a line drawing: it appears at 18px beside the
+wordmark and at 16px in a browser tab, and at those sizes hairlines silt up and
+an emoji renders in whatever colour and weight the platform chooses. The heart
+carries the weight, the pulse is cut out of it in the bar colour, and the tab
+icon is the same shape reversed out of a navy tile so it holds up on a light or
+a dark tab strip.
+
 A few conventions ride along with the tokens: panels and grouped lists use the
 medium radius and a hairline `--divider` between rows, overlays use the large
 one; buttons and headings are sentence case; and colour carries a fixed
