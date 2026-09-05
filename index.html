@@ -23,18 +23,36 @@
   h1{margin:0 0 6px;font-size:var(--fs-xl);color:var(--navy-dark);letter-spacing:-.2px;}
   .lede{margin:0;color:var(--muted);font-size:var(--fs-base);line-height:1.55;}
 
-  h2.subject{
-    margin:28px 0 9px;
-    font-size:var(--fs-xs);font-weight:700;
-    letter-spacing:.07em;text-transform:uppercase;
-    color:var(--faint);
-  }
-  .group{
+  /* Sixteen forms made the page a scroll rather than a choice, so each subject
+     is a panel that opens. The head is a row of the same family as the exam
+     rows below it, and the panel is what carries the border. */
+  .subject-block{
     background:#fff;
     border:1px solid var(--border);
     border-radius:var(--r-md);
     overflow:hidden;
+    margin-top:14px;
   }
+  .subject-head{
+    width:100%;
+    display:flex;align-items:center;gap:14px;
+    padding:15px 18px;
+    font:inherit;text-align:left;color:inherit;
+    background:none;border:0;cursor:pointer;
+    transition:background .12s;
+  }
+  .subject-head:hover{background:var(--navy-tint);}
+  .subject-name{
+    flex:1 1 auto;min-width:0;
+    font-size:var(--fs-md);font-weight:600;color:var(--navy-dark);
+  }
+  .subject-meta{font-size:var(--fs-xs);color:var(--faint);white-space:nowrap;}
+  .subject-chev{color:#b3c1cb;flex:none;transition:transform .15s, color .12s;}
+  .subject-head:hover .subject-chev{color:var(--navy);}
+  .subject-head[aria-expanded="true"] .subject-chev{
+    transform:rotate(90deg);color:var(--navy);
+  }
+  .group{border-top:1px solid var(--divider);}
   a.row{
     display:flex;align-items:center;gap:16px;
     padding:15px 18px;
@@ -119,9 +137,12 @@
     return {kind:'new'};
   }
 
-  const CHEV = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" '
-             + 'stroke="currentColor" stroke-width="2.4" stroke-linecap="round" '
-             + 'stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>';
+  function chevron(cls){
+    return '<svg class="' + cls + '" width="15" height="15" viewBox="0 0 24 24" '
+         + 'fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" '
+         + 'stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>';
+  }
+  const CHEV = chevron('');
 
   function row(e){
     const p = progressOf(e);
@@ -159,14 +180,71 @@
     groups.get(subject).push(e);
   });
 
+  /* Which subjects are open is remembered per browser, so the list you came
+     back to is the one you left. Nothing is open on a first visit — the point
+     of the panels is that the page opens as three choices rather than sixteen. */
+  const OPEN_KEY = 'shelf_open_subjects';
+  function readOpen(){
+    try{ return new Set(JSON.parse(localStorage.getItem(OPEN_KEY)) || []); }
+    catch(err){ return new Set(); }
+  }
+  function writeOpen(set){
+    try{ localStorage.setItem(OPEN_KEY, JSON.stringify(Array.from(set))); }catch(err){}
+  }
+
+  /* The head says how much is inside, and — only when there is something to
+     say — how much of it you have touched. */
+  function summarize(members){
+    let done = 0, going = 0;
+    members.forEach(e => {
+      const kind = progressOf(e).kind;
+      if(kind === 'done') done++;
+      else if(kind === 'going') going++;
+    });
+    const bits = [members.length + (members.length === 1 ? ' form' : ' forms')];
+    if(going) bits.push(going + ' in progress');
+    if(done) bits.push(done + ' scored');
+    return bits.join(' · ');
+  }
+
+  const open = readOpen();
+
   groups.forEach((members, subject) => {
-    const h = document.createElement('h2');
-    h.className = 'subject';
-    h.textContent = subject;
     const box = document.createElement('div');
     box.className = 'group';
+    box.id = 'subject-' + subject.toLowerCase().replace(/[^a-z0-9]+/g, '-');
     members.forEach(e => box.append(row(e)));
-    list.append(h, box);
+
+    const head = document.createElement('button');
+    head.type = 'button';
+    head.className = 'subject-head';
+    head.setAttribute('aria-controls', box.id);
+    const name = document.createElement('span');
+    name.className = 'subject-name';
+    name.textContent = subject;
+    const meta = document.createElement('span');
+    meta.className = 'subject-meta';
+    meta.textContent = summarize(members);
+    head.append(name, meta);
+    head.insertAdjacentHTML('beforeend', chevron('subject-chev'));
+
+    function setOpen(isOpen){
+      head.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      box.hidden = !isOpen;
+    }
+    setOpen(open.has(subject));
+
+    head.addEventListener('click', () => {
+      const next = head.getAttribute('aria-expanded') !== 'true';
+      setOpen(next);
+      if(next) open.add(subject); else open.delete(subject);
+      writeOpen(open);
+    });
+
+    const block = document.createElement('section');
+    block.className = 'subject-block';
+    block.append(head, box);
+    list.append(block);
   });
 </script>
 </body>
