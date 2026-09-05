@@ -118,5 +118,12 @@ window.EXAMS = [
     title: "Surgery Practice Exam",
     label: "CMS Form 4",
     items: 50
+  },
+  {
+    slug: "surgery-form3",
+    id: "surgery_practice_exam_form3",
+    title: "Surgery Practice Exam",
+    label: "CMS Form 3",
+    items: 50
   }
 ];

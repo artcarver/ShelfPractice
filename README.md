@@ -54,6 +54,9 @@ exams/
   surgery-form4/
     data.js
     images/
+  surgery-form3/
+    data.js
+    images/
 ```
 
 ## Design
