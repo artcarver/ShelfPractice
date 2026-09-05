@@ -142,13 +142,20 @@ visit does not, and those still get the resume / start-over choice. Start
 Over is a quiet text link rather than a button beside Resume, and it asks
 for confirmation, since it throws away every answer.
 
-The landing page groups the forms by subject and gives each one a row: the
-form label, its question count, and — only once you have touched it — where it
-stands, either "3 of 50 answered" or the score. The row's action reads Start,
-Resume or Review to match. An untouched exam says nothing rather than
-repeating "Not started" down the whole list. It is all read from the same
-saved progress the engine writes, so no exam's `data.js` is loaded to draw
-the page.
+The landing page groups the forms by subject, and each subject is a panel you
+open rather than a heading you scroll past — with sixteen forms the list had
+become a scroll rather than a choice, so the page now opens as three choices.
+The panel's head carries the subject, how many forms are inside, and, only when
+there is something to say, how many of them you have started or scored. Which
+panels are open is remembered per browser, so you come back to the list you
+left; nothing is open on a first visit.
+
+Inside a panel each form gets a row: the form label, its question count, and —
+only once you have touched it — where it stands, either "3 of 50 answered" or
+the score. The row's action reads Start, Resume or Review to match. An
+untouched exam says nothing rather than repeating "Not started" down the whole
+list. It is all read from the same saved progress the engine writes, so no
+exam's `data.js` is loaded to draw the page.
 
 The exam page also loads `assets/labvalues.js` / `assets/labvalues.css`, which add a **Lab Values** button to the toolbar. It opens a searchable, tabbed reference panel (Serum / Cerebrospinal / Blood / Urine and BMI) that splits the screen beside the question. The lab-value data is shared across all exams — edit it once in `assets/labvalues.js`.
 
