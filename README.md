@@ -17,6 +17,9 @@ assets/
   labvalues.js      Lab Values data + panel (searchable, tabbed)
 exams/
   manifest.js       The catalog: one entry per exam
+  medicine-form3/
+    data.js
+    images/
   obgyn-form7/
     data.js
     images/
