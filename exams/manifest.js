@@ -13,6 +13,13 @@
 */
 window.EXAMS = [
   {
+    slug: "medicine-form3",
+    id: "medicine_practice_exam_form3",
+    title: "Medicine Practice Exam",
+    label: "CMS Form 3",
+    items: 50
+  },
+  {
     slug: "obgyn-form8",
     id: "obgyn_practice_exam_form8",
     title: "Obstetrics and Gynecology Practice Exam",
