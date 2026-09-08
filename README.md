@@ -17,6 +17,9 @@ assets/
   labvalues.js      Lab Values data + panel (searchable, tabbed)
 exams/
   manifest.js       The catalog: one entry per exam
+  medicine-form10/
+    data.js
+    images/
   medicine-form5/
     data.js
     images/
@@ -24,6 +27,9 @@ exams/
     data.js
     images/
   medicine-form3/
+    data.js
+    images/
+  obgyn-form8/
     data.js
     images/
   obgyn-form7/
@@ -154,8 +160,9 @@ Over is a quiet text link rather than a button beside Resume, and it asks
 for confirmation, since it throws away every answer.
 
 The landing page groups the forms by subject, and each subject is a panel you
-open rather than a heading you scroll past — with sixteen forms the list had
-become a scroll rather than a choice, so the page now opens as three choices.
+open rather than a heading you scroll past — past a dozen or so forms the list
+had become a scroll rather than a choice, so the page opens as one row per
+subject.
 The panel's head carries the subject, how many forms are inside, and, only when
 there is something to say, how many of them you have started or scored. Which
 panels are open is remembered per browser, so you come back to the list you
