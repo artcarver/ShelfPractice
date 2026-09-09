@@ -344,15 +344,25 @@
   .opt.wrong-selected{background:var(--incorrect-bg);}
   .opt.wrong-selected .tag{background:var(--incorrect);color:#fff;}
 
+  /* Previous and Next sit under the answer choices rather than at the far
+     edges of a wide window: after clicking a choice, the hand is at the
+     options column, and the button that moves you on should be a short
+     travel from there, not in the opposite corner of the screen. The bar
+     itself still spans the width — it is the row inside it that takes the
+     column's measure. */
   footer.botbar{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
     padding:16px 28px;
     border-top:1px solid var(--border);
     background:var(--navy-tint);
     position:sticky;
     bottom:0;
+  }
+  .botbar-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    max-width:680px;   /* the width of the options box above it */
   }
 
   /* grid / review overlay */

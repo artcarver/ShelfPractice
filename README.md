@@ -162,6 +162,13 @@ size is a reading preference rather than progress through a block, so it is
 saved on its own, outside any exam's state: it holds for every exam in the
 browser and survives Start Over.
 
+Previous and Next sit under the answer choices rather than at the far edges of
+a wide window. After clicking a choice your hand is at the options column, and
+the button that moves you on should be a short reach from there, not in the
+opposite corner of the screen — so the bar spans the width but the row inside
+it takes the column's measure, and Next lines up with the right edge of the
+choices above it.
+
 Lab Values, Notes and Text size each answer to their own toolbar button: the
 button that opened a panel closes it again, and carries a lit background while
 its panel is up. The item review overlay is the one exception — it covers the
