@@ -161,6 +161,9 @@
     display:flex;flex-direction:column;gap:2px;
     text-align:left;
   }
+  /* A display rule on the element outranks the browser's own [hidden] rule, so
+     the panel has to say what hidden means for it or it never closes. */
+  .size-pop[hidden]{display:none;}
   .size-opt{
     background:none;border:none;border-radius:var(--r-sm);
     font-family:inherit;font-size:var(--fs-sm);color:var(--text);
