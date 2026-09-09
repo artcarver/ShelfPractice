@@ -26,6 +26,9 @@ exams/
   medicine-form8/
     data.js
     images/
+  medicine-form7/
+    data.js
+    images/
   medicine-form5/
     data.js
     images/
