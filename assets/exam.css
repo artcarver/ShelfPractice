@@ -96,7 +96,8 @@
   }
   /* left and right flex equally so the Previous / Next cluster sits at the
      true centre of the bar */
-  .topbar-left{display:flex;align-items:center;gap:14px;flex:1 1 0;min-width:0;}
+  .topbar-left{display:flex;align-items:center;gap:12px;flex:1 1 0;min-width:0;}
+  .brand-name{white-space:nowrap;}
   .item-box{
     white-space:nowrap;
     border:2px solid #fff;
@@ -106,7 +107,18 @@
     line-height:1.3;
     font-weight:600;
   }
-  .exam-title{font-size:var(--fs-md);font-weight:600;letter-spacing:.2px;}
+  .exam-title{
+    font-size:var(--fs-md);font-weight:600;letter-spacing:.2px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;
+  }
+  /* which form you are working, beside the subject: the title alone stops
+     telling you where you are once a subject has ten of them */
+  .form-tag{
+    flex-shrink:0;
+    font-size:var(--fs-xs);font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    color:#fff;background:rgba(255,255,255,.16);
+    border-radius:var(--r-pill);padding:4px 9px;white-space:nowrap;
+  }
   .topbar-center{display:flex;align-items:center;gap:14px;}
   .nav-btn{
     background:transparent;
@@ -137,6 +149,26 @@
   }
   .topbar-right .tb-item:hover{opacity:1;}
   .topbar-right .tb-item svg{display:block;}
+  /* the text-size button owns the popover under it, so the panel is placed
+     against the button rather than against the bar */
+  .topbar-right .tb-wrap{position:relative;display:flex;}
+  .size-pop{
+    position:absolute;top:calc(100% + 8px);right:0;z-index:120;
+    background:var(--panel);color:var(--text);
+    border:1px solid var(--border);border-radius:var(--r-md);
+    box-shadow:var(--shadow-md);
+    padding:5px;min-width:132px;
+    display:flex;flex-direction:column;gap:2px;
+    text-align:left;
+  }
+  .size-opt{
+    background:none;border:none;border-radius:var(--r-sm);
+    font-family:inherit;font-size:var(--fs-sm);color:var(--text);
+    padding:7px 10px;cursor:pointer;text-align:left;
+  }
+  .size-opt:hover{background:var(--navy-tint);}
+  .size-opt.active{background:#dbeaf4;color:var(--navy-dark);font-weight:600;}
+  .tb-item[aria-expanded="true"]{opacity:1;background:rgba(255,255,255,.15);}
 
   .subbar{
     display:flex;
@@ -202,7 +234,16 @@
   .graded-banner.incorrect-banner{background:var(--incorrect-bg);color:#8f2c20;border:1px solid var(--incorrect);}
   .graded-banner.unanswered-banner{background:#f0f1f2;color:var(--muted);border:1px solid var(--border);}
 
-  .stem{font-size:var(--fs-md);line-height:1.6;margin-bottom:20px;white-space:pre-line;user-select:text;cursor:text;}
+  /* Text size applies to what you read, not to the chrome: the stem, its lab
+     tables, the choices, the explanation and your notes all take this factor,
+     while the bar, the counters and the buttons keep their own sizes so the
+     layout cannot come apart at the largest step. */
+  :root{--content-scale:1;}
+  html[data-text-size="s"]{--content-scale:.92;}
+  html[data-text-size="l"]{--content-scale:1.13;}
+  html[data-text-size="xl"]{--content-scale:1.28;}
+
+  .stem{font-size:calc(var(--fs-md) * var(--content-scale));line-height:1.6;margin-bottom:20px;white-space:pre-line;user-select:text;cursor:text;}
   .stem b{font-weight:600;}
   /* No horizontal padding: padding on an inline mark widens the text run, so
      highlighting would nudge the surrounding words sideways and reflow the line. */
@@ -262,7 +303,7 @@
     padding:16px 18px;
     border-bottom:1px solid var(--divider);
     cursor:pointer;
-    font-size:var(--fs-md);
+    font-size:calc(var(--fs-md) * var(--content-scale));
     line-height:1.5;
   }
   .opt:last-child{border-bottom:none;}
@@ -415,12 +456,26 @@
   .results-table tr.row-correct .result-badge{color:var(--correct);}
   .results-table tr.row-incorrect .result-badge{color:var(--incorrect);}
 
+  /* The bar carries six tools now. Below a laptop width the subject line is
+     what goes: the form tag beside it says which exam this is, which is the
+     part you cannot infer from the questions in front of you. */
+  @media (max-width:1340px){
+    .topbar-right{gap:13px;}
+    header.topbar{padding:10px 14px;}
+  }
+  @media (max-width:1180px){
+    .exam-title{display:none;}
+  }
+
   @media (max-width:760px){
     .grid-nav{grid-template-columns:repeat(5,1fr);}
-    /* keep the toolbar (Lab Values / Review / Pause / Restart) usable on
-       phones; drop the redundant title text instead and tighten spacing */
+    /* keep the toolbar usable on phones: tighten the padding, and give the
+       left of the bar up to the form tag */
     header.topbar{padding:8px 12px;}
-    .exam-title{display:none;}
+    .topbar-left{gap:10px;}
+    /* the centre counter already says which item you are on, so the box
+       repeating it gives up its room to the form tag */
+    .item-box{display:none;}
     /* the mark alone still gets you back to the exam list */
     .brand .brand-name{display:none;}
     .topbar-right{gap:12px;font-size:var(--fs-xs);}
@@ -533,7 +588,7 @@
   #notesText{
     flex:1 1 auto;
     width:100%;
-    font-family:inherit;font-size:var(--fs-base);line-height:1.5;color:var(--text);
+    font-family:inherit;font-size:calc(var(--fs-base) * var(--content-scale));line-height:1.5;color:var(--text);
     padding:10px 12px;
     border:none;border-top:1px solid var(--border);
     background:#fff;
@@ -587,7 +642,7 @@
     border-left:5px solid var(--navy);
     border-radius:var(--r-md);
     line-height:1.55;
-    font-size:var(--fs-md);
+    font-size:calc(var(--fs-md) * var(--content-scale));
     color:var(--text);
   }
   .explanation .exp-h{

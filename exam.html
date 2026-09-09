@@ -90,6 +90,7 @@
       <a class="brand" href="index.html" title="All practice exams"><svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><rect x="1.5" y="1.5" width="21" height="21" rx="5.5"/><rect class="mark-bar" x="6" y="6" width="2.9" height="12" rx="1.2"/><rect class="mark-bar" x="10.6" y="8.4" width="2.9" height="9.6" rx="1.2"/><rect class="mark-bar" x="15.2" y="10.6" width="2.9" height="7.4" rx="1.2"/></svg><span class="brand-name">Shelf Practice</span></a>
       <div class="item-box">Item <span id="curItem">1</span> of <span id="totalItems"></span></div>
       <div class="exam-title" id="examTitleBar"></div>
+      <span class="form-tag" id="examFormTag" style="display:none"></span>
     </div>
     <div class="topbar-center">
       <button class="nav-btn" id="prevBtn">
@@ -112,6 +113,18 @@
         <div>Notes</div>
         <span class="tb-dot" id="notesDot" aria-hidden="true"></span>
       </button>
+      <div class="tb-wrap">
+        <button type="button" class="tb-item" id="textSizeBtn" aria-haspopup="true" aria-expanded="false" title="Size of the question text (&minus; and +)">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 18.5 6.5 8l4 10.5"/><path d="M3.8 15.2h5.4"/><path d="M13.5 18.5 17.75 5l4.25 13.5"/><path d="M14.9 14.6h5.7"/></svg>
+          <div>Text size</div>
+        </button>
+        <div class="size-pop" id="sizePop" role="menu" aria-label="Text size" hidden>
+          <button type="button" class="size-opt" data-size="s" role="menuitemradio">Small</button>
+          <button type="button" class="size-opt" data-size="m" role="menuitemradio">Default</button>
+          <button type="button" class="size-opt" data-size="l" role="menuitemradio">Large</button>
+          <button type="button" class="size-opt" data-size="xl" role="menuitemradio">Larger</button>
+        </div>
+      </div>
       <button type="button" class="tb-item" id="reviewOpenBtn">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7.5" height="7.5" rx="1"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1"/></svg>
         <div>Review</div>

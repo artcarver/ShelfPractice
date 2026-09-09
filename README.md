@@ -143,12 +143,32 @@ typed into the notepad never reach the exam — <kbd>A</kbd>–<kbd>E</kbd>,
 The window stands down for the two screens it cannot belong to: the pause
 overlay and the results screen.
 
+The top bar names the exam you are in: the subject, and beside it the form as a
+small tag — "Medicine · FORM 6". Past a dozen forms in a subject the title alone
+stops telling you where you are, and the form is the half you cannot infer from
+the questions in front of you, so it is the half that survives when the bar
+runs out of room: below a laptop width the subject drops out and the tag stays.
+The bar has room for one short line, so the title sheds its "Practice Exam"
+suffix there; the start screen, the browser tab and the results screen all
+still say it in full.
+
+A **Text size** button in the toolbar sets how large the question text is
+drawn — four steps from Small to Larger, or <kbd>−</kbd> and <kbd>+</kbd> to
+step through them. It applies to what you read and not to the chrome: the stem
+and its lab tables, the answer choices, the explanation, your notes and the Lab
+Values table all take the setting, while the bar, the counters and the buttons
+keep their own sizes, so the top bar cannot come apart at the largest step. The
+size is a reading preference rather than progress through a block, so it is
+saved on its own, outside any exam's state: it holds for every exam in the
+browser and survives Start Over.
+
 Keyboard shortcuts on the exam page: <kbd>←</kbd>/<kbd>→</kbd> change items,
 <kbd>A</kbd>–<kbd>E</kbd> select an answer, <kbd>M</kbd> toggles "mark for
-review", <kbd>N</kbd> opens or closes the notepad, <kbd>Enter</kbd> begins or
+review", <kbd>N</kbd> opens or closes the notepad, <kbd>−</kbd>/<kbd>+</kbd>
+step the text size, <kbd>Enter</kbd> begins or
 resumes from the start screen, and
-<kbd>Esc</kbd> closes the topmost layer (enlarged exhibit, then the review
-overlay) before pausing. Keystrokes aimed at a text field — like the Lab
+<kbd>Esc</kbd> closes the topmost layer (the text-size panel, then an enlarged
+exhibit, then the review overlay) before pausing. Keystrokes aimed at a text field — like the Lab
 Values search box — are left alone. Right-clicking an answer choice crosses
 it out (same as the <b>ab</b> tab), and clicking an exhibit image enlarges
 it. The results screen can filter its table to incorrect, unanswered or
