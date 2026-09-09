@@ -130,7 +130,9 @@
 .lv-table{
   width:100%;
   border-collapse:collapse;
-  font-size:var(--fs-base);
+  /* the reference table is reading matter too, so it takes the exam page's
+     text-size setting; on its own it falls back to the plain scale */
+  font-size:calc(var(--fs-base) * var(--content-scale, 1));
 }
 .lv-table thead th{
   position:sticky;

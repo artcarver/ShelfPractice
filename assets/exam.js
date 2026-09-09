@@ -23,11 +23,23 @@ document.title = EXAM.title;
 document.getElementById('loadingText').textContent = 'Loading ' + EXAM.title + '…';
 document.getElementById('examName').textContent = EXAM.title;
 document.getElementById('examSub').textContent = QUESTIONS.length + ' questions · untimed';
-document.getElementById('examTitleBar').textContent = EXAM.title;
+/* The bar names the subject and, beside it, the form. It has room for one
+   short line, so the title drops its "Practice Exam" suffix there — the start
+   screen, the browser tab and the results screen all still say it in full. */
+const titleBar = document.getElementById('examTitleBar');
+titleBar.textContent = EXAM.title.replace(/\s+Practice Exam$/i, '');
+titleBar.title = EXAM.title;   // the long subjects have to ellipsize
 if(EXAM.label){
   const chip = document.getElementById('examLabel');
   chip.textContent = EXAM.label;
   chip.style.display = '';
+  /* The bar has the subject beside it, so the tag carries only the part the
+     subject does not: "CMS Form 6" becomes "Form 6". The start screen still
+     shows the label in full. */
+  const tag = document.getElementById('examFormTag');
+  tag.textContent = EXAM.label.replace(/^CMS\s+/i, '');
+  tag.title = EXAM.label;
+  tag.style.display = '';
 }
 
 if(EXAM.items && EXAM.items !== QUESTIONS.length){
@@ -870,6 +882,69 @@ function lightboxOpen(){
 document.getElementById('qimg').addEventListener('click', openLightbox);
 document.getElementById('imgOverlay').addEventListener('click', closeLightbox);
 
+/* ---------- text size ---------- */
+
+/* How large the question text is set is a reading preference, not progress
+   through a block: it lives under its own key, outside any exam's saved state,
+   so it holds for every exam in this browser and survives Start Over. */
+const TEXT_SIZE_KEY = 'shelfpractice_text_size';
+const TEXT_SIZES = ['s', 'm', 'l', 'xl'];
+
+function currentTextSize(){
+  try{
+    const saved = localStorage.getItem(TEXT_SIZE_KEY);
+    if(TEXT_SIZES.indexOf(saved) !== -1) return saved;
+  }catch(e){}
+  return 'm';
+}
+function applyTextSize(size){
+  // "m" is the stylesheet's own scale, so it carries no attribute at all
+  if(size === 'm') document.documentElement.removeAttribute('data-text-size');
+  else document.documentElement.setAttribute('data-text-size', size);
+  document.querySelectorAll('.size-opt').forEach(b => {
+    const on = b.dataset.size === size;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-checked', on ? 'true' : 'false');
+  });
+}
+function setTextSize(size){
+  applyTextSize(size);
+  try{ localStorage.setItem(TEXT_SIZE_KEY, size); }catch(e){}
+}
+function stepTextSize(dir){
+  const i = TEXT_SIZES.indexOf(currentTextSize());
+  const next = TEXT_SIZES[Math.min(TEXT_SIZES.length - 1, Math.max(0, i + dir))];
+  if(next !== currentTextSize()) setTextSize(next);
+  showSizePop(true);
+}
+function sizePopOpen(){
+  return !document.getElementById('sizePop').hidden;
+}
+function showSizePop(show){
+  const pop = document.getElementById('sizePop');
+  pop.hidden = !show;
+  document.getElementById('textSizeBtn')
+          .setAttribute('aria-expanded', show ? 'true' : 'false');
+}
+
+applyTextSize(currentTextSize());
+document.getElementById('textSizeBtn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  showSizePop(!sizePopOpen());
+});
+document.querySelectorAll('.size-opt').forEach(b => {
+  b.addEventListener('click', () => {
+    setTextSize(b.dataset.size);
+    showSizePop(false);
+  });
+});
+// a click anywhere else puts the panel away
+document.addEventListener('click', (e) => {
+  if(sizePopOpen() && !(e.target.closest && e.target.closest('.tb-wrap'))){
+    showSizePop(false);
+  }
+});
+
 // keyboard shortcuts: left/right arrows navigate, letter keys select option,
 // M toggles "mark for review", Esc closes the review overlay or pauses
 document.addEventListener('keydown', (e) => {
@@ -894,6 +969,13 @@ document.addEventListener('keydown', (e) => {
     if(e.key === 'Escape' || e.key === 'Enter'){ resumeExam(); }
     return;
   }
+  if(e.key === 'Escape' && sizePopOpen()){
+    showSizePop(false);
+    return;
+  }
+  // the text-size keys work wherever there is text to read, results included
+  if(e.key === '-' || e.key === '_'){ e.preventDefault(); stepTextSize(-1); return; }
+  if(e.key === '+' || e.key === '='){ e.preventDefault(); stepTextSize(1); return; }
   if(e.key === 'Escape' && lightboxOpen()){
     closeLightbox();
     return;
