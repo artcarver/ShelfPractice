@@ -1090,7 +1090,10 @@ function renderNotes(){
   document.getElementById('notesItem').textContent = q.n;
   // never overwrite what is being typed; this also keeps the caret put
   if(notesText.value !== noteFor(q.n)) notesText.value = noteFor(q.n);
-  if(notesBtn) notesBtn.classList.toggle('has-note', hasNote(q.n));
+  if(notesBtn){
+    notesBtn.classList.toggle('has-note', hasNote(q.n));
+    notesBtn.setAttribute('aria-expanded', notesShouldShow() ? 'true' : 'false');
+  }
 }
 
 /* ---------- where the window sits ---------- */
@@ -1257,7 +1260,10 @@ function closeNotes(){
   renderNotes();
 }
 function toggleNotes(){
-  if(state.notesOpen && document.activeElement !== notesText){ notesText.focus(); return; }
+  /* A plain switch: the control that opened the window closes it. It used to
+     re-focus the field instead when the window was open but unfocused, which
+     meant the button could never put it away — clicking the button is itself
+     what takes focus off the field. */
   state.notesOpen ? closeNotes() : openNotes();
 }
 
@@ -1284,6 +1290,12 @@ if(notesClearBtn){
 
 let lvSide = null;
 
+function labValuesOpen(){
+  return !!lvSide;
+}
+function toggleLabValues(){
+  labValuesOpen() ? closeLabValues() : openLabValues();
+}
 function openLabValues(){
   if(lvSide) return;
   const examBody = document.getElementById('examBody');
@@ -1297,6 +1309,8 @@ function openLabValues(){
     showClose: true,
     onClose: closeLabValues
   });
+  const b = document.getElementById('labValuesBtn');
+  if(b) b.setAttribute('aria-expanded', 'true');
 }
 
 function closeLabValues(){
@@ -1305,10 +1319,12 @@ function closeLabValues(){
   document.getElementById('app').classList.remove('lab-open');
   lvSide.remove();
   lvSide = null;
+  const b = document.getElementById('labValuesBtn');
+  if(b) b.setAttribute('aria-expanded', 'false');
 }
 
 const labBtn = document.getElementById('labValuesBtn');
-if(labBtn) labBtn.addEventListener('click', openLabValues);
+if(labBtn) labBtn.addEventListener('click', toggleLabValues);
 
 loadState();
 renderPause();

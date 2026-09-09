@@ -162,6 +162,11 @@ size is a reading preference rather than progress through a block, so it is
 saved on its own, outside any exam's state: it holds for every exam in the
 browser and survives Start Over.
 
+Lab Values, Notes and Text size each answer to their own toolbar button: the
+button that opened a panel closes it again, and carries a lit background while
+its panel is up. The item review overlay is the one exception — it covers the
+bar, so it closes from its own **×** or <kbd>Esc</kbd>.
+
 Keyboard shortcuts on the exam page: <kbd>←</kbd>/<kbd>→</kbd> change items,
 <kbd>A</kbd>–<kbd>E</kbd> select an answer, <kbd>M</kbd> toggles "mark for
 review", <kbd>N</kbd> opens or closes the notepad, <kbd>−</kbd>/<kbd>+</kbd>
