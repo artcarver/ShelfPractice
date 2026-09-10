@@ -69,6 +69,13 @@ window.EXAMS = [
     items: 50
   },
   {
+    slug: "neurology-form6",
+    id: "neurology_practice_exam_form6",
+    title: "Neurology Practice Exam",
+    label: "CMS Form 6",
+    items: 50
+  },
+  {
     slug: "neurology-form7",
     id: "neurology_practice_exam_form7",
     title: "Neurology Practice Exam",
