@@ -147,6 +147,45 @@ exhibit, the shape of the lab tables, and the HTML rules above — then, if
 Playwright is installed, serves the site and answers all 50 items from the key
 in Chromium, expecting 100% and a clean console.
 
+Then look for capture damage, which a well-formed file hides:
+
+    node tools/scan-ocr.mjs <slug>
+
+It reads the exam against the vocabulary of every other exam, so a word split
+in this form is still vouched for by the forms that spell it correctly. What it
+catches, all of it found in exams already in the repo:
+
+| looked like | was |
+| --- | --- |
+| `mi ldly`, `chi ld's`, `fe atures` | a word cut in two by a stray space |
+| `withincreased`, `firstline` | two words run together |
+| `corre,cting`, `block,ers` | a stray comma inside a word |
+| `syndrom1e` | a digit dropped inside a word |
+| `~-globin`, `y-aminobutyric`, `B-adrenergic` | β, γ, β |
+| `brachia!`, `Fallo!`, `(MAO!)` | a word-final l, t, I |
+| `CS and C6`, `CB to T1` | C5, C8 |
+| `lmipramine`, `lgA`, `type Il` | Imipramine, IgA, type II |
+
+The findings are advisory — `~` really does mean "approximately" in a few
+places, dialogue really does end in "!", and some flagged words are simply
+rare. Read each one against the form.
+
+It also reports runs of three or more consecutive words no exam has ever used.
+Prose does not do that, so a run means the page was captured badly. Those are
+the ones to flag rather than repair. Three exams still carry such passages,
+where a degraded font turned g into a, y into v, p into n and u into ii —
+"Meaciirament of seriim nralactin cancentratian" for "Measurement of serum
+prolactin concentration":
+
+- obgyn Form 8, explanations 18, 19, 20, 25, 31, 36, 40, 43 and 44
+- psychiatry Form 7, explanations 21 and 22
+- obgyn Form 7, explanation 44 ("preanancy")
+
+Leave them alone. The substitution is regular enough to guess at, and a guess
+is invented content: only a fresh capture of those pages can fix them.
+Psychiatry Form 4 has one of its own — "propranolol's 6. antagonism", where
+the 6 is a β and the form has to say whether a subscript follows.
+
 Do the reading checks by hand as well:
 
 - Diff your text against the source word by word, not by eye. Unescape the
