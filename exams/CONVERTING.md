@@ -100,20 +100,28 @@ Two house styles, and the source decides which:
 - **Plain paragraphs** — no objective line in the source (Medicine Forms 3–6,
   Surgery Forms 3–6).
 
-Do not mix the two inside one form. Neurology Form 7 is the one exception in
-the repo and is not a precedent for choosing to mix: 17 of its 50 answer
-screenshots stop at the source app's navigation bar partway down the page, so
-those items print no objective line to move and run as plain paragraphs while
-the other 33 are objective first. They are items 3, 6, 7, 13, 14, 19, 22, 23,
-26, 30, 31, 34, 38, 39, 40, 48 and 49. Item 34 has no paragraph defending its
-answer at all, only the one ruling the others out, and items 23, 39 and 49 stop
-mid-sentence, as does item 33's objective. The text is absent from the source
-PDF rather than lost in transcription, so finishing those items needs a fresh
-capture of the form, not a re-read of what we have.
+Do not mix the two inside one form.
 
 If the source has no explanation for an item, write one in that form's own
 style and voice, and **say which items you wrote** in your report. Medicine
-Form 9 item 36 and Medicine Form 6 item 30 are the two that exist.
+Form 9 item 36 and Medicine Form 6 item 30 are single items filled that way.
+
+Neurology Form 7 is the large case, and worth reading before doing the same
+again. Seventeen of its 50 answer screenshots stop at the source app's
+navigation bar partway down the page, so those items reached the repo with no
+Educational Objective, and item 34 with no paragraph defending its answer at
+all. Written rather than transcribed there: the objectives for items 3, 6, 7,
+13, 14, 19, 22, 23, 26, 30, 31, 34, 38, 39, 40, 48 and 49; item 34's
+discussion; and the ends of four sentences the screenshot cut mid-phrase, in
+items 23, 39, 49 and item 33's objective, the last of which is the form's own
+wording recovered from the identical sentence in its discussion. Each written
+objective summarises the discussion that item already carries, so the gap was
+filled from the item's own reasoning wherever the item still had any; item 34
+is the exception and is written from the stem, the exhibit and the paragraph
+ruling out the other choices. That is roughly 5% of the form's explanation
+text. None of it is recoverable by re-reading the file we have (the material
+is absent from the source PDF), so only a fresh capture of the form can
+replace it with what the form actually prints.
 
 ## 7. The answer key
 
