@@ -677,7 +677,8 @@
   /* ---------- answer explanation (shown during review) ---------- */
   .explanation{
     margin:26px 0 10px;
-    max-width:680px;
+    /* Runs to the same width as the stem rather than stepping in to the width
+       of the options box: it is prose to read, not a list to scan. */
     padding:20px 24px;
     background:var(--navy-tint);
     border:1px solid var(--border);
