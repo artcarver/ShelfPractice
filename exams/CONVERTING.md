@@ -143,7 +143,18 @@ check was skipped.
 ## 9. Register and commit
 
 Add the manifest entry (`slug`, `id`, `title`, `label`, `items`), keeping `id`
-unique so saved progress does not collide.
+unique so saved progress does not collide. Follow the existing conventions
+exactly — the landing page groups the list by subject, and it takes the subject
+from the title:
+
+    slug:  "neurology-form9"                  folder name, and the ?exam= value
+    id:    "neurology_practice_exam_form9"    subject_practice_exam_formN
+    title: "Neurology Practice Exam"          the subject panel is named from this
+    label: "CMS Form 9"
+    items: 50
+
+A subject that is not in the list yet needs no code: the first exam titled
+"Neurology Practice Exam" grows its own panel on the landing page.
 
 Commit the exam on its own. Say in the message what the form is and anything a
 reader would want to know without opening the file: keys you derived rather
