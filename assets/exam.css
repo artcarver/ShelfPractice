@@ -266,6 +266,29 @@
   html[data-text-size="l"]{--content-scale:1.13;}
   html[data-text-size="xl"]{--content-scale:1.28;}
 
+  /* Matched sets: two items that share one list of choices. The exam says so
+     in a box above the item, and repeats the shared instruction directly above
+     the choices, which is where it applies. */
+  .set-note{
+    max-width:680px;
+    margin:0 0 18px;
+    padding:10px 14px;
+    border:1px solid var(--border);
+    border-left:4px solid var(--navy);
+    border-radius:var(--r-xs);
+    background:var(--navy-tint);
+    font-size:calc(var(--fs-sm) * var(--content-scale));
+    color:var(--text);
+    line-height:1.5;
+  }
+  .set-lead{
+    max-width:680px;
+    margin:0 0 12px;
+    font-size:calc(var(--fs-md) * var(--content-scale));
+    font-weight:600;
+    line-height:1.5;
+  }
+
   .stem{font-size:calc(var(--fs-md) * var(--content-scale));line-height:1.6;margin-bottom:20px;white-space:pre-line;user-select:text;cursor:text;}
   .stem b{font-weight:600;}
   /* No horizontal padding: padding on an inline mark widens the text run, so

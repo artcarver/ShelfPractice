@@ -170,6 +170,13 @@ size is a reading preference rather than progress through a block, so it is
 saved on its own, outside any exam's state: it holds for every exam in the
 browser and survives Start Over.
 
+Some items come in **matched sets**: two questions that share one list of
+choices and one instruction, the way the paper form prints them. Those items
+carry a `setNote` and a `lead` — the notice sits in a box above the item and
+the shared instruction directly above the choices it governs, which is where
+the form puts it. The notice names both items rather than saying "the next 2
+items", since here you can arrive at either one from the grid.
+
 Previous and Next sit under the answer choices rather than at the far edges of
 a wide window. After clicking a choice your hand is at the options column, and
 the button that moves you on should be a short reach from there, not in the
@@ -245,6 +252,10 @@ Two steps: drop in a folder, add a line to the manifest.
      // An item whose stem contains a lab or vital-sign table splits in three:
      // "stem" ends with the lead-in ("Laboratory studies show:"), "labs" holds
      // the table, and "stemTail" is the prose that follows it.
+     //
+     // Two items that share one list of choices are a matched set. Both carry
+     // "lead" (the shared instruction, drawn above the choices) and "setNote"
+     // (the notice, drawn in a box above the item).
      //   "labs": [{"name": "Serum",                       // optional group heading
      //             "head": ["", "On admission", "Now"],   // optional header row
      //             "rows": [["Na+", "118 mEq/L"], ...]}]  // 2+ cells per row

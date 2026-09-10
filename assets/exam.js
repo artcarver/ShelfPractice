@@ -149,6 +149,14 @@ function render(){
   }
 
   document.getElementById('qstem').innerHTML = renderStemHTML(q, state.highlights[q.n] || []);
+  /* A matched set states itself: the notice above the item, and the shared
+     instruction directly above the choices it governs. */
+  const setNote = document.getElementById('setNote');
+  setNote.textContent = q.setNote || '';
+  setNote.style.display = q.setNote ? '' : 'none';
+  const setLead = document.getElementById('setLead');
+  setLead.textContent = q.lead || '';
+  setLead.style.display = q.lead ? '' : 'none';
 
   const selected = state.answers[q.n];
   const correctLetter = ANSWER_KEY[q.n];
