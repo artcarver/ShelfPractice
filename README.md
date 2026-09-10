@@ -301,6 +301,22 @@ The landing page picks it up automatically, and it is reachable at
 collide between exams; the engine logs a console warning if `items` disagrees
 with the number of questions actually in `data.js`.
 
+Check the result before committing it:
+
+```
+node tools/verify-exam.mjs medicine-form1
+```
+
+That validates the manifest against the data, every item's choices, key,
+exhibit and lab tables, and the HTML rules for explanations — and, where
+Playwright is installed, answers the whole form from the key in Chromium and
+expects a perfect score with a clean console.
+
+`exams/CONVERTING.md` covers the other half: how a form gets turned into that
+file in the first place, and the standard the existing exams were built to.
+`tools/shotpack/` is for forms that only exist inside an app you cannot export
+from, and turns a run of screenshots into per-item images to read back.
+
 The surgery exams keep their exhibits as image files under their own `images/` folder,
 referenced by relative path. The engine also accepts inline `data:` URIs, but
 files are preferred: they keep `data.js` small enough to read and diff, avoid

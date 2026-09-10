@@ -71,10 +71,44 @@ height, default 1500), `--per-item N` (group shots that were not named by
 ## Handing it over
 
 Send the `packed/<name>/` folder plus the answer key as plain text, one line
-per item (`1 C`, `2 D`, …). That is enough to build the exam: the tiles carry
-the stems, choices and explanations, and the key is checked against what the
-explanations themselves argue, the same way every other form in this repo was
-verified.
+per item (`1 C`, `2 D`, …). Put the key in the run's folder as
+`shots/<name>/answer-key.txt` so it travels with the captures.
+
+The tiles carry the stems, choices and explanations; the key gets checked
+against what the explanations themselves argue, the way every other form in
+this repo was verified. `exams/CONVERTING.md` is that procedure written down.
 
 `shots/`, `packed/` and the run's state file are gitignored — raw captures are
 large and belong on your machine, not in the site.
+
+## Handing it to Claude Cowork
+
+Cowork works in local folders and has a shell, so it can do everything after
+the capture: pack the shots, read the tiles, build the exam, verify it and
+commit. Grant it the repo folder, then give it this:
+
+> The exam I am capturing is `<slug>` (e.g. `medicine-form5`), and its
+> screenshots are landing in `tools/shotpack/shots/<slug>/` in this repo. The
+> answer key is in that same folder as `answer-key.txt`.
+>
+> Read `exams/CONVERTING.md` first — it is the procedure and the standard,
+> and `tools/shotpack/README.md` covers the packer. Then:
+>
+> 1. Pack the shots. If they are not named `iNNN-pNN.png`, read the item
+>    number printed on each screenshot and rename them to that convention
+>    before packing rather than guessing the grouping from file order. Tune
+>    `--crop` on two items, then do the rest. Tell me about anything the
+>    report flags before continuing.
+> 2. Read the packed tiles and build `exams/<slug>/data.js` to the format in
+>    the repo README, transcribing verbatim.
+> 3. Derive the answer key from what each explanation argues and compare it
+>    against `answer-key.txt`. Where they disagree, tell me — do not quietly
+>    pick one.
+> 4. Register the exam in `exams/manifest.js`, then run
+>    `node tools/verify-exam.mjs <slug>` and fix what it reports.
+> 5. Commit on a branch. Do not commit the screenshots.
+>
+> Then report: any item whose key you had to derive, any explanation you had
+> to write, any value that looks clinically wrong but is what the form
+> prints, and anything you could not read. Never invent content to fill a
+> gap — flag it instead.
