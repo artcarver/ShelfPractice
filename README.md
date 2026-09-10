@@ -234,6 +234,14 @@ untouched exam says nothing rather than repeating "Not started" down the whole
 list. It is all read from the same saved progress the engine writes, so no
 exam's `data.js` is loaded to draw the page.
 
+A row you have touched also carries a quiet **Clear**, which forgets that exam
+entirely — answers, score, highlights and notes — and returns the row to Start.
+It is the difference between Start Over inside an exam, which empties the
+answers but leaves the exam started and still showing Resume, and wanting the
+list to look as though you had never opened it. It asks before it does
+anything, there is no undo, and an exam you have never opened has no button
+since it has nothing to clear.
+
 The exam page also loads `assets/labvalues.js` / `assets/labvalues.css`, which add a **Lab Values** button to the toolbar. It opens a searchable, tabbed reference panel (Serum / Cerebrospinal / Blood / Urine and BMI) that splits the screen beside the question. The lab-value data is shared across all exams — edit it once in `assets/labvalues.js`.
 
 ## Adding a new exam

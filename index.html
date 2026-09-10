@@ -59,8 +59,27 @@
     text-decoration:none;color:inherit;
     transition:background .12s;
   }
-  a.row + a.row{border-top:1px solid var(--divider);}
-  a.row:hover{background:var(--navy-tint);}
+  .row-wrap{display:flex;align-items:center;}
+  .row-wrap + .row-wrap{border-top:1px solid var(--divider);}
+  .row-wrap:hover{background:var(--navy-tint);}
+  a.row{flex:1 1 auto;min-width:0;}
+
+  /* Clearing an exam throws away answers, highlights and notes with no undo,
+     so the control stays out of the way: it appears only on a row that has
+     something to clear, reads as faint metadata until you reach for it, and
+     asks before it does anything. */
+  .row-clear{
+    flex:none;
+    margin-right:12px;
+    padding:6px 9px;
+    border:0;border-radius:var(--r-xs);
+    background:none;
+    font-family:inherit;font-size:var(--fs-xs);
+    color:var(--faint);
+    cursor:pointer;
+  }
+  .row-clear:hover{background:var(--incorrect-bg);color:var(--incorrect);}
+  .row-clear:focus-visible{outline:2px solid var(--navy);outline-offset:1px;}
   .row-main{flex:1 1 auto;min-width:0;}
   .row-form{font-weight:600;color:var(--navy);font-size:var(--fs-md);}
   .row-len{font-size:var(--fs-xs);color:var(--faint);margin-top:2px;}
@@ -166,7 +185,42 @@
         '<div class="row-len">' + (e.items ? e.items + ' questions' : 'Practice block') + '</div>' +
       '</div>' + state +
       '<div class="row-go"><span>' + cta + '</span>' + CHEV + '</div>';
-    return a;
+
+    const wrap = document.createElement('div');
+    wrap.className = 'row-wrap';
+    wrap.append(a);
+
+    /* An exam you have never opened has nothing to clear, so it gets no
+       button. Restarting from inside the exam wipes the answers but leaves the
+       exam started; this is the way back to a clean slate. */
+    if(p.kind !== 'new'){
+      const clear = document.createElement('button');
+      clear.type = 'button';
+      clear.className = 'row-clear';
+      clear.textContent = 'Clear';
+      clear.title = 'Forget this exam and start it fresh';
+      clear.setAttribute('aria-label',
+        'Clear saved progress for ' + (e.label || e.title) + ' ' + e.title);
+      clear.addEventListener('click', () => {
+        const what = p.kind === 'done'
+          ? 'your score and answers'
+          : 'your answers so far';
+        if(!confirm('Clear ' + (e.label || e.title) + '?\n\n'
+                  + 'This forgets ' + what + ', along with any highlights and '
+                  + 'notes, and returns the exam to Start. It cannot be undone.')) return;
+        forget(e);
+        renderList();
+      });
+      wrap.append(clear);
+    }
+    return wrap;
+  }
+
+  /* Remove every trace of one exam: the saved state the row reads, and the
+     per-tab flag that lets a reload skip the start screen. */
+  function forget(e){
+    try{ localStorage.removeItem(e.storageKey || ('exam_state_' + e.id)); }catch(err){}
+    try{ sessionStorage.removeItem('exam_session_' + e.id); }catch(err){}
   }
 
   /* Sibling forms of one exam share a title — every surgery form is called
@@ -207,45 +261,52 @@
     return bits.join(' · ');
   }
 
-  const open = readOpen();
+  /* Rebuilt from scratch after a row is cleared, so the row, its subject
+     summary and the panel that holds it all agree again. Which panels are
+     open is read back from storage, so nothing closes under you. */
+  function renderList(){
+    list.innerHTML = '';
+    const open = readOpen();
 
-  groups.forEach((members, subject) => {
-    const box = document.createElement('div');
-    box.className = 'group';
-    box.id = 'subject-' + subject.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-    members.forEach(e => box.append(row(e)));
+    groups.forEach((members, subject) => {
+      const box = document.createElement('div');
+      box.className = 'group';
+      box.id = 'subject-' + subject.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      members.forEach(e => box.append(row(e)));
 
-    const head = document.createElement('button');
-    head.type = 'button';
-    head.className = 'subject-head';
-    head.setAttribute('aria-controls', box.id);
-    const name = document.createElement('span');
-    name.className = 'subject-name';
-    name.textContent = subject;
-    const meta = document.createElement('span');
-    meta.className = 'subject-meta';
-    meta.textContent = summarize(members);
-    head.append(name, meta);
-    head.insertAdjacentHTML('beforeend', chevron('subject-chev'));
+      const head = document.createElement('button');
+      head.type = 'button';
+      head.className = 'subject-head';
+      head.setAttribute('aria-controls', box.id);
+      const name = document.createElement('span');
+      name.className = 'subject-name';
+      name.textContent = subject;
+      const meta = document.createElement('span');
+      meta.className = 'subject-meta';
+      meta.textContent = summarize(members);
+      head.append(name, meta);
+      head.insertAdjacentHTML('beforeend', chevron('subject-chev'));
 
-    function setOpen(isOpen){
-      head.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-      box.hidden = !isOpen;
-    }
-    setOpen(open.has(subject));
+      function setOpen(isOpen){
+        head.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        box.hidden = !isOpen;
+      }
+      setOpen(open.has(subject));
 
-    head.addEventListener('click', () => {
-      const next = head.getAttribute('aria-expanded') !== 'true';
-      setOpen(next);
-      if(next) open.add(subject); else open.delete(subject);
-      writeOpen(open);
+      head.addEventListener('click', () => {
+        const next = head.getAttribute('aria-expanded') !== 'true';
+        setOpen(next);
+        if(next) open.add(subject); else open.delete(subject);
+        writeOpen(open);
+      });
+
+      const block = document.createElement('section');
+      block.className = 'subject-block';
+      block.append(head, box);
+      list.append(block);
     });
-
-    const block = document.createElement('section');
-    block.className = 'subject-block';
-    block.append(head, box);
-    list.append(block);
-  });
+  }
+  if(exams.length) renderList();
 </script>
 </body>
 </html>
