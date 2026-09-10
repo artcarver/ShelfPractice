@@ -64,6 +64,11 @@ ends with the lead-in ("Laboratory studies show:"), `labs` holds the table, and
   becomes a `name`; a table with columns ("On admission" / "Now") gets a `head`.
 - Two tables printed side by side merge into one `labs` array as named groups.
 - Every row in a group needs the same number of cells.
+- A row the form indents under the row above it — a leukocyte differential
+  beneath its leukocyte count, a CSF differential beneath its WBC — carries two
+  leading spaces per level on its label: `["  Bands", "5%"]`. The spaces are
+  layout, not content; the page renders the label without them. Indent only
+  what the form indents, and only under a row that is really its parent.
 - A sentence is not a group name. Medicine Form 7 item 30 lost its question
   sentence that way, parsed as a heading with no rows beneath it. If a "group"
   has no rows, it is prose — put it in `stemTail`.

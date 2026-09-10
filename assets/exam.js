@@ -347,13 +347,26 @@ function markUp(text, ranges, base){
   return html;
 }
 
+/* A lab row whose label is indented sits under the row above it, the way a
+   form prints a leukocyte differential beneath its leukocyte count. Two
+   leading spaces mark one level. The spaces are layout, not text: they never
+   reach the page or the offset string, so a highlight still lands where the
+   reader put it. */
+function labLabel(cell){
+  const lead = /^ +/.exec(cell);
+  if(!lead) return {depth: 0, text: cell};
+  return {depth: Math.round(lead[0].length / 2), text: cell.slice(lead[0].length)};
+}
+
 /* Plain text of a question, in the same order the DOM renders it. */
 function stemText(q){
   let text = q.stem;
   (q.labs || []).forEach(group => {
     if(group.name) text += group.name;
     (group.head || []).forEach(c => { text += c; });
-    group.rows.forEach(row => row.forEach(c => { text += c; }));
+    group.rows.forEach(row => row.forEach((c, ci) => {
+      text += ci === 0 ? labLabel(c).text : c;
+    }));
   });
   return text + (q.stemTail || '');
 }
@@ -385,9 +398,12 @@ function renderStemHTML(q, ranges){
     group.rows.forEach(row => {
       html += '<tr>';
       row.forEach((cell, ci) => {
-        html += `<td class="${ci === 0 ? 'lab-name' : 'lab-val'}">`
-              + markUp(cell, indexed, off) + '</td>';
-        off += cell.length;
+        const {depth, text} = ci === 0 ? labLabel(cell) : {depth: 0, text: cell};
+        const cls = ci === 0
+          ? 'lab-name' + (depth ? ` lab-sub lab-sub-${Math.min(depth, 3)}` : '')
+          : 'lab-val';
+        html += `<td class="${cls}">` + markUp(text, indexed, off) + '</td>';
+        off += text.length;
       });
       html += '</tr>';
     });

@@ -267,6 +267,11 @@ Two steps: drop in a folder, add a line to the manifest.
      //   "labs": [{"name": "Serum",                       // optional group heading
      //             "head": ["", "On admission", "Now"],   // optional header row
      //             "rows": [["Na+", "118 mEq/L"], ...]}]  // 2+ cells per row
+     //
+     // Two leading spaces on a row's label nest it under the row above, the
+     // way a form prints a differential under its leukocyte count:
+     //   ["Leukocyte count", "19,200/mm³"], ["  Bands", "5%"]
+     // The spaces are layout only; they never reach the page as text.
    ];
    const IMAGES = {
      // "q04": "images/q04.png"  — a path relative to this exam's folder, or an
