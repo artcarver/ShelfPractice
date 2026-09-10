@@ -1,0 +1,118 @@
+#!/bin/bash
+# One keystroke per screenshot while you page through an exam app (macOS).
+#
+#   ./shot start psychiatry-form6   begin a run (shots land in shots/<name>/)
+#   ./shot region                   remember the frontmost window's bounds
+#   ./shot new                      first shot of the next item        <- hotkey 1
+#   ./shot add                      another shot of the same item      <- hotkey 2
+#   ./shot back                     undo the last shot
+#   ./shot at 23                    jump the counter to item 23
+#   ./shot done                     stitch everything into packed/<name>/
+#
+# Bind `new` and `add` to keys in Shortcuts (Run Shell Script -> Add Keyboard
+# Shortcut). The app that runs them needs Screen Recording permission, and
+# `region` also needs Accessibility.
+
+set -euo pipefail
+here="$(cd "$(dirname "$0")" && pwd)"
+state="$here/.shotstate"
+
+read_state() {
+  [ -f "$state" ] || { echo "Run './shot start <name>' first." >&2; exit 1; }
+  # shellcheck disable=SC1090
+  . "$state"
+}
+
+write_state() {
+  cat > "$state" <<S
+NAME="$NAME"
+ITEM=$ITEM
+PART=$PART
+REGION="${REGION:-}"
+S
+}
+
+capture() {
+  local file="$1"
+  if [ -n "${REGION:-}" ]; then
+    screencapture -x -R "$REGION" "$file"
+  else
+    screencapture -x "$file"
+  fi
+}
+
+cmd="${1:-}"
+case "$cmd" in
+  start)
+    NAME="${2:?usage: ./shot start <exam-name>}"
+    ITEM=0; PART=0; REGION="${SHOT_REGION:-}"
+    mkdir -p "$here/shots/$NAME"
+    write_state
+    echo "Capturing into shots/$NAME. Press your 'new' key on item 1."
+    ;;
+
+  region)
+    read_state
+    REGION="$(osascript -e 'tell application "System Events" to tell (first process whose frontmost is true) to get {item 1 of (get position of front window), item 2 of (get position of front window), item 1 of (get size of front window), item 2 of (get size of front window)}' 2>/dev/null | tr -d ' ')" || true
+    if [ -z "$REGION" ]; then
+      echo "Could not read the front window (grant Accessibility, or skip this" >&2
+      echo "step and let pack.py crop the full-screen shots instead)." >&2
+      exit 1
+    fi
+    write_state
+    echo "Region set to $REGION"
+    ;;
+
+  new|add)
+    read_state
+    if [ "$cmd" = new ]; then ITEM=$((ITEM + 1)); PART=1; else PART=$((PART + 1)); fi
+    [ "$ITEM" -gt 0 ] || { echo "Press 'new' before 'add'." >&2; exit 1; }
+    file="$(printf '%s/shots/%s/i%03d-p%02d.png' "$here" "$NAME" "$ITEM" "$PART")"
+    capture "$file"
+    write_state
+    printf 'item %d, shot %d\n' "$ITEM" "$PART"
+    ;;
+
+  back)
+    read_state
+    [ "$ITEM" -gt 0 ] || { echo "Nothing to undo." >&2; exit 1; }
+    file="$(printf '%s/shots/%s/i%03d-p%02d.png' "$here" "$NAME" "$ITEM" "$PART")"
+    rm -f "$file"
+    if [ "$PART" -gt 1 ]; then
+      PART=$((PART - 1))
+    else
+      ITEM=$((ITEM - 1))
+      PART=$(find "$here/shots/$NAME" -name "$(printf 'i%03d-p*.png' "$ITEM")" | wc -l | tr -d ' ')
+      [ "$PART" -gt 0 ] || PART=0
+    fi
+    write_state
+    echo "Dropped that shot; back at item $ITEM."
+    ;;
+
+  at)
+    read_state
+    ITEM="${2:?usage: ./shot at <item number>}"; ITEM=$((ITEM - 1)); PART=0
+    write_state
+    echo "Next 'new' will be item $((ITEM + 1))."
+    ;;
+
+  done)
+    read_state
+    shift || true
+    out="$here/packed/$NAME"
+    mkdir -p "$out"
+    python3 "$here/pack.py" --in "$here/shots/$NAME" --out "$out" "$@"
+    echo "Packed into packed/$NAME"
+    ;;
+
+  status)
+    read_state
+    n=$(find "$here/shots/$NAME" -name '*.png' | wc -l | tr -d ' ')
+    echo "$NAME: $n shots, last was item $ITEM shot $PART, region '${REGION:-full screen}'"
+    ;;
+
+  *)
+    sed -n '2,${/^#/!q;p;}' "$0" | sed 's/^# \{0,1\}//'
+    exit 1
+    ;;
+esac

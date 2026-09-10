@@ -1,0 +1,4 @@
+tools/shotpack/shots/
+tools/shotpack/packed/
+tools/shotpack/.shotstate
+tools/shotpack/__pycache__/
