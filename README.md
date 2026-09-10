@@ -126,6 +126,14 @@ hides the question behind an overlay until you resume. The elapsed time is banke
 rather than derived from a start timestamp, so paused time is excluded, the pause
 survives a reload, and the clock stops for good once the block is graded.
 
+Paused is also where you take stock, since the overlay covers the bar: the card
+names the exam, the form and the item you are on, counts what is answered, what
+is left and what is marked, and works your time out per item — what you are
+averaging, and roughly how long the rest would take at that rate. It quotes the
+shelf's own pace, 1:30 an item, so the average has something to mean. Leaving
+from here is a link rather than a hunt for the back button, because everything
+is already saved.
+
 A **Notes** button in the toolbar (or the <kbd>N</kbd> key) opens a small notes
 window for the item you are on — somewhere to write out your reasoning while you
 work the question. It floats over the question rather than sitting in the
