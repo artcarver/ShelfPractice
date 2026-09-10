@@ -308,6 +308,10 @@
     padding-bottom:6px;
   }
   .stem .lab-table td.lab-name{padding-left:22px;}
+  /* a row nested under the one above it — a differential under its count */
+  .stem .lab-table td.lab-name.lab-sub-1{padding-left:44px;}
+  .stem .lab-table td.lab-name.lab-sub-2{padding-left:66px;}
+  .stem .lab-table td.lab-name.lab-sub-3{padding-left:88px;}
   .stem .lab-table tr.lab-group td,
   .stem .lab-table tr.lab-head td{padding-left:0;}
   .stem .lab-table tr.lab-head td + td{padding-left:34px;}

@@ -67,6 +67,22 @@ for (const q of questions) {
     if (!g.rows || !g.rows.length) fail(`${at}: a lab group has no rows`);
     const widths = new Set((g.rows || []).map((r) => r.length));
     if (widths.size > 1) fail(`${at}: lab rows are ragged (${[...widths].join('/')} cells)`);
+    // Leading spaces on a row's label nest it under the row above: two per
+    // level, and nothing to nest under on the first row of a group.
+    let depth = 0;
+    (g.rows || []).forEach((r, i) => {
+      const lead = /^ +/.exec(String(r[0] ?? ''));
+      const d = lead ? lead[0].length / 2 : 0;
+      if (!Number.isInteger(d))
+        fail(`${at}: lab row "${String(r[0]).trim()}" is indented ${lead[0].length} spaces, not a multiple of 2`);
+      if (d > depth + 1)
+        fail(`${at}: lab row "${String(r[0]).trim()}" skips an indent level`);
+      if (d && i === 0) fail(`${at}: the first lab row of a group is indented, so it nests under nothing`);
+      depth = d;
+    });
+    for (const r of g.rows || [])
+      for (const c of r)
+        if (/\s$/.test(String(c))) fail(`${at}: lab cell "${String(c).trim()}" has trailing whitespace`);
   }
   if ((q.lead && !q.setNote) || (q.setNote && !q.lead))
     fail(`${at}: a matched set needs both lead and setNote`);
