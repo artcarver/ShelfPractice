@@ -177,17 +177,26 @@ rare. Read each one against the form.
 
 It also reports runs of three or more consecutive words no exam has ever used.
 Prose does not do that, so a run means the page was captured badly. Those are
-the ones to flag rather than repair. Three exams still carry such passages,
-where a degraded font turned g into a, y into v, p into n and u into ii —
-"Meaciirament of seriim nralactin cancentratian" for "Measurement of serum
-prolactin concentration":
+the ones to flag rather than repair, where a degraded font turned g into a, y
+into v, p into n and u into ii — "Meaciirament of seriim nralactin
+cancentratian" for "Measurement of serum prolactin concentration". Two exams
+still carry such passages:
 
-- obgyn Form 8, explanations 18, 19, 20, 25, 31, 36, 40, 43 and 44
 - psychiatry Form 7, explanations 21 and 22
 - obgyn Form 7, explanation 44 ("preanancy")
 
 Leave them alone. The substitution is regular enough to guess at, and a guess
 is invented content: only a fresh capture of those pages can fix them.
+
+obgyn Form 8 carried nine of these and no longer does: a second capture of the
+same form arrived and its clean text replaced them. That is the way out of a
+degraded page — another capture, not a guess. Merging the two was worth doing
+carefully, because each capture had lost different lines: the explanations were
+rebuilt section by section, taking whichever capture had fewer words the other
+exams' vocabulary did not recognise, and preferring the one that still
+addressed every ruled-out choice. Both captures lost the same clause in item
+41, which is still missing, and both agreed on the answer key for all 50 items,
+which is the strongest confirmation of a key the repo has.
 Psychiatry Form 4 has one of its own — "propranolol's 6. antagonism", where
 the 6 is a β and the form has to say whether a subscript follows.
 
