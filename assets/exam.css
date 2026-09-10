@@ -208,35 +208,21 @@
   .pause-card .pause-icon svg{display:inline-block;}
   .pause-card h1{margin:0 0 8px;font-size:var(--fs-xl);color:var(--navy-dark);}
   .pause-card p.sub{margin:0 0 20px;color:var(--muted);font-size:var(--fs-base);line-height:1.6;}
-  /* Paused is where you take stock: the bar is hidden behind this card, so it
-     says which exam you are in, how the block stands, and what your pace works
-     out to. The figures take the results screen's shape so the two screens
-     count the same way. */
+  /* Paused hides the bar, so the card says which exam and item you left off
+     on, and how the block stands — one line each. Everything else can wait
+     for the results screen. */
   .pause-where{
     font-size:var(--fs-xs);font-weight:700;letter-spacing:.06em;text-transform:uppercase;
-    color:var(--navy);margin-bottom:14px;
+    color:var(--navy);margin-bottom:16px;
   }
-  .pause-stats{
-    display:flex;justify-content:center;gap:26px;flex-wrap:wrap;
-    padding:14px 16px;margin-bottom:14px;
-    background:#f0f4f7;border-radius:var(--r-sm);
-    font-size:var(--fs-xs);color:var(--muted);
+  .pause-line{
+    font-size:var(--fs-base);color:var(--muted);
+    margin-bottom:24px;
   }
-  .pause-stats div{display:flex;flex-direction:column;gap:2px;}
-  .pause-stats b{
-    font-size:var(--fs-lg);color:var(--navy-dark);
-    font-variant-numeric:tabular-nums;line-height:1.15;
-  }
-  .pause-pace{
-    margin:0 0 20px;font-size:var(--fs-sm);color:var(--muted);line-height:1.6;
-  }
-  .pause-pace b{color:var(--text);font-variant-numeric:tabular-nums;}
+  .pause-line b{color:var(--navy-dark);font-variant-numeric:tabular-nums;}
   .pause-card .btn{padding:11px 26px;}
-  .pause-foot{
-    margin-top:16px;display:flex;flex-direction:column;gap:8px;align-items:center;
-    font-size:var(--fs-xs);color:var(--faint);
-  }
-  .pause-foot a{color:var(--muted);}
+  .pause-foot{margin-top:16px;font-size:var(--fs-xs);}
+  .pause-foot a{color:var(--faint);}
 
   /* One measure for the whole item: stem, choices and explanation share a
      column rather than the stem running the full width of a wide monitor. */

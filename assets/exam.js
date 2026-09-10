@@ -839,61 +839,28 @@ function goToNextIncorrect(){
   goToItem(next === undefined ? list[0] : next);   // wrap around
 }
 
-/* The shelf allows 110 items in 2 hours 45 minutes, which is 90 seconds an
-   item. It is the one number that makes a per-item average mean something, so
-   the paused screen quotes it. */
-const SHELF_SECONDS_PER_ITEM = 90;
-
-/* "1 h 12 m", "12 m", "40 s" — a rough duration, not a running clock. */
-function roughDuration(ms){
-  const mins = Math.round(ms / 60000);
-  if(mins < 1) return Math.max(1, Math.round(ms / 1000)) + ' s';
-  if(mins < 60) return mins + ' m';
-  return Math.floor(mins / 60) + ' h ' + (mins % 60) + ' m';
-}
-/* "1:47" an item */
-function perItem(ms){
-  const secs = Math.round(ms / 1000);
-  return Math.floor(secs / 60) + ':' + pad(secs % 60);
-}
-
+/* Paused covers the top bar, so the card restates where you are: which exam,
+   which item, and how the block stands. It is a glance, not a report — the
+   numbers that reward study belong to the results screen. */
 function renderPauseFigures(){
   const answered = Object.keys(state.answers).length;
-  const marked = Object.keys(state.marked).filter(n => state.marked[n]).length;
-  const left = QUESTIONS.length - answered;
 
   const where = document.getElementById('pauseWhere');
   if(where){
-    where.textContent = [EXAM.title.replace(/\s+Practice Exam$/i, ''), EXAM.label,
+    where.textContent = [EXAM.title.replace(/\s+Practice Exam$/i, ''),
+                         (EXAM.label || '').replace(/^CMS\s+/i, ''),
                          'item ' + currentQ().n + ' of ' + QUESTIONS.length]
                         .filter(Boolean).join(' · ');
   }
-  const set = (id, text) => {
-    const el = document.getElementById(id);
-    if(el) el.textContent = text;
-  };
-  set('pausedAnswered', answered);
-  set('pausedLeft', left);
-  set('pausedMarked', marked);
-  const markedBox = document.getElementById('pausedMarkedBox');
-  if(markedBox) markedBox.style.display = marked ? '' : 'none';
-
-  const pace = document.getElementById('pausePace');
-  if(!pace) return;
-  const shelf = 'Shelf pace is ' + perItem(SHELF_SECONDS_PER_ITEM * 1000) +
-                ' an item — 110 items in 2 h 45 m.';
-  if(!answered){
-    pace.innerHTML = 'Nothing answered yet. ' + shelf;
-    return;
+  const rest = document.getElementById('pausedRest');
+  if(rest){
+    let text = 'on this block · ' + answered + ' of ' + QUESTIONS.length + ' answered';
+    if(answered){
+      const secs = Math.round(elapsedMs() / answered / 1000);
+      text += ' · ' + Math.floor(secs / 60) + ':' + pad(secs % 60) + ' an item';
+    }
+    rest.textContent = text;
   }
-  const each = elapsedMs() / answered;
-  let text = 'That is <b>' + perItem(each) + '</b> an item so far. ';
-  if(left === 0)      text += 'Every item is answered. ';
-  else if(left === 1) text += 'The last one would take about <b>' +
-                              roughDuration(each) + '</b> at that pace. ';
-  else                text += 'The ' + left + ' left would take about <b>' +
-                              roughDuration(each * left) + '</b> at that pace. ';
-  pace.innerHTML = text + shelf;
 }
 
 function renderPause(){
