@@ -139,6 +139,13 @@ window.EXAMS = [
     items: 50
   },
   {
+    slug: "psychiatry-form3",
+    id: "psychiatry_practice_exam_form3",
+    title: "Psychiatry Practice Exam",
+    label: "CMS Form 3",
+    items: 50
+  },
+  {
     slug: "surgery-form9",
     id: "surgery_practice_exam_v4",
     title: "Surgery Practice Exam",
