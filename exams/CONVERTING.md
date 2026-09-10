@@ -96,11 +96,20 @@ Two house styles, and the source decides which:
 - **Objective first** — `<p class="exp-obj">Educational Objective: …</p>`
   followed by the discussion. Use it when the source prints an Educational
   Objective line, wherever on the page it appears; it moves to the front.
-  Seventeen of the current forms are this style.
+  Twenty of the current forms are this style.
 - **Plain paragraphs** — no objective line in the source (Medicine Forms 3–6,
   Surgery Forms 3–6).
 
-Do not mix the two inside one form.
+Do not mix the two inside one form. Neurology Form 7 is the one exception in
+the repo and is not a precedent for choosing to mix: 17 of its 50 answer
+screenshots stop at the source app's navigation bar partway down the page, so
+those items print no objective line to move and run as plain paragraphs while
+the other 33 are objective first. They are items 3, 6, 7, 13, 14, 19, 22, 23,
+26, 30, 31, 34, 38, 39, 40, 48 and 49. Item 34 has no paragraph defending its
+answer at all, only the one ruling the others out, and items 23, 39 and 49 stop
+mid-sentence, as does item 33's objective. The text is absent from the source
+PDF rather than lost in transcription, so finishing those items needs a fresh
+capture of the form, not a re-read of what we have.
 
 If the source has no explanation for an item, write one in that form's own
 style and voice, and **say which items you wrote** in your report. Medicine
