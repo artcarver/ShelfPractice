@@ -335,6 +335,46 @@ function scrollQuestionTop(){
   window.scrollTo(0,0);
 }
 
+/* ---------- the Back button ---------- */
+
+/* The exam page is one URL wearing two faces: the question view and the
+   results screen. Without a history entry between them the browser has
+   nothing to go back to but the page before this one, so opening an item from
+   the results table and pressing Back dumps you on the exam list instead of
+   returning to your results.
+
+   One entry per face, not per item. Stepping through items with Next and
+   Previous stays on the same entry — fifty entries in the back stack would
+   mean fifty presses to leave the exam — so Back returns you to whichever
+   screen you came from, which is the question it is actually being asked. */
+let restoringView = false;
+
+function pushView(view){
+  if(restoringView) return;                       // replaying history, not making it
+  if(history.state && history.state.view === view) return;   // already this face
+  try{
+    if(history.state) history.pushState({view}, '');
+    else history.replaceState({view}, '');        // first entry: claim it, do not add one
+  }catch(e){}                                     // file:// and similar: leave Back alone
+}
+
+window.addEventListener('popstate', e => {
+  if(!enteredExam) return;                        // still on the start screen
+  const view = e.state && e.state.view;
+  restoringView = true;
+  try{
+    if(view === 'results' && state.graded){
+      showResults();
+    }else if(view === 'question'){
+      showQuestionView();
+      render();
+      scrollQuestionTop();
+    }
+  }finally{
+    restoringView = false;
+  }
+});
+
 /* Swap the results screen out for the question view. Item navigation can be
    triggered from the review overlay while Exam complete is on screen, and
    rendering the question underneath it would otherwise change nothing the
@@ -347,6 +387,7 @@ function showQuestionView(){
   startItemClock();   // an item is on screen again, so its clock resumes
   renderNotes();
   saveState();
+  pushView('question');
 }
 
 /* The one way to move to an item: it always ends with that item on screen. */
@@ -967,6 +1008,7 @@ function showResults(){
   renderNotes();      // no item on screen, so the notes window goes too
   state.onResults = true;
   saveState();
+  pushView('results');
 
   const score = computeScore();
   const {correct, incorrect, unanswered, total} = score;
