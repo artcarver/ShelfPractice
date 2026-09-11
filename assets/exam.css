@@ -521,12 +521,22 @@
     border-bottom:none;
     box-shadow:inset 0 -1px 0 var(--border);
   }
-  /* everything but the stem takes its content's width; the stem absorbs
-     whatever is left */
+  /* Fixed layout, because the stem is the one column whose width is decided
+     by the space left over rather than by its content. Sizing the columns
+     from content instead leaves the stem cell holding all the slack while the
+     text inside it stops short — a dead gutter between the stem and the
+     answer. Here the five data columns are the widths their content needs
+     and the stem takes exactly the remainder, so it runs to the edge of its
+     cell at every window size. */
+  .results-table{table-layout:fixed;}
+  .results-table .col-item{width:92px;}
+  .results-table .col-ans{width:92px;}
+  .results-table .col-res{width:132px;}
+  .results-table .col-time{width:84px;text-align:right;}
+  .results-table .col-go{width:34px;}
   .results-table .col-item,.results-table .col-ans,
   .results-table .col-res,.results-table .col-time,
-  .results-table .col-go{width:1%;white-space:nowrap;}
-  .results-table .col-time{text-align:right;}
+  .results-table .col-go{white-space:nowrap;}
 
   .sort-btn{
     font:inherit;color:inherit;letter-spacing:inherit;text-transform:inherit;
@@ -594,7 +604,7 @@
      pair and a colour, and finding the item you want means opening items
      until one of them is it. */
   .stem-text{
-    display:block;max-width:min(76ch,46vw);
+    display:block;
     overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
   }
   .results-table tbody tr.row-unanswered .stem-text{color:var(--muted);}
@@ -657,7 +667,9 @@
   @media (max-width:720px){
     .results-table .col-time,.results-table td.cell-time,
     .results-table .col-go,.results-table td.cell-go{display:none;}
-    .stem-text{max-width:26ch;}
+    .results-table .col-item{width:74px;}
+    .results-table .col-ans{width:78px;}
+    .results-table .col-res{width:122px;}
     .results-table th,.results-table td{padding:9px 10px;}
   }
   @media (max-width:560px){
