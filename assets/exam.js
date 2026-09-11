@@ -413,18 +413,6 @@ function labLabel(cell){
 }
 
 /* Plain text of a question, in the same order the DOM renders it. */
-function stemText(q){
-  let text = q.stem;
-  (q.labs || []).forEach(group => {
-    if(group.name) text += group.name;
-    (group.head || []).forEach(c => { text += c; });
-    group.rows.forEach(row => row.forEach((c, ci) => {
-      text += ci === 0 ? labLabel(c).text : c;
-    }));
-  });
-  return text + (q.stemTail || '');
-}
-
 function renderStemHTML(q, ranges){
   const indexed = (ranges || []).slice().sort((a,b) => a[0]-b[0]).map((r,i) => ({r, i}));
   if(!q.labs || !q.labs.length) return markUp(q.stem, indexed, 0);
