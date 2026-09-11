@@ -842,23 +842,6 @@ function toggleNoteRow(tr, btn){
   tr.after(row);
 }
 
-/* Marking from the results screen, because this is where triage happens: you
-   look at an item you missed, decide it is worth another pass, and mark it.
-   The row deliberately stays put afterwards even under the Marked filter —
-   yanking a row out from under the pointer that just clicked it is worse than
-   a count that reconciles on the next filter click. */
-function toggleRowMark(tr, btn){
-  const n = Number(tr.dataset.n);
-  const on = !state.marked[n];
-  if(on) state.marked[n] = true; else delete state.marked[n];
-  saveState();
-  tr.dataset.marked = on ? '1' : '';
-  tr.classList.toggle('is-marked', on);
-  btn.setAttribute('aria-pressed', String(on));
-  btn.title = on ? 'Marked for review — click to clear' : 'Mark this item for review';
-  buildResultFilters(computeScore());   // refresh the counts, leave the rows alone
-}
-
 function buildResultsBody(){
   const body = document.getElementById('resultsBody');
   body.innerHTML = '';
@@ -918,9 +901,11 @@ function buildResultsBody(){
 
     tr.innerHTML =
       `<td class="cell-item">${q.n}` +
-        `<button type="button" class="flag-btn" aria-pressed="${marked}" ` +
-          `title="${marked ? 'Marked for review — click to clear' : 'Mark this item for review'}">` +
-          `<span class="flag-ico"></span><span class="sr-only">Mark item ${q.n} for review</span></button>` +
+        /* The mark is a record of how the item felt while you were answering
+           it, so the results screen shows it and does not offer to change it.
+           Marking after the fact, with the key in front of you, would overwrite
+           that with hindsight. The row's aria-label carries it for a reader. */
+        (marked ? '<span class="flag-ico" aria-hidden="true"></span>' : '') +
         (noted ? `<button type="button" class="note-btn" aria-expanded="false" title="Read my note">` +
                  `<span class="note-ico"></span><span class="sr-only">Show my note on item ${q.n}</span></button>` : '') +
       `</td>` +
@@ -940,13 +925,10 @@ function buildResultsBody(){
     if(noted) bits.push('has a note');
     if(ms > 0) bits.push(formatItemTime(ms) + ' on this item');
     tr.setAttribute('aria-label', `Item ${q.n}, ${bits.join(', ')}. Open this item.`);
-    tr.title = stemSnippet(q);
 
     const open = () => goToItem(QUESTIONS.findIndex(x => x.n === q.n));
     tr.addEventListener('click', e => {
-      // the two in-row controls act on the row without opening the item
-      const flag = e.target.closest('.flag-btn');
-      if(flag){ e.stopPropagation(); toggleRowMark(tr, flag); return; }
+      // the note button acts on the row without opening the item
       const note = e.target.closest('.note-btn');
       if(note){ e.stopPropagation(); toggleNoteRow(tr, note); return; }
       open();

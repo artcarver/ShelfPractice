@@ -579,21 +579,18 @@
   }
   .results-table tbody tr.is-marked td.cell-item{box-shadow:inset 3px 0 0 var(--marked);}
 
-  .flag-btn,.note-btn{
+  .note-btn{
     background:none;border:none;padding:3px;margin-left:4px;
     cursor:pointer;line-height:0;border-radius:var(--r-xs);
   }
+  /* An indicator, not a control: the mark records how the item felt while you
+     were answering it, and the results screen is the one place where changing
+     it would mean overwriting that with hindsight. */
   .flag-ico{
-    display:block;width:10px;height:12px;background:var(--marked);
+    display:inline-block;width:10px;height:12px;background:var(--marked);
+    margin-left:6px;vertical-align:-1px;
     clip-path:polygon(0 0,100% 0,100% 72%,50% 58%,0 72%);
   }
-  /* an unset flag stays out of the way until the row is under the pointer,
-     so fifty grey flags never compete with the two that mean something */
-  .flag-btn[aria-pressed="false"] .flag-ico{background:var(--faint);opacity:0;}
-  .item-row:hover .flag-btn[aria-pressed="false"] .flag-ico,
-  .flag-btn:focus-visible .flag-ico{opacity:1;}
-  .flag-btn:hover{background:var(--marked-tint);}
-  .flag-btn:hover .flag-ico{background:var(--marked);}
   /* the corner fold the item grid uses for "has a note" */
   .note-ico{
     display:block;width:0;height:0;
