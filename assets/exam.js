@@ -835,7 +835,7 @@ function toggleNoteRow(tr, btn){
   const row = document.createElement('tr');
   row.className = 'note-row';
   const td = document.createElement('td');
-  td.colSpan = 6;
+  td.colSpan = 7;
   td.innerHTML = `<span class="note-label">My note on item ${n}</span>` +
                  `<div class="note-body">${escapeHtml(noteFor(n))}</div>`;
   row.appendChild(td);
@@ -862,6 +862,26 @@ function toggleRowMark(tr, btn){
 function buildResultsBody(){
   const body = document.getElementById('resultsBody');
   body.innerHTML = '';
+
+  /* A block worked before per-item timing existed has nothing to put in the
+     Time column, and fifty dashes read as a broken column rather than as an
+     empty one. Nothing recorded, no column — the same rule that retired
+     "Marked for Review".
+     "Nothing recorded" is not "no item has a time": grading banks the seconds
+     spent on whichever item was on screen, so a legacy block arrives with one
+     stray fragment on it. The question worth asking is whether the per-item
+     numbers account for the block's own clock. A block worked on this build
+     answers for nearly all of it; a legacy block answers for a rounding
+     error. A block half-worked before the update answers for about half,
+     and there the column is worth keeping. */
+  const timedMs = QUESTIONS.reduce((t, q) => t + itemMsFor(q.n), 0);
+  const blockMs = elapsedMs();
+  const anyTime = blockMs > 0 ? timedMs >= blockMs * 0.2 : timedMs > 0;
+  const table = document.querySelector('.results-table');
+  if(table) table.classList.toggle('no-times', !anyTime);
+  if(!anyTime && resultsSort.key === 'time') resultsSort = {key:'item', dir:'asc'};
+  renderSortHeaders();
+
   const slowMs = slowThresholdMs();
 
   sortResultRows().forEach(q => {
@@ -879,11 +899,11 @@ function buildResultsBody(){
     tr.dataset.marked = marked ? '1' : '';
     tr.dataset.noted = noted ? '1' : '';
 
-    // one cell, because the pair only says anything when the two differ
-    const answerCell = result === 'correct'
-      ? escapeHtml(ans)
-      : (result === 'unanswered' ? '<span class="blank">&mdash;</span>' : escapeHtml(ans)) +
-        `<span class="to">&rarr;</span>${escapeHtml(key)}`;
+    // two plainly labelled cells: what you picked, and what the form says.
+    // Nothing to decode, which a compact "B -> C" notation asked you to do.
+    const yourCell = result === 'unanswered'
+      ? '<span class="blank">&mdash;</span>'
+      : escapeHtml(ans);
 
     const pill = {
       correct:    '<span class="result-pill c"><span class="g" aria-hidden="true">&#10003;</span>Correct</span>',
@@ -905,7 +925,8 @@ function buildResultsBody(){
                  `<span class="note-ico"></span><span class="sr-only">Show my note on item ${q.n}</span></button>` : '') +
       `</td>` +
       `<td class="cell-stem"><span class="stem-text">${escapeHtml(stemSnippet(q))}</span></td>` +
-      `<td class="cell-ans">${answerCell}</td>` +
+      `<td class="cell-ans">${yourCell}</td>` +
+      `<td class="cell-key">${escapeHtml(key)}</td>` +
       `<td class="cell-res">${pill}</td>` +
       `<td class="cell-time">${timeCell}</td>` +
       `<td class="cell-go"><span class="chev" aria-hidden="true">&rsaquo;</span></td>`;
@@ -949,7 +970,6 @@ document.querySelectorAll('#resultsScreen .sort-btn').forEach(btn => {
       resultsSort = {key, dir: SORT_DEFAULT_DIR[key] || 'asc'};
     }
     expandedNotes.clear();      // the rows are about to be rebuilt underneath them
-    renderSortHeaders();
     buildResultsBody();
   });
 });
@@ -978,7 +998,6 @@ function showResults(){
   document.getElementById('bUnanswered').textContent = unanswered;
   buildResultFilters(score);
   updateProgress();
-  renderSortHeaders();
   buildResultsBody();
 }
 
