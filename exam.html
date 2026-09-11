@@ -111,7 +111,7 @@
       <button type="button" class="tb-item" id="notesBtn" aria-expanded="false" title="Write a note about this item (N)">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h9l5 5v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14 3v5h5"/><path d="M8 12h8M8 16h5"/></svg>
         <div>Notes</div>
-        <span class="tb-dot" id="notesDot" aria-hidden="true"></span>
+        <span class="tb-dot" aria-hidden="true"></span>
       </button>
       <div class="tb-wrap">
         <button type="button" class="tb-item" id="textSizeBtn" aria-haspopup="true" aria-expanded="false" title="Size of the question text (&minus; and +)">
@@ -178,7 +178,7 @@
       <!-- Results screen -->
       <div id="resultsScreen">
         <h1>Exam complete</h1>
-        <p>Here is how you scored, and which items you got wrong. Go back to the exam to page through your answers &mdash; incorrect items are marked so you can review them.</p>
+        <p>Select any item below to reopen it with the answer explanation. Narrow the list to the ones you missed, the ones you marked for review, or the ones you left a note on.</p>
 
         <div class="score-card">
           <div>
@@ -200,7 +200,16 @@
         <div class="filter-row" id="resultsFilters"></div>
         <div class="table-wrap">
           <table class="results-table">
-            <thead><tr><th>Item</th><th>Your Answer</th><th>Correct Answer</th><th>Result</th><th>Marked for Review</th></tr></thead>
+            <thead>
+              <tr>
+                <th class="col-item"><button type="button" class="sort-btn" data-sort="item">Item<span class="sort-caret" aria-hidden="true"></span></button></th>
+                <th class="col-stem">Stem</th>
+                <th class="col-ans">Answer</th>
+                <th class="col-res"><button type="button" class="sort-btn" data-sort="result">Result<span class="sort-caret" aria-hidden="true"></span></button></th>
+                <th class="col-time"><button type="button" class="sort-btn" data-sort="time">Time<span class="sort-caret" aria-hidden="true"></span></button></th>
+                <th class="col-go"><span class="sr-only">Open item</span></th>
+              </tr>
+            </thead>
             <tbody id="resultsBody"></tbody>
           </table>
           <p class="results-empty" id="resultsEmpty" style="display:none">No items match this filter.</p>

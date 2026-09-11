@@ -17,78 +17,21 @@ assets/
   labvalues.js      Lab Values data + panel (searchable, tabbed)
 exams/
   manifest.js       The catalog: one entry per exam
-  medicine-form10/
-    data.js
-    images/
-  medicine-form9/
-    data.js
-    images/
-  medicine-form8/
-    data.js
-    images/
-  medicine-form7/
-    data.js
-    images/
-  medicine-form6/
-    data.js
-    images/
-  medicine-form5/
-    data.js
-    images/
-  medicine-form4/
-    data.js
-    images/
-  medicine-form3/
-    data.js
-    images/
-  obgyn-form8/
-    data.js
-    images/
-  obgyn-form7/
-    data.js
-    images/
-  obgyn-form6/
-    data.js
-    images/
-  obgyn-form5/
-    data.js
-  obgyn-form4/
-    data.js
-  psychiatry-form8/
-    data.js         Questions, answer key, explanations (no exhibits)
-  psychiatry-form7/
-    data.js
-  psychiatry-form6/
-    data.js
-  psychiatry-form5/
-    data.js
-    images/         The Figure 1 / Figure 2 exhibit for item 48
-  psychiatry-form4/
-    data.js
-  psychiatry-form3/
-    data.js         Questions, answer key, explanations (no exhibits)
-  surgery-form9/
-    data.js         Questions, images, answer key, explanations
-    images/         Exhibit images, referenced by relative path
-  surgery-form8/
-    data.js
-    images/
-  surgery-form7/
-    data.js
-    images/
-  surgery-form6/
-    data.js
-    images/
-  surgery-form5/
-    data.js
-    images/
-  surgery-form4/
-    data.js
-    images/
-  surgery-form3/
-    data.js
-    images/
+  <subject>-form<N>/
+    data.js         Questions, answer key, explanations — content only
+    images/         Exhibit images, present only where the form has them
 ```
+
+One folder per exam, named for the subject and the form. What is on the shelf
+now, which `manifest.js` is the authority on:
+
+| Subject | Forms | With exhibits |
+| --- | --- | --- |
+| Medicine | 3–10 | all 8 |
+| Neurology | 4–9 | all 6 |
+| Obstetrics & Gynecology | 4–8 | all 5 |
+| Psychiatry | 3–8 | 1 of 6 (Form 5, the Figure 1 / Figure 2 exhibit on item 48) |
+| Surgery | 3–9 | all 7 |
 
 ## Design
 
@@ -198,13 +141,32 @@ resumes from the start screen, and
 exhibit, then the review overlay) before pausing. Keystrokes aimed at a text field — like the Lab
 Values search box — are left alone. Right-clicking an answer choice crosses
 it out (same as the <b>ab</b> tab), and clicking an exhibit image enlarges
-it. The results screen can filter its table to incorrect, unanswered or
-marked items. Once a block is graded the toolbar's Pause slot becomes
+it. Once a block is graded the toolbar's Pause slot becomes
 **Results**, which returns to the score screen from anywhere, and the item
 review overlay gains "Back to Results" and "Go to first incorrect". A
 **Next incorrect** button in the bottom bar steps through just the items
-you missed (blanks included), wrapping at the end. The results table
-remembers which filter you left it on, and its rows are keyboard-operable.
+you missed (blanks included), wrapping at the end.
+
+The results table gives each item a row: the number, the opening of its stem,
+your answer against the key, the result, and how long you spent on it. Marking
+is a violet flag on the row rather than a column of its own — the same signal
+the item grid uses, and a control, so an item can be marked or unmarked from
+here without opening it. A row with a note carries the item grid's corner fold
+and expands in place to show what you wrote.
+
+Above the table, two kinds of filter. The state chips — All, Correct,
+Incorrect, Unanswered — replace one another; **Marked** and **Has a note**
+stack on top of whichever is showing, which is how you ask for the items you
+missed that you had already marked. The table sorts by item, by result
+(what needs attention first) or by time, and remembers the filter and the sort
+you left it on. Its header stays put as the rows scroll under it, and its rows
+are keyboard-operable.
+
+Time is kept per item as well as per block, banked the same way, so it excludes
+paused time and stops at the results screen. An item that ran well past the
+block's own median is called out — the median rather than a fixed target, since
+what counts as slow depends on how the block actually went. **Download My
+Results** carries the per-item times and marks alongside your answers and notes.
 Chrome that describes the current question — the item counter, Previous /
 Next, the subbar and Lab Values — is hidden on the results screen, where
 there is no question for it to refer to. Saved progress records which of
