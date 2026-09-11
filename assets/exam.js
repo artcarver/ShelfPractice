@@ -842,25 +842,9 @@ function toggleNoteRow(tr, btn){
   tr.after(row);
 }
 
-/* Marking from the results screen, because this is where triage happens: you
-   look at an item you missed, decide it is worth another pass, and mark it.
-   The row deliberately stays put afterwards even under the Marked filter —
-   yanking a row out from under the pointer that just clicked it is worse than
-   a count that reconciles on the next filter click. */
-function toggleRowMark(tr, btn){
-  const n = Number(tr.dataset.n);
-  const on = !state.marked[n];
-  if(on) state.marked[n] = true; else delete state.marked[n];
-  saveState();
-  tr.dataset.marked = on ? '1' : '';
-  tr.classList.toggle('is-marked', on);
-  btn.setAttribute('aria-pressed', String(on));
-  btn.title = on ? 'Marked for review — click to clear' : 'Mark this item for review';
-  buildResultFilters(computeScore());   // refresh the counts, leave the rows alone
-}
-
 function buildResultsBody(){
   const body = document.getElementById('resultsBody');
+  hideStemTip();      // the row it was anchored to is about to be replaced
   body.innerHTML = '';
 
   /* A block worked before per-item timing existed has nothing to put in the
@@ -918,13 +902,16 @@ function buildResultsBody(){
 
     tr.innerHTML =
       `<td class="cell-item">${q.n}` +
-        `<button type="button" class="flag-btn" aria-pressed="${marked}" ` +
-          `title="${marked ? 'Marked for review — click to clear' : 'Mark this item for review'}">` +
-          `<span class="flag-ico"></span><span class="sr-only">Mark item ${q.n} for review</span></button>` +
+        /* The mark is a record of how the item felt while you were answering
+           it, so the results screen shows it and does not offer to change it.
+           Marking after the fact, with the key in front of you, would overwrite
+           that with hindsight. The row's aria-label carries it for a reader. */
+        (marked ? '<span class="flag-ico" aria-hidden="true"></span>' : '') +
         (noted ? `<button type="button" class="note-btn" aria-expanded="false" title="Read my note">` +
                  `<span class="note-ico"></span><span class="sr-only">Show my note on item ${q.n}</span></button>` : '') +
       `</td>` +
-      `<td class="cell-stem"><span class="stem-text">${escapeHtml(stemSnippet(q))}</span></td>` +
+      `<td class="cell-stem" data-stem="${escapeHtml(stemSnippet(q))}">` +
+        `<span class="stem-text">${escapeHtml(stemSnippet(q))}</span></td>` +
       `<td class="cell-ans">${yourCell}</td>` +
       `<td class="cell-key">${escapeHtml(key)}</td>` +
       `<td class="cell-res">${pill}</td>` +
@@ -940,13 +927,10 @@ function buildResultsBody(){
     if(noted) bits.push('has a note');
     if(ms > 0) bits.push(formatItemTime(ms) + ' on this item');
     tr.setAttribute('aria-label', `Item ${q.n}, ${bits.join(', ')}. Open this item.`);
-    tr.title = stemSnippet(q);
 
     const open = () => goToItem(QUESTIONS.findIndex(x => x.n === q.n));
     tr.addEventListener('click', e => {
-      // the two in-row controls act on the row without opening the item
-      const flag = e.target.closest('.flag-btn');
-      if(flag){ e.stopPropagation(); toggleRowMark(tr, flag); return; }
+      // the note button acts on the row without opening the item
       const note = e.target.closest('.note-btn');
       if(note){ e.stopPropagation(); toggleNoteRow(tr, note); return; }
       open();
@@ -960,6 +944,91 @@ function buildResultsBody(){
 
   applyResultsFilter();   // rows exist now, so the filter can bite
 }
+
+/* Hovering a clipped stem should show the rest of it. The browser's own
+   title tooltip did that badly: about a second to appear, longer to go away,
+   triggered anywhere on the row, and styled like nothing else on the page.
+   This is the same idea built properly — over the stem cell only, up in
+   120ms, gone the moment the pointer leaves, and a preview rather than the
+   whole item, since the item itself is one click away.
+
+   One element, moved and refilled, rather than one per row: fifty tooltips in
+   the DOM to show at most one at a time is fifty too many. */
+const STEM_TIP_DELAY = 120;
+const STEM_TIP_CHARS = 300;
+let stemTip = null, stemTipTimer = null;
+
+function stemTipEl(){
+  if(!stemTip){
+    stemTip = document.createElement('div');
+    stemTip.className = 'stem-tip';
+    stemTip.setAttribute('role', 'presentation');
+    document.body.appendChild(stemTip);
+  }
+  return stemTip;
+}
+
+function hideStemTip(){
+  clearTimeout(stemTipTimer);
+  if(stemTip) stemTip.classList.remove('show');
+}
+
+/* Scrolling and resizing detach a fixed tooltip from the cell it belongs to,
+   so one that is already up comes down. A hover that has not fired yet is
+   left alone: showStemTip measures the cell when it runs, so it will land in
+   the right place, and cancelling it here means a row the pointer reached by
+   scrolling never gets a tooltip at all. */
+function dismissStemTip(){
+  if(stemTip) stemTip.classList.remove('show');
+}
+
+/* A full NBME stem runs to a couple of hundred words, which is a wall rather
+   than a reminder. Cut at a word boundary and let the click carry the rest. */
+function stemPreview(text){
+  if(text.length <= STEM_TIP_CHARS) return text;
+  const cut = text.slice(0, STEM_TIP_CHARS);
+  return cut.slice(0, cut.lastIndexOf(' ')).replace(/[,;:]$/, '') + '…';
+}
+
+function showStemTip(cell, text){
+  const tip = stemTipEl();
+  tip.textContent = stemPreview(text);
+  tip.classList.add('show');
+  // measure after filling, so a flipped or clamped tooltip uses its real size
+  const t = tip.getBoundingClientRect();
+  const c = cell.getBoundingClientRect();
+  const margin = 10;
+  let left = c.left + 14;
+  let top = c.bottom + 8;
+  if(left + t.width > window.innerWidth - margin) left = window.innerWidth - margin - t.width;
+  if(left < margin) left = margin;
+  // no room below: sit above the row rather than hang off the viewport
+  if(top + t.height > window.innerHeight - margin) top = c.top - t.height - 8;
+  if(top < margin) top = margin;
+  tip.style.left = Math.round(left) + 'px';
+  tip.style.top = Math.round(top) + 'px';
+}
+
+(() => {
+  const body = document.getElementById('resultsBody');
+  body.addEventListener('mouseover', e => {
+    const cell = e.target.closest('.cell-stem');
+    if(!cell || cell.contains(e.relatedTarget)) return;
+    const full = cell.dataset.stem;
+    if(!full) return;
+    clearTimeout(stemTipTimer);
+    stemTipTimer = setTimeout(() => showStemTip(cell, full), STEM_TIP_DELAY);
+  });
+  body.addEventListener('mouseout', e => {
+    const cell = e.target.closest('.cell-stem');
+    if(cell && !cell.contains(e.relatedTarget)) hideStemTip();
+  });
+  // anything that moves the table out from under the tooltip takes it down too
+  body.addEventListener('click', hideStemTip);
+  document.addEventListener('scroll', dismissStemTip, true);
+  window.addEventListener('resize', dismissStemTip);
+  document.addEventListener('keydown', e => { if(e.key === 'Escape') hideStemTip(); });
+})();
 
 document.querySelectorAll('#resultsScreen .sort-btn').forEach(btn => {
   btn.addEventListener('click', () => {

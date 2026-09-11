@@ -579,21 +579,18 @@
   }
   .results-table tbody tr.is-marked td.cell-item{box-shadow:inset 3px 0 0 var(--marked);}
 
-  .flag-btn,.note-btn{
+  .note-btn{
     background:none;border:none;padding:3px;margin-left:4px;
     cursor:pointer;line-height:0;border-radius:var(--r-xs);
   }
+  /* An indicator, not a control: the mark records how the item felt while you
+     were answering it, and the results screen is the one place where changing
+     it would mean overwriting that with hindsight. */
   .flag-ico{
-    display:block;width:10px;height:12px;background:var(--marked);
+    display:inline-block;width:10px;height:12px;background:var(--marked);
+    margin-left:6px;vertical-align:-1px;
     clip-path:polygon(0 0,100% 0,100% 72%,50% 58%,0 72%);
   }
-  /* an unset flag stays out of the way until the row is under the pointer,
-     so fifty grey flags never compete with the two that mean something */
-  .flag-btn[aria-pressed="false"] .flag-ico{background:var(--faint);opacity:0;}
-  .item-row:hover .flag-btn[aria-pressed="false"] .flag-ico,
-  .flag-btn:focus-visible .flag-ico{opacity:1;}
-  .flag-btn:hover{background:var(--marked-tint);}
-  .flag-btn:hover .flag-ico{background:var(--marked);}
   /* the corner fold the item grid uses for "has a note" */
   .note-ico{
     display:block;width:0;height:0;
@@ -656,6 +653,28 @@
   }
   .cell-time .slow{color:var(--slow);font-weight:700;}
   .cell-time .no-time{color:var(--faint);}
+
+  /* The stem, in full, on hovering its cell. The browser's title tooltip took
+     about a second to arrive and longer to leave; this one is up in 120ms and
+     gone with the pointer. Fixed rather than absolute so it is positioned
+     against the viewport the clamping maths is written in, and transparent to
+     the mouse so the row underneath stays clickable. */
+  .stem-tip{
+    position:fixed;z-index:60;left:0;top:0;
+    max-width:46ch;
+    background:var(--panel);color:var(--text);
+    border:1px solid var(--border);border-left:3px solid var(--navy);
+    border-radius:var(--r-sm);box-shadow:var(--shadow-md);
+    padding:10px 13px;
+    font-size:var(--fs-sm);line-height:1.5;
+    pointer-events:none;
+    opacity:0;visibility:hidden;
+    transition:opacity .09s ease-out;
+  }
+  .stem-tip.show{opacity:1;visibility:visible;}
+  @media (prefers-reduced-motion:reduce){
+    .stem-tip{transition:none;}
+  }
 
   /* nothing recorded, no column */
   .results-table.no-times .col-time,
