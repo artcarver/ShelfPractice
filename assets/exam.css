@@ -530,13 +530,16 @@
      cell at every window size. */
   .results-table{table-layout:fixed;}
   .results-table .col-item{width:92px;}
-  .results-table .col-ans{width:92px;}
+  /* Two single letters do not need the width their headers do, so these two
+     headers are the only ones allowed to wrap — "Your / Answer" over two
+     lines buys the stem about a hundred pixels back. */
+  .results-table .col-ans{width:88px;white-space:normal;}
+  .results-table .col-key{width:98px;white-space:normal;}
   .results-table .col-res{width:132px;}
   .results-table .col-time{width:84px;text-align:right;}
   .results-table .col-go{width:34px;}
-  .results-table .col-item,.results-table .col-ans,
-  .results-table .col-res,.results-table .col-time,
-  .results-table .col-go{white-space:nowrap;}
+  .results-table .col-item,.results-table .col-res,
+  .results-table .col-time,.results-table .col-go{white-space:nowrap;}
 
   .sort-btn{
     font:inherit;color:inherit;letter-spacing:inherit;text-transform:inherit;
@@ -623,13 +626,12 @@
     max-width:72ch;border-left:2px solid var(--border);padding-left:12px;
   }
 
-  /* One cell, because the pair only carries information when it differs:
-     on a block scored in the seventies, seven rows in ten printed the same
-     letter twice. */
-  .results-table td.cell-ans{
+  /* What you picked and what the form says, in two plainly labelled columns.
+     The letter does repeat on a row you got right; that is the price of a
+     column nobody has to decode. */
+  .results-table td.cell-ans,.results-table td.cell-key{
     white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:600;
   }
-  .cell-ans .to{color:var(--faint);font-weight:400;padding:0 3px;}
   .cell-ans .blank{color:var(--faint);font-weight:400;}
 
   /* Colour is never the only cue: the pill keeps the word and adds a shape,
@@ -668,7 +670,8 @@
     .results-table .col-time,.results-table td.cell-time,
     .results-table .col-go,.results-table td.cell-go{display:none;}
     .results-table .col-item{width:74px;}
-    .results-table .col-ans{width:78px;}
+    .results-table .col-ans{width:66px;}
+    .results-table .col-key{width:74px;}
     .results-table .col-res{width:122px;}
     .results-table th,.results-table td{padding:9px 10px;}
   }

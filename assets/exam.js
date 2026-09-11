@@ -835,7 +835,7 @@ function toggleNoteRow(tr, btn){
   const row = document.createElement('tr');
   row.className = 'note-row';
   const td = document.createElement('td');
-  td.colSpan = 6;
+  td.colSpan = 7;
   td.innerHTML = `<span class="note-label">My note on item ${n}</span>` +
                  `<div class="note-body">${escapeHtml(noteFor(n))}</div>`;
   row.appendChild(td);
@@ -879,11 +879,11 @@ function buildResultsBody(){
     tr.dataset.marked = marked ? '1' : '';
     tr.dataset.noted = noted ? '1' : '';
 
-    // one cell, because the pair only says anything when the two differ
-    const answerCell = result === 'correct'
-      ? escapeHtml(ans)
-      : (result === 'unanswered' ? '<span class="blank">&mdash;</span>' : escapeHtml(ans)) +
-        `<span class="to">&rarr;</span>${escapeHtml(key)}`;
+    // two plainly labelled cells: what you picked, and what the form says.
+    // Nothing to decode, which a compact "B -> C" notation asked you to do.
+    const yourCell = result === 'unanswered'
+      ? '<span class="blank">&mdash;</span>'
+      : escapeHtml(ans);
 
     const pill = {
       correct:    '<span class="result-pill c"><span class="g" aria-hidden="true">&#10003;</span>Correct</span>',
@@ -905,7 +905,8 @@ function buildResultsBody(){
                  `<span class="note-ico"></span><span class="sr-only">Show my note on item ${q.n}</span></button>` : '') +
       `</td>` +
       `<td class="cell-stem"><span class="stem-text">${escapeHtml(stemSnippet(q))}</span></td>` +
-      `<td class="cell-ans">${answerCell}</td>` +
+      `<td class="cell-ans">${yourCell}</td>` +
+      `<td class="cell-key">${escapeHtml(key)}</td>` +
       `<td class="cell-res">${pill}</td>` +
       `<td class="cell-time">${timeCell}</td>` +
       `<td class="cell-go"><span class="chev" aria-hidden="true">&rsaquo;</span></td>`;
