@@ -657,6 +657,10 @@
   .cell-time .slow{color:var(--slow);font-weight:700;}
   .cell-time .no-time{color:var(--faint);}
 
+  /* nothing recorded, no column */
+  .results-table.no-times .col-time,
+  .results-table.no-times td.cell-time{display:none;}
+
   .results-table td.cell-go{padding-left:0;padding-right:12px;color:var(--navy);}
   .cell-go .chev{display:inline-block;font-weight:700;opacity:0;}
   .item-row:hover .cell-go .chev,.item-row:focus-visible .cell-go .chev{opacity:1;}
