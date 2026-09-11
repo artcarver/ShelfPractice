@@ -463,7 +463,15 @@
   .b-unanswered b{color:var(--muted);}
 
   .results-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:22px;}
-  .filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:0;}
+
+  /* Two kinds of filter, and the rule between them is the whole explanation.
+     Left of it is the item's state, so those chips replace one another.
+     Right of it is an attribute the item either carries or does not, so those
+     stack on top of whichever state is showing. "Incorrect and flagged" is
+     the cohort a second pass is actually built from, and it is unreachable
+     when every chip cancels the last one. */
+  .filter-row{display:flex;gap:8px;flex-wrap:wrap;align-items:stretch;margin-top:0;}
+  .filter-sep{width:1px;background:var(--border);margin:3px 5px;flex:none;}
   .filter-chip{
     border:1px solid var(--border);background:#fff;border-radius:var(--r-pill);
     padding:6px 14px;font-size:var(--fs-sm);font-weight:600;color:var(--muted);
@@ -471,13 +479,32 @@
   }
   .filter-chip:hover{border-color:var(--navy);color:var(--navy);}
   .filter-chip.active{background:var(--navy);border-color:var(--navy);color:#fff;}
+  /* the attribute chips answer to the marked violet, so the two groups stay
+     readable as two groups even when both are lit */
+  .filter-chip.attr{border-color:#ddd0ef;color:var(--marked);}
+  .filter-chip.attr:hover{border-color:var(--marked);color:var(--marked);}
+  .filter-chip.attr.active{background:var(--marked);border-color:var(--marked);color:#fff;}
+  .filter-chip:disabled{opacity:.45;cursor:default;}
+  .filter-chip:disabled:hover{border-color:var(--border);color:var(--muted);}
+  .filter-chip.attr:disabled:hover{border-color:#ddd0ef;color:var(--marked);}
+
+  /* The header is the only thing that gives a cell its meaning, so it has to
+     survive the scroll: at item 24 of 50 an unpinned header is long gone and
+     every value under it is an unlabelled fragment. The table scrolls in its
+     own frame to make that possible. border-collapse drops a sticky cell's
+     own border, so the header's rule is an inset shadow instead. */
   .table-wrap{
-    overflow-x:auto;margin-top:14px;
+    /* position + contain keep the clipped rows out of the page's scroll area:
+       without them the document stays as tall as the unclipped table and the
+       page scrolls a long way past its own content. */
+    position:relative;contain:paint;
+    overflow:auto;max-height:min(62vh,640px);
+    margin-top:14px;
     border:1px solid var(--border);border-radius:var(--r-md);
     background:var(--panel);
   }
   .results-empty{
-    padding:22px 4px;color:var(--muted);font-size:var(--fs-base);font-style:italic;
+    padding:22px 18px;color:var(--muted);font-size:var(--fs-base);font-style:italic;
   }
   .results-table tr:focus-visible{outline:2px solid var(--navy);outline-offset:-2px;}
   .results-table{width:100%;border-collapse:collapse;font-size:var(--fs-base);}
@@ -487,20 +514,156 @@
   }
   .results-table tr:last-child td{border-bottom:none;}
   .results-table th{
+    position:sticky;top:0;z-index:2;
     background:var(--navy-tint);color:var(--muted);
     font-size:var(--fs-xs);font-weight:700;
     letter-spacing:.05em;text-transform:uppercase;
-    border-bottom:1px solid var(--border);
+    border-bottom:none;
+    box-shadow:inset 0 -1px 0 var(--border);
   }
-  .results-table tr.row-incorrect td{background:var(--incorrect-bg);}
-  .results-table tr.row-correct td{background:var(--correct-bg);}
-  /* Unanswered is not the same signal as wrong: it stays grey, the way it is
-     in the item grid, and red is kept for answers that were actually missed. */
-  .results-table tr.row-unanswered td{color:var(--muted);}
-  .results-table tr.row-unanswered .result-badge{color:var(--unanswered);}
-  .results-table .result-badge{font-weight:700;}
-  .results-table tr.row-correct .result-badge{color:var(--correct);}
-  .results-table tr.row-incorrect .result-badge{color:var(--incorrect);}
+  /* everything but the stem takes its content's width; the stem absorbs
+     whatever is left */
+  .results-table .col-item,.results-table .col-ans,
+  .results-table .col-res,.results-table .col-time,
+  .results-table .col-go{width:1%;white-space:nowrap;}
+  .results-table .col-time{text-align:right;}
+
+  .sort-btn{
+    font:inherit;color:inherit;letter-spacing:inherit;text-transform:inherit;
+    background:none;border:none;padding:0;cursor:pointer;
+    display:inline-flex;align-items:center;gap:5px;
+  }
+  .sort-btn:hover{color:var(--navy);}
+  .sort-caret{
+    width:0;height:0;flex:none;
+    border-left:4px solid transparent;border-right:4px solid transparent;
+    border-bottom:5px solid currentColor;
+    opacity:0;
+  }
+  .sort-btn:hover .sort-caret{opacity:.4;}
+  .sort-btn[data-dir="asc"] .sort-caret{opacity:1;}
+  .sort-btn[data-dir="desc"] .sort-caret{
+    opacity:1;border-bottom:none;border-top:5px solid currentColor;
+  }
+
+  /* A lighter step than the grid's cell tints: a whole row of --correct-bg
+     swallows the violet stripe that has to sit on top of it. Hover deepens
+     the row to the grid's tint, which doubles as the affordance — the rows
+     are buttons and until now nothing but the cursor said so. */
+  .results-table tbody tr.row-correct td{background:var(--correct-row);}
+  .results-table tbody tr.row-incorrect td{background:var(--incorrect-row);}
+  .results-table tbody tr.row-unanswered td{color:var(--muted);}
+  .results-table tbody tr.item-row:hover td{background:var(--navy-tint);}
+  .results-table tbody tr.row-correct:hover td{background:var(--correct-bg);}
+  .results-table tbody tr.row-incorrect:hover td{background:var(--incorrect-bg);}
+
+  /* Flagged is a sparse attribute — two or three items in fifty — so it is a
+     mark on the row it belongs to, not a column every row pays for. Violet
+     stripe and violet flag, the same signal the item grid already uses. */
+  .results-table td.cell-item{
+    white-space:nowrap;font-variant-numeric:tabular-nums;
+    font-weight:600;
+  }
+  .results-table tbody tr.is-marked td.cell-item{box-shadow:inset 3px 0 0 var(--marked);}
+
+  .flag-btn,.note-btn{
+    background:none;border:none;padding:3px;margin-left:4px;
+    cursor:pointer;line-height:0;border-radius:var(--r-xs);
+  }
+  .flag-ico{
+    display:block;width:10px;height:12px;background:var(--marked);
+    clip-path:polygon(0 0,100% 0,100% 72%,50% 58%,0 72%);
+  }
+  /* an unset flag stays out of the way until the row is under the pointer,
+     so fifty grey flags never compete with the two that mean something */
+  .flag-btn[aria-pressed="false"] .flag-ico{background:var(--faint);opacity:0;}
+  .item-row:hover .flag-btn[aria-pressed="false"] .flag-ico,
+  .flag-btn:focus-visible .flag-ico{opacity:1;}
+  .flag-btn:hover{background:var(--marked-tint);}
+  .flag-btn:hover .flag-ico{background:var(--marked);}
+  /* the corner fold the item grid uses for "has a note" */
+  .note-ico{
+    display:block;width:0;height:0;
+    border-left:9px solid var(--navy);border-bottom:9px solid transparent;
+    opacity:.7;
+  }
+  .note-btn:hover .note-ico,.note-btn[aria-expanded="true"] .note-ico{opacity:1;}
+  .note-btn:hover{background:var(--navy-tint);}
+
+  /* The stem is what makes the list navigable: without it a row is a letter
+     pair and a colour, and finding the item you want means opening items
+     until one of them is it. */
+  .stem-text{
+    display:block;max-width:min(76ch,46vw);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .results-table tbody tr.row-unanswered .stem-text{color:var(--muted);}
+
+  .results-table tr.note-row td{
+    background:var(--navy-tint);
+    padding:2px 16px 14px 30px;
+  }
+  .note-label{
+    display:block;font-size:var(--fs-xs);font-weight:700;
+    letter-spacing:.05em;text-transform:uppercase;color:var(--muted);
+    margin-bottom:5px;
+  }
+  .note-body{
+    white-space:pre-wrap;font-size:var(--fs-sm);line-height:1.55;color:var(--text);
+    max-width:72ch;border-left:2px solid var(--border);padding-left:12px;
+  }
+
+  /* One cell, because the pair only carries information when it differs:
+     on a block scored in the seventies, seven rows in ten printed the same
+     letter twice. */
+  .results-table td.cell-ans{
+    white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:600;
+  }
+  .cell-ans .to{color:var(--faint);font-weight:400;padding:0 3px;}
+  .cell-ans .blank{color:var(--faint);font-weight:400;}
+
+  /* Colour is never the only cue: the pill keeps the word and adds a shape,
+     which is what WCAG 1.4.1 asks for and what a red/green pair needs. */
+  .result-pill{
+    display:inline-flex;align-items:center;gap:5px;white-space:nowrap;
+    font-size:var(--fs-xs);font-weight:700;letter-spacing:.02em;
+    padding:3px 10px;border-radius:var(--r-pill);border:1px solid;
+  }
+  .result-pill .g{font-size:11px;line-height:1;}
+  .result-pill.c{color:#1f6b41;border-color:var(--correct);background:var(--correct-bg);}
+  .result-pill.x{color:#8f2c20;border-color:var(--incorrect);background:var(--incorrect-bg);}
+  .result-pill.u{color:var(--muted);border-color:var(--border);background:var(--bg);}
+
+  /* Time is the axis that separates a knowledge gap from a reasoning one:
+     fast and wrong is a fact you do not have, slow and wrong is an
+     elimination that went astray, slow and right is what costs you on a
+     timed form. */
+  .results-table td.cell-time{
+    white-space:nowrap;text-align:right;
+    font-variant-numeric:tabular-nums;color:var(--muted);
+  }
+  .cell-time .slow{color:var(--slow);font-weight:700;}
+  .cell-time .no-time{color:var(--faint);}
+
+  .results-table td.cell-go{padding-left:0;padding-right:12px;color:var(--navy);}
+  .cell-go .chev{display:inline-block;font-weight:700;opacity:0;}
+  .item-row:hover .cell-go .chev,.item-row:focus-visible .cell-go .chev{opacity:1;}
+
+  /* Narrowing goes in the order the columns earn their width. The clock and
+     the open-item chevron go first. Below phone width the stem goes too:
+     a stem clipped to a dozen characters is not the feature, and keeping it
+     would push Result — the one column the screen exists for — off the edge.
+     The full stem stays on the row as its tooltip and in its aria-label. */
+  @media (max-width:720px){
+    .results-table .col-time,.results-table td.cell-time,
+    .results-table .col-go,.results-table td.cell-go{display:none;}
+    .stem-text{max-width:26ch;}
+    .results-table th,.results-table td{padding:9px 10px;}
+  }
+  @media (max-width:560px){
+    .results-table .col-stem,.results-table td.cell-stem{display:none;}
+    .results-table th,.results-table td{padding:9px 8px;}
+  }
 
   /* The bar carries six tools now. Below a laptop width the subject line is
      what goes: the form tag beside it says which exam this is, which is the

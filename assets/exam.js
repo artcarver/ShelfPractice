@@ -60,6 +60,15 @@ const state = {
      so pausing is just stopping the clock. */
   elapsedMs: 0,
   runningSince: null,
+  /* The same two-field scheme per item: `itemMs` banks completed time against
+     an item number, `itemSince` timestamps the stretch running now and
+     `itemSinceN` says which item it belongs to, so a stretch can be banked
+     correctly even after a reload moved the cursor. The item clock runs only
+     while the block clock runs AND a question is on screen — the results
+     screen and the pause screen both stop it. */
+  itemMs: {},
+  itemSince: null,
+  itemSinceN: null,
   paused: false,
   graded: false,
   score: null,   // {correct, incorrect, unanswered, total}; saved at grading so
@@ -86,6 +95,9 @@ function loadState(){
       state.paused = !!saved.paused;
       state.score = saved.score || null;
       state.onResults = !!saved.onResults;
+      state.itemMs = saved.itemMs || {};
+      state.itemSince = saved.itemSince || null;
+      state.itemSinceN = saved.itemSinceN || null;
       if(typeof saved.elapsedMs === 'number'){
         state.elapsedMs = saved.elapsedMs;
         state.runningSince = saved.runningSince || null;
@@ -105,7 +117,8 @@ function saveState(){
       notesOpen: state.notesOpen, notesPos: state.notesPos,
       graded: state.graded, paused: state.paused,
       score: state.score, onResults: state.onResults,
-      elapsedMs: state.elapsedMs, runningSince: state.runningSince
+      elapsedMs: state.elapsedMs, runningSince: state.runningSince,
+      itemMs: state.itemMs, itemSince: state.itemSince, itemSinceN: state.itemSinceN
     }));
   }catch(e){}
 }
@@ -117,12 +130,51 @@ function elapsedMs(){
 }
 function startClock(){
   if(!state.runningSince && !state.paused && !state.graded) state.runningSince = Date.now();
+  startItemClock();   // guards itself; a no-op unless a question is on screen
 }
 function stopClock(){
   if(state.runningSince){
     state.elapsedMs += Date.now() - state.runningSince;
     state.runningSince = null;
   }
+  stopItemClock();   // the item clock never outlives the block clock
+}
+
+/* The item clock. startItemClock is a no-op unless a question is actually on
+   screen, so every caller can fire it without first checking the view. */
+function startItemClock(){
+  if(state.itemSince || state.paused || state.graded || state.onResults) return;
+  const q = QUESTIONS[state.idx];
+  if(!q) return;
+  state.itemSince = Date.now();
+  state.itemSinceN = q.n;
+}
+/* Always call this BEFORE state.idx moves, or the time lands on the wrong
+   item. goToItem is the only place that moves it, and it does. */
+function stopItemClock(){
+  if(!state.itemSince) return;
+  const n = state.itemSinceN;
+  if(n != null) state.itemMs[n] = (state.itemMs[n] || 0) + (Date.now() - state.itemSince);
+  state.itemSince = null;
+  state.itemSinceN = null;
+}
+function itemMsFor(n){
+  let ms = state.itemMs[n] || 0;
+  if(state.itemSince && state.itemSinceN === n) ms += Date.now() - state.itemSince;
+  return ms;
+}
+
+/* "Slow" is relative to how this block actually went, not to a fixed target:
+   a form worked in half the allotted time would flag nothing against a clock,
+   and every item against a strict average. The median is the block's own
+   pace, and the floor keeps a fast block from flagging a 30-second item as a
+   struggle. */
+function slowThresholdMs(){
+  const times = QUESTIONS.map(q => itemMsFor(q.n)).filter(ms => ms > 0).sort((a,b) => a-b);
+  if(times.length < 5) return Infinity;
+  const mid = Math.floor(times.length / 2);
+  const median = times.length % 2 ? times[mid] : (times[mid-1] + times[mid]) / 2;
+  return Math.max(median * 1.75, 90000);
 }
 
 function currentQ(){ return QUESTIONS[state.idx]; }
@@ -292,6 +344,7 @@ function showQuestionView(){
   document.getElementById('quizMain').style.display = '';
   document.querySelector('footer.botbar').style.display = '';
   state.onResults = false;
+  startItemClock();   // an item is on screen again, so its clock resumes
   renderNotes();
   saveState();
 }
@@ -299,6 +352,7 @@ function showQuestionView(){
 /* The one way to move to an item: it always ends with that item on screen. */
 function goToItem(i){
   if(i < 0 || i >= QUESTIONS.length) return;
+  stopItemClock();    // bank against the item being left, before idx moves
   state.idx = i;
   saveState();
   showQuestionView();
@@ -491,12 +545,16 @@ stemEl.addEventListener('mouseup', (e) => {
   }
 });
 
+/* Both go through goToItem, which really is the one way to move to an item:
+   it is where the item clock is banked against the item being left, and
+   stepping the cursor here instead would quietly bank the whole block
+   against whichever item happened to be on screen when the clock started. */
 function goPrev(){
-  if(state.idx > 0){ state.idx--; saveState(); render(); scrollQuestionTop(); }
+  if(state.idx > 0) goToItem(state.idx - 1);
 }
 function goNext(){
-  if(state.idx < QUESTIONS.length - 1){ state.idx++; saveState(); render(); scrollQuestionTop(); }
-  else { openReview(); }
+  if(state.idx < QUESTIONS.length - 1) goToItem(state.idx + 1);
+  else openReview();
 }
 
 document.getElementById('prevBtn').addEventListener('click', goPrev);
@@ -514,8 +572,9 @@ document.getElementById('restartBtn').addEventListener('click', () => {
     state.idx = 0; state.answers = {}; state.marked = {}; state.struck = {}; state.highlights = {}; state.graded = false;
     state.notes = {};
     state.score = null; state.onResults = false;
-    resultsFilter = 'all';
+    resultsFilter = 'all'; resultsAttrs.clear(); resultsSort = {key:'item', dir:'asc'};
     state.elapsedMs = 0; state.runningSince = Date.now(); state.paused = false;
+    state.itemMs = {}; state.itemSince = Date.now(); state.itemSinceN = QUESTIONS[0].n;
     saveState();
     showQuestionView();
     renderPause();
@@ -655,21 +714,57 @@ function computeScore(){
   return {correct, incorrect, unanswered, total: QUESTIONS.length};
 }
 
-/* Filter chips above the results table: All / Incorrect / Unanswered / Marked.
-   The choice sticks, so stepping out to an item and back does not drop you
-   from "Incorrect" back to the full list every time. */
+/* The results table.
+ *
+ * Two filters, not one. `resultsFilter` is the item's state and the chips for
+ * it replace one another; `resultsAttrs` holds attributes the item either
+ * carries or does not, and those stack. That is the only way to ask for the
+ * cohort a second pass is built from — the items missed that you had already
+ * marked as shaky — which a single exclusive row of chips cannot express.
+ *
+ * Both, and the sort, persist across a trip out to an item and back, so the
+ * list you built is still there when you return to it.
+ */
 let resultsFilter = 'all';
+const resultsAttrs = new Set();
+let resultsSort = {key:'item', dir:'asc'};
+const expandedNotes = new Set();   // item numbers whose note is expanded in place
+
+/* The first click on a header sorts the way that column is useful: items in
+   form order, results with what needs attention on top, times slowest first. */
+const SORT_DEFAULT_DIR = {item:'asc', result:'asc', time:'desc'};
+
+function resultOf(n){
+  if(!state.answers[n]) return 'unanswered';
+  return state.answers[n] === ANSWER_KEY[n] ? 'correct' : 'incorrect';
+}
+
+/* The leading article carries nothing and costs the first characters of every
+   row, where the width is scarcest. Everything after it is the form's own
+   wording, untouched — the cell is clipped by CSS, not truncated here, so
+   nothing is lost and the full stem stays in the row's tooltip. */
+function stemSnippet(q){
+  return (q.stem || '').replace(/\s+/g, ' ').trim().replace(/^(an?|the)\s+/i, '');
+}
+
+function formatItemTime(ms){
+  const secs = Math.round(ms / 1000);
+  return Math.floor(secs / 60) + ':' + pad(secs % 60);
+}
 
 function applyResultsFilter(key){
-  resultsFilter = key;
-  document.querySelectorAll('#resultsFilters .filter-chip').forEach(c => {
-    c.classList.toggle('active', c.dataset.key === key);
-  });
+  if(key) resultsFilter = key;
   let shown = 0;
-  document.querySelectorAll('#resultsBody tr').forEach(tr => {
-    const show = key === 'all' ||
-      (key === 'marked' ? tr.dataset.marked === '1' : tr.dataset.result === key);
+  document.querySelectorAll('#resultsBody tr.item-row').forEach(tr => {
+    const show = (resultsFilter === 'all' || tr.dataset.result === resultsFilter) &&
+      (!resultsAttrs.has('marked') || tr.dataset.marked === '1') &&
+      (!resultsAttrs.has('noted')  || tr.dataset.noted  === '1');
     tr.style.display = show ? '' : 'none';
+    // an expanded note belongs to its row and hides with it
+    const note = tr.nextElementSibling;
+    if(note && note.classList.contains('note-row')){
+      note.style.display = show && expandedNotes.has(Number(tr.dataset.n)) ? '' : 'none';
+    }
     if(show) shown++;
   });
   // an empty table under a filter reads as a glitch without a word of explanation
@@ -680,24 +775,199 @@ function buildResultFilters(score){
   const wrap = document.getElementById('resultsFilters');
   wrap.innerHTML = '';
   const markedCount = QUESTIONS.filter(q => state.marked[q.n]).length;
-  const defs = [
-    ['all',        `All (${score.total})`],
-    ['incorrect',  `Incorrect (${score.incorrect})`],
-    ['unanswered', `Unanswered (${score.unanswered})`],
-    ['marked',     `Marked (${markedCount})`]
-  ];
-  defs.forEach(([key, label]) => {
+  const notedCount  = QUESTIONS.filter(q => hasNote(q.n)).length;
+
+  const addChip = (key, label, attr, count) => {
     const chip = document.createElement('button');
     chip.type = 'button';
-    chip.className = 'filter-chip';
+    chip.className = 'filter-chip' + (attr ? ' attr' : '');
     chip.dataset.key = key;
     chip.textContent = label;
-    chip.addEventListener('click', () => applyResultsFilter(key));
+    const on = attr ? resultsAttrs.has(key) : resultsFilter === key;
+    chip.classList.toggle('active', on);
+    chip.setAttribute('aria-pressed', String(on));
+    // a chip that can only ever produce an empty table is not worth a click
+    if(attr && !count && !on) chip.disabled = true;
+    chip.addEventListener('click', () => {
+      if(attr){
+        if(resultsAttrs.has(key)) resultsAttrs.delete(key); else resultsAttrs.add(key);
+      }else{
+        resultsFilter = key;
+      }
+      buildResultFilters(score);
+      applyResultsFilter();
+    });
     wrap.appendChild(chip);
+  };
+
+  addChip('all',        `All (${score.total})`);
+  addChip('correct',    `Correct (${score.correct})`);
+  addChip('incorrect',  `Incorrect (${score.incorrect})`);
+  addChip('unanswered', `Unanswered (${score.unanswered})`);
+
+  const sep = document.createElement('div');
+  sep.className = 'filter-sep';
+  wrap.appendChild(sep);
+
+  addChip('marked', `Marked (${markedCount})`, true, markedCount);
+  addChip('noted',  `Has a note (${notedCount})`, true, notedCount);
+}
+
+function sortResultRows(){
+  const rank = {incorrect:0, unanswered:1, correct:2};
+  const dir = resultsSort.dir === 'desc' ? -1 : 1;
+  const rows = QUESTIONS.slice();
+  rows.sort((a, b) => {
+    let d = 0;
+    if(resultsSort.key === 'result')    d = rank[resultOf(a.n)] - rank[resultOf(b.n)];
+    else if(resultsSort.key === 'time') d = itemMsFor(a.n) - itemMsFor(b.n);
+    else                                d = a.n - b.n;
+    return (d || a.n - b.n) * dir;
+  });
+  return rows;
+}
+
+function renderSortHeaders(){
+  document.querySelectorAll('#resultsScreen .sort-btn').forEach(btn => {
+    const on = btn.dataset.sort === resultsSort.key;
+    if(on) btn.dataset.dir = resultsSort.dir; else delete btn.dataset.dir;
+    btn.closest('th').setAttribute('aria-sort',
+      on ? (resultsSort.dir === 'asc' ? 'ascending' : 'descending') : 'none');
   });
 }
 
+function toggleNoteRow(tr, btn){
+  const n = Number(tr.dataset.n);
+  const open = !expandedNotes.has(n);
+  if(open) expandedNotes.add(n); else expandedNotes.delete(n);
+  btn.setAttribute('aria-expanded', String(open));
+  const existing = tr.nextElementSibling;
+  if(existing && existing.classList.contains('note-row')) existing.remove();
+  if(!open) return;
+  const row = document.createElement('tr');
+  row.className = 'note-row';
+  const td = document.createElement('td');
+  td.colSpan = 6;
+  td.innerHTML = `<span class="note-label">My note on item ${n}</span>` +
+                 `<div class="note-body">${escapeHtml(noteFor(n))}</div>`;
+  row.appendChild(td);
+  tr.after(row);
+}
+
+/* Marking from the results screen, because this is where triage happens: you
+   look at an item you missed, decide it is worth another pass, and mark it.
+   The row deliberately stays put afterwards even under the Marked filter —
+   yanking a row out from under the pointer that just clicked it is worse than
+   a count that reconciles on the next filter click. */
+function toggleRowMark(tr, btn){
+  const n = Number(tr.dataset.n);
+  const on = !state.marked[n];
+  if(on) state.marked[n] = true; else delete state.marked[n];
+  saveState();
+  tr.dataset.marked = on ? '1' : '';
+  tr.classList.toggle('is-marked', on);
+  btn.setAttribute('aria-pressed', String(on));
+  btn.title = on ? 'Marked for review — click to clear' : 'Mark this item for review';
+  buildResultFilters(computeScore());   // refresh the counts, leave the rows alone
+}
+
+function buildResultsBody(){
+  const body = document.getElementById('resultsBody');
+  body.innerHTML = '';
+  const slowMs = slowThresholdMs();
+
+  sortResultRows().forEach(q => {
+    const result = resultOf(q.n);
+    const ans = state.answers[q.n];
+    const key = ANSWER_KEY[q.n] || '—';
+    const marked = !!state.marked[q.n];
+    const noted = hasNote(q.n);
+    const ms = itemMsFor(q.n);
+
+    const tr = document.createElement('tr');
+    tr.className = 'item-row row-' + result + (marked ? ' is-marked' : '');
+    tr.dataset.n = q.n;
+    tr.dataset.result = result;
+    tr.dataset.marked = marked ? '1' : '';
+    tr.dataset.noted = noted ? '1' : '';
+
+    // one cell, because the pair only says anything when the two differ
+    const answerCell = result === 'correct'
+      ? escapeHtml(ans)
+      : (result === 'unanswered' ? '<span class="blank">&mdash;</span>' : escapeHtml(ans)) +
+        `<span class="to">&rarr;</span>${escapeHtml(key)}`;
+
+    const pill = {
+      correct:    '<span class="result-pill c"><span class="g" aria-hidden="true">&#10003;</span>Correct</span>',
+      incorrect:  '<span class="result-pill x"><span class="g" aria-hidden="true">&#10007;</span>Incorrect</span>',
+      unanswered: '<span class="result-pill u"><span class="g" aria-hidden="true">&ndash;</span>Unanswered</span>'
+    }[result];
+
+    const slow = ms > 0 && ms >= slowMs;
+    const timeCell = ms > 0
+      ? `<span class="${slow ? 'slow' : ''}"${slow ? ' title="Well over this block’s median time per item"' : ''}>${formatItemTime(ms)}</span>`
+      : '<span class="no-time">&mdash;</span>';
+
+    tr.innerHTML =
+      `<td class="cell-item">${q.n}` +
+        `<button type="button" class="flag-btn" aria-pressed="${marked}" ` +
+          `title="${marked ? 'Marked for review — click to clear' : 'Mark this item for review'}">` +
+          `<span class="flag-ico"></span><span class="sr-only">Mark item ${q.n} for review</span></button>` +
+        (noted ? `<button type="button" class="note-btn" aria-expanded="false" title="Read my note">` +
+                 `<span class="note-ico"></span><span class="sr-only">Show my note on item ${q.n}</span></button>` : '') +
+      `</td>` +
+      `<td class="cell-stem"><span class="stem-text">${escapeHtml(stemSnippet(q))}</span></td>` +
+      `<td class="cell-ans">${answerCell}</td>` +
+      `<td class="cell-res">${pill}</td>` +
+      `<td class="cell-time">${timeCell}</td>` +
+      `<td class="cell-go"><span class="chev" aria-hidden="true">&rsaquo;</span></td>`;
+
+    // the row is a control: reachable and operable from the keyboard too
+    tr.tabIndex = 0;
+    tr.setAttribute('role', 'button');
+    const bits = [result === 'unanswered' ? 'unanswered' : result];
+    if(result === 'incorrect') bits.push(`you answered ${ans}, correct answer ${key}`);
+    if(marked) bits.push('marked for review');
+    if(noted) bits.push('has a note');
+    if(ms > 0) bits.push(formatItemTime(ms) + ' on this item');
+    tr.setAttribute('aria-label', `Item ${q.n}, ${bits.join(', ')}. Open this item.`);
+    tr.title = stemSnippet(q);
+
+    const open = () => goToItem(QUESTIONS.findIndex(x => x.n === q.n));
+    tr.addEventListener('click', e => {
+      // the two in-row controls act on the row without opening the item
+      const flag = e.target.closest('.flag-btn');
+      if(flag){ e.stopPropagation(); toggleRowMark(tr, flag); return; }
+      const note = e.target.closest('.note-btn');
+      if(note){ e.stopPropagation(); toggleNoteRow(tr, note); return; }
+      open();
+    });
+    tr.addEventListener('keydown', e => {
+      if(e.target !== tr) return;   // let the buttons inside handle their own keys
+      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); open(); }
+    });
+    body.appendChild(tr);
+  });
+
+  applyResultsFilter();   // rows exist now, so the filter can bite
+}
+
+document.querySelectorAll('#resultsScreen .sort-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const key = btn.dataset.sort;
+    if(resultsSort.key === key){
+      resultsSort.dir = resultsSort.dir === 'asc' ? 'desc' : 'asc';
+    }else{
+      resultsSort = {key, dir: SORT_DEFAULT_DIR[key] || 'asc'};
+    }
+    expandedNotes.clear();      // the rows are about to be rebuilt underneath them
+    renderSortHeaders();
+    buildResultsBody();
+  });
+});
+
 function showResults(){
+  stopItemClock();    // no item on screen, so no item is accruing time
   renderPause();
   closeLabValues();   // the split layout has no question to sit beside now
   document.getElementById('quizMain').style.display = 'none';
@@ -720,35 +990,8 @@ function showResults(){
   document.getElementById('bUnanswered').textContent = unanswered;
   buildResultFilters(score);
   updateProgress();
-
-  const body = document.getElementById('resultsBody');
-  body.innerHTML = '';
-  QUESTIONS.forEach(q => {
-    const tr = document.createElement('tr');
-    const ans = state.answers[q.n] || '—';
-    const correctLetter = ANSWER_KEY[q.n] || '—';
-    let rowCls, badge, result;
-    if(!state.answers[q.n]){ rowCls = 'row-unanswered'; badge = 'Unanswered'; result = 'unanswered'; }
-    else if(state.answers[q.n] === ANSWER_KEY[q.n]){ rowCls = 'row-correct'; badge = 'Correct'; result = 'correct'; }
-    else { rowCls = 'row-incorrect'; badge = 'Incorrect'; result = 'incorrect'; }
-    tr.className = rowCls;
-    tr.dataset.result = result;
-    tr.dataset.marked = state.marked[q.n] ? '1' : '';
-    tr.innerHTML = `<td>${q.n}</td><td>${ans}</td><td>${correctLetter}</td><td class="result-badge">${badge}</td><td>${state.marked[q.n] ? 'Yes' : ''}</td>`;
-    // the row is a control: reachable and operable from the keyboard too
-    tr.style.cursor = 'pointer';
-    tr.tabIndex = 0;
-    tr.setAttribute('role', 'button');
-    tr.setAttribute('aria-label', `Item ${q.n}, ${badge}. Go to this item.`);
-    const open = () => goToItem(QUESTIONS.findIndex(x => x.n === q.n));
-    tr.addEventListener('click', open);
-    tr.addEventListener('keydown', e => {
-      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); open(); }
-    });
-    body.appendChild(tr);
-  });
-
-  applyResultsFilter(resultsFilter);   // rows exist now, so the filter can bite
+  renderSortHeaders();
+  buildResultsBody();
 }
 
 document.getElementById('backToExamBtn').addEventListener('click', () => {
@@ -769,7 +1012,12 @@ document.getElementById('downloadBtn').addEventListener('click', () => {
     const ans = state.answers[q.n] || '(unanswered)';
     const correctLetter = ANSWER_KEY[q.n] || '?';
     const result = !state.answers[q.n] ? 'UNANSWERED' : (state.answers[q.n] === correctLetter ? 'CORRECT' : 'INCORRECT');
-    lines.push(`Item ${q.n}: your answer = ${ans}, correct = ${correctLetter}  [${result}]`);
+    const ms = itemMsFor(q.n);
+    // the same two facts the screen now shows beside the letters
+    const extra = [ms > 0 ? formatItemTime(ms) : null, state.marked[q.n] ? 'marked' : null]
+      .filter(Boolean).join(', ');
+    lines.push(`Item ${q.n}: your answer = ${ans}, correct = ${correctLetter}  [${result}]` +
+               (extra ? `  (${extra})` : ''));
   });
   // your own notes are the part of a block worth keeping, so they come along
   const noted = QUESTIONS.filter(q => hasNote(q.n));
@@ -1103,8 +1351,9 @@ document.getElementById('startOverBtn').addEventListener('click', () => {
   state.idx = 0; state.answers = {}; state.marked = {}; state.struck = {}; state.highlights = {};
   state.notes = {};
   state.score = null; state.onResults = false;
-  resultsFilter = 'all';
+  resultsFilter = 'all'; resultsAttrs.clear(); resultsSort = {key:'item', dir:'asc'};
   state.elapsedMs = 0; state.runningSince = null; state.paused = false; state.graded = false;
+  state.itemMs = {}; state.itemSince = null; state.itemSinceN = null;
   saveState();
   enterExam();
 });
