@@ -81,6 +81,14 @@ ends with the lead-in ("Laboratory studies show:"), `labs` holds the table, and
 - A group with a heading in the source ("Serum", "Urine", "Arterial blood gas")
   becomes a `name`; a table with columns ("On admission" / "Now") gets a `head`.
 - Two tables printed side by side merge into one `labs` array as named groups.
+- A stem that prints a table, then a paragraph, then a second table keeps both
+  in `labs` and hands the paragraph to the second group as its `intro`, which
+  is drawn above that group and splits the table in two. Use it rather than
+  moving the sentence: the point is that the stem reads in the order the form
+  prints. Family Medicine Form 4 item 45 is the case in the repo — a
+  blood-pressure table, the patient's medications and vital signs, then the
+  serum studies. An `intro` ending in a lead-in ("Serum studies show:") does
+  the work a `name` would, so the group needs no heading as well.
 - Every row in a group needs the same number of cells.
 - A row the form indents under the row above it — a leukocyte differential
   beneath its leukocyte count, a CSF differential beneath its WBC — carries two

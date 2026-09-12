@@ -245,7 +245,12 @@ Two steps: drop in a folder, add a line to the manifest.
      // head of both stems.
      //   "labs": [{"name": "Serum",                       // optional group heading
      //             "head": ["", "On admission", "Now"],   // optional header row
+     //             "intro": "Serum studies show:",        // optional prose above
      //             "rows": [["Na+", "118 mEq/L"], ...]}]  // 2+ cells per row
+     //
+     // A group's "intro" is the paragraph the form prints above it, for a stem
+     // that runs table, prose, table. It closes the table above and opens a new
+     // one, so the stem keeps the order the form prints.
      //
      // Two leading spaces on a row's label nest it under the row above, the
      // way a form prints a differential under its leukocyte count:
