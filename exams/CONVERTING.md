@@ -103,6 +103,16 @@ one can be reached first from the grid:
 
     "Items 33 and 34 share these response options. Select one answer for each."
 
+The other shape is two items sharing a *patient* rather than a list of choices:
+one vignette printed above both, and each item keeping its own choices. There
+is no shared instruction to draw above those choices, so such a set carries
+`setNote` alone — a `lead` without a notice is still an error, since nothing
+would say which items the instruction spans. The vignette itself goes at the
+head of both stems, which is what each of the two screens prints. Family
+Medicine Form 4 items 25 and 26 are the case in the repo:
+
+    "Items 25 and 26 share this patient. Select one answer for each."
+
 ## 5. Exhibits
 
 Save each as `exams/<slug>/images/qNN.png`, add it to `IMAGES` under the key

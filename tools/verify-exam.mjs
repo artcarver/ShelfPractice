@@ -84,8 +84,11 @@ for (const q of questions) {
       for (const c of r)
         if (/\s$/.test(String(c))) fail(`${at}: lab cell "${String(c).trim()}" has trailing whitespace`);
   }
-  if ((q.lead && !q.setNote) || (q.setNote && !q.lead))
-    fail(`${at}: a matched set needs both lead and setNote`);
+  // A set that shares response options carries both: the notice, and the
+  // instruction above the choices it governs. A set that shares only a patient
+  // has no such instruction, so setNote stands on its own — but a lead with no
+  // notice is an instruction with nothing to say which items it spans.
+  if (q.lead && !q.setNote) fail(`${at}: lead without setNote`);
 }
 
 for (const n of Object.keys(answerKey))
