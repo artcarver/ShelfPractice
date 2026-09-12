@@ -34,6 +34,37 @@ sentence you had to write and what you worked from, any value that looks
 clinically wrong but is what the form prints, and anything you could not read.
 The same goes in the commit message.
 
+## Building a new exam from a text transcription
+
+The other shape the source arrives in: a questions-and-choices file, an
+answers-and-explanations file, and often a validation audit of the capture.
+Text is the better source, but it has lost the layout, so where the form prints
+a table — of choices, or of laboratory values — ask for the screenshot or the
+PDF page as well. Pediatrics Form 8 cost two extra commits for want of them:
+item 7's column headings were guessed, and item 26's "Hemoglobulin" was
+"corrected" to a word the form does not print.
+
+The order that is quickest and still holds the standard in `exams/CONVERTING.md`:
+
+1. **Parse, do not retype.** Split the answer file on `Question N`, unwrap its
+   hard-wrapped lines into paragraphs, and do the same for the question file.
+   Writing 50 stems out by hand is the slowest part of the job and introduces
+   errors of its own.
+2. **Read every explanation once, in four or five passes, before building.**
+   Page seams are what a parser cannot see: a sentence that stops mid-phrase, a
+   paragraph repeated from the page above, a stray `z` or `S` where the app's
+   chrome was captured, two paragraphs interleaved. Note them; fix nothing yet.
+3. **Keep the fixes as a table of find-and-replace pairs per item**, applied to
+   the parsed text. That table is the record of everything in the file that is
+   not the form's own, and the commit message is written from it.
+4. **Cross-check the key in code, not by eye:** the printed key list, each
+   item's own `Correct Answer` header, and the letters its Incorrect Answers
+   line rules out, which with the key should account for every choice. Where
+   they disagree, CONVERTING.md §7 says which wins.
+5. **Verify once at the end** — `node tools/verify-exam.mjs <slug>`, then
+   `node tools/scan-ocr.mjs <slug>` — and diff your text against the source
+   word by word. Every difference should be one you meant.
+
 ## House style
 
 The question is the form's; the explanation is the site's to finish. Stems,
