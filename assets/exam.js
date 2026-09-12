@@ -481,8 +481,20 @@ function renderStemHTML(q, ranges){
   let html = '<div class="stem-p">' + markUp(q.stem, indexed, off) + '</div>';
   off += q.stem.length;
 
-  html += '<table class="lab-table">';
+  /* Most stems run prose, then one table. A few print a table, a paragraph,
+     and then a second table — so a group can carry the prose that introduces
+     it, which closes the table above and opens a new one after it. */
+  let open = false;
+  const openTable = () => { if(!open){ html += '<table class="lab-table">'; open = true; } };
+  const closeTable = () => { if(open){ html += '</table>'; open = false; } };
+
   q.labs.forEach(group => {
+    if(group.intro){
+      closeTable();
+      html += '<div class="stem-p">' + markUp(group.intro, indexed, off) + '</div>';
+      off += group.intro.length;
+    }
+    openTable();
     const width = Math.max(...group.rows.map(r => r.length));
     if(group.name){
       html += `<tr class="lab-group"><td colspan="${width}">`
@@ -510,7 +522,7 @@ function renderStemHTML(q, ranges){
       html += '</tr>';
     });
   });
-  html += '</table>';
+  closeTable();
 
   if(q.stemTail){
     html += '<div class="stem-p">' + markUp(q.stemTail, indexed, off) + '</div>';

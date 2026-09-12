@@ -32,14 +32,14 @@ now, which `manifest.js` is the authority on:
 
 | Subject | Forms | With exhibits |
 | --- | --- | --- |
-| Family Medicine | 5 | the 1 (three photographs, items 40, 47 and 49) |
+| Family Medicine | 4, 5 | both 2 |
 | Medicine | 3–10 | all 8 |
 | Neurology | 4–9 | all 6 |
 | Obstetrics & Gynecology | 4–8, 10 | all 6 |
 | Psychiatry | 3–8 | 1 of 6 (Form 5, the Figure 1 / Figure 2 exhibit on item 48) |
 | Surgery | 3–9 | all 7 |
 
-Thirty-four forms, 1,700 items.
+Thirty-five forms, 1,750 items.
 
 ## Design
 
@@ -125,7 +125,11 @@ Some items come in **matched sets**: two questions that share one list of
 choices and one instruction, the way the paper form prints them. Those items
 carry a `setNote` and a `lead` — the notice sits in a box above the item and
 the shared instruction directly above the choices it governs, which is where
-the form puts it. The notice names both items rather than saying "the next 2
+the form puts it. A set can instead share a patient, one vignette printed above
+two items that each keep their own choices; there is no instruction to draw
+above those choices, so such a set carries only the notice, and the vignette is
+repeated at the head of both stems, which is what each of the two screens
+prints. Either way the notice names both items rather than saying "the next 2
 items", since here you can arrive at either one from the grid.
 
 Previous and Next sit under the answer choices rather than at the far edges of
@@ -235,10 +239,18 @@ Two steps: drop in a folder, add a line to the manifest.
      //
      // Two items that share one list of choices are a matched set. Both carry
      // "lead" (the shared instruction, drawn above the choices) and "setNote"
-     // (the notice, drawn in a box above the item).
+     // (the notice, drawn in a box above the item). Two items that share only a
+     // patient carry "setNote" alone — there is no instruction above the
+     // choices, since each item keeps its own — and repeat the vignette at the
+     // head of both stems.
      //   "labs": [{"name": "Serum",                       // optional group heading
      //             "head": ["", "On admission", "Now"],   // optional header row
+     //             "intro": "Serum studies show:",        // optional prose above
      //             "rows": [["Na+", "118 mEq/L"], ...]}]  // 2+ cells per row
+     //
+     // A group's "intro" is the paragraph the form prints above it, for a stem
+     // that runs table, prose, table. It closes the table above and opens a new
+     // one, so the stem keeps the order the form prints.
      //
      // Two leading spaces on a row's label nest it under the row above, the
      // way a form prints a differential under its leukocyte count:

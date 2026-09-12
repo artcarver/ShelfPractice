@@ -81,6 +81,14 @@ ends with the lead-in ("Laboratory studies show:"), `labs` holds the table, and
 - A group with a heading in the source ("Serum", "Urine", "Arterial blood gas")
   becomes a `name`; a table with columns ("On admission" / "Now") gets a `head`.
 - Two tables printed side by side merge into one `labs` array as named groups.
+- A stem that prints a table, then a paragraph, then a second table keeps both
+  in `labs` and hands the paragraph to the second group as its `intro`, which
+  is drawn above that group and splits the table in two. Use it rather than
+  moving the sentence: the point is that the stem reads in the order the form
+  prints. Family Medicine Form 4 item 45 is the case in the repo — a
+  blood-pressure table, the patient's medications and vital signs, then the
+  serum studies. An `intro` ending in a lead-in ("Serum studies show:") does
+  the work a `name` would, so the group needs no heading as well.
 - Every row in a group needs the same number of cells.
 - A row the form indents under the row above it — a leukocyte differential
   beneath its leukocyte count, a CSF differential beneath its WBC — carries two
@@ -102,6 +110,16 @@ item). Word the notice by item number, not "the next 2 items", since either
 one can be reached first from the grid:
 
     "Items 33 and 34 share these response options. Select one answer for each."
+
+The other shape is two items sharing a *patient* rather than a list of choices:
+one vignette printed above both, and each item keeping its own choices. There
+is no shared instruction to draw above those choices, so such a set carries
+`setNote` alone — a `lead` without a notice is still an error, since nothing
+would say which items the instruction spans. The vignette itself goes at the
+head of both stems, which is what each of the two screens prints. Family
+Medicine Form 4 items 25 and 26 are the case in the repo:
+
+    "Items 25 and 26 share this patient. Select one answer for each."
 
 ## 5. Exhibits
 
