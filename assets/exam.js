@@ -234,7 +234,25 @@ function render(){
 
   const optsDiv = document.getElementById('qoptions');
   optsDiv.innerHTML = '';
-  q.options.forEach(([letter, text]) => {
+  /* An item whose choices are a small table gets drawn as one: the values in
+     aligned columns, under the headings the form prints above them. */
+  const table = choiceTable(q);
+  optsDiv.className = 'options' + (table ? ' opt-table' : '')
+                    + (table && table.head ? ' has-head' : '')
+                    + (table && state.graded ? ' graded' : '');
+  optsDiv.style.setProperty('--opt-cols', table ? table.width : 1);
+  if(table && table.head){
+    // Not a choice, and it must not answer to a choice's selector: the head
+    // row carries its own class and never `opt`.
+    const head = document.createElement('div');
+    head.className = 'opt-head';
+    head.innerHTML = '<span class="opt-radio-space" aria-hidden="true"></span>'
+      + '<div class="opt-body"><span class="letter"></span>'
+      + table.head.map(h => `<span class="opt-cell">${escapeHtml(h)}</span>`).join('')
+      + '</div>';
+    optsDiv.appendChild(head);
+  }
+  q.options.forEach(([letter, text], idx) => {
     const row = document.createElement('div');
     const strikeKey = q.n + '_' + letter;
     const isStruck = !!state.struck[strikeKey];
@@ -252,8 +270,14 @@ function render(){
     }
     row.className = cls;
     const strikeBtn = state.graded ? '' : `<span class="strike-toggle${isStruck ? ' active' : ''}" title="Cross out this choice">ab</span>`;
+    const body = table
+      ? '<span class="opt-body">' + `<span class="letter">${letter}.</span>`
+        + table.cells[idx].map((c, j) =>
+            `<span class="opt-cell"${table.head ? ` data-head="${escapeHtml(table.head[j])}"` : ''}>${escapeHtml(c)}</span>`
+          ).join('') + '</span>'
+      : `<span class="letter">${letter}.</span> ${escapeHtml(text)}`;
     row.innerHTML = `<input type="radio" name="opt" id="opt_${letter}" ${selected===letter?'checked':''} ${state.graded?'disabled':''}>
-      <label for="opt_${letter}"><span class="letter">${letter}.</span> ${escapeHtml(text)}</label>${tag}${strikeBtn}`;
+      <label for="opt_${letter}">${body}</label>${tag}${strikeBtn}`;
     if(!state.graded){
       row.addEventListener('click', (e) => {
         if(e.target.closest('.strike-toggle')) return;
@@ -441,6 +465,23 @@ function markUp(text, ranges, base){
   });
   html += escapeHtml(text.slice(pos));
   return html;
+}
+
+/* Some items do not ask for a phrase but for a set of values — one per column
+   of a small table the form prints above the choices, a row to each choice.
+   data.js keeps such a choice as one string with " · " between its values, so
+   the letter, the key and the results file need no special case; the item adds
+   `choiceHead` when the form heads those columns. Here the string is split back
+   into cells, and only when every choice yields the same number of them: a set
+   that does not line up is prose that happens to contain the separator, and is
+   drawn as prose. Headings that do not match the columns are ignored. */
+const CHOICE_SEP = ' · ';
+function choiceTable(q){
+  const cells = (q.options || []).map(([, text]) => text.split(CHOICE_SEP));
+  const width = cells.length ? cells[0].length : 0;
+  if(width < 2 || !cells.every(c => c.length === width)) return null;
+  const head = Array.isArray(q.choiceHead) && q.choiceHead.length === width ? q.choiceHead : null;
+  return {cells, width, head};
 }
 
 /* Where a capture lost part of an explanation, the missing text is written in

@@ -351,6 +351,91 @@
   .opt .tag{margin-left:auto;font-size:var(--fs-xs);font-weight:700;padding:2px 8px;border-radius:var(--r-md);white-space:nowrap;}
   .opt.struck label{text-decoration:line-through;color:var(--muted);opacity:.6;}
 
+  /* A choice that is a row of values rather than a phrase. The form prints
+     these as a table — a heading over each column, one row to a choice — so
+     the values are set in columns of equal width and the headings sit in a
+     head row above them. The columns need more room than a phrase does, so
+     the box is allowed to run wider than the usual 680px. */
+  .options.opt-table{max-width:760px;}
+  .opt-table .opt-body{
+    display:grid;
+    grid-template-columns:2.1em repeat(var(--opt-cols), minmax(0, 1fr));
+    gap:0 14px;
+    align-items:start;
+  }
+  /* Centred under its heading, the way the form sets these: a one-word value
+     left-aligned in a wide column reads as a stray word rather than a cell. */
+  .opt-table .opt-cell{min-width:0;text-align:center;}
+  .opt-table .opt-head{
+    display:flex;
+    align-items:flex-end;
+    gap:12px;
+    padding:14px 18px 10px;
+    border-bottom:1px solid var(--border);
+    font-size:calc(var(--fs-md) * var(--content-scale));
+    font-weight:700;
+    line-height:1.3;
+  }
+  .opt-table .opt-head .opt-body{flex:1;align-items:end;}
+  /* The head row stands a blank in place of the radio button, so the two have
+     to measure the same: a radio carries margins of its own from the browser,
+     and 8px of them would walk every value out from under its heading. */
+  .opt-table .opt input{margin-left:0;margin-right:0;}
+  .opt-head .opt-radio-space{width:16px;flex-shrink:0;}
+
+  /* A head row carries no cross-out button and no result tag, so its columns
+     would sit a little wider than the choices beneath it and the values would
+     drift out from under their headings. Every row reserves the same slot at
+     its right instead, and the button or the tag sits in it. The slot is wider
+     once the block is graded, which is when the tag replaces the button. */
+  .opt-table{--opt-right:46px;}
+  .opt-table.graded{--opt-right:124px;}
+  .opt-table .opt,
+  .opt-table .opt-head{position:relative;padding-right:calc(var(--opt-right) + 18px);}
+  .opt-table .opt .strike-toggle,
+  .opt-table .opt .tag{
+    position:absolute;
+    right:18px;
+    top:50%;
+    transform:translateY(-50%);
+    margin:0;
+  }
+
+  /* Down to a tablet the table keeps its shape, on tighter paddings. */
+  @media (max-width: 700px){
+    .opt-table .opt{padding:12px 12px;padding-right:calc(var(--opt-right) + 12px);}
+    .opt-table .opt-head{padding:12px 12px 9px;padding-right:calc(var(--opt-right) + 12px);}
+    .opt-table .opt .strike-toggle,
+    .opt-table .opt .tag{right:12px;}
+    .opt-table .opt-body{grid-template-columns:1.7em repeat(var(--opt-cols), minmax(0, 1fr));gap:0 8px;}
+    .opt-table .opt-head{font-size:calc(var(--fs-sm) * var(--content-scale));}
+  }
+
+  /* Narrower than that, a heading like "Language Development" is wider than
+     the column it heads and the head row runs into itself. So the table gives
+     way: each value takes its own line, named by the heading that stood over
+     it — and where the form gives no headings there is nothing to name them
+     with, so the values run on with their separator instead. */
+  @media (max-width: 519px){
+    .opt-table{--opt-right:34px;}
+    .opt-table.has-head .opt-head{display:none;}
+    .opt-table.has-head .opt-body{grid-template-columns:1.7em minmax(0, 1fr);gap:2px 8px;}
+    .opt-table.has-head .opt-cell{grid-column:2;text-align:left;}
+    /* The heading is set smaller than the value it names, so the pair sits on
+       one line: repeated down eight choices, two lines each would be a page of
+       scrolling for a table that fits on a postcard. */
+    .opt-table.has-head .opt-cell::before{
+      content:attr(data-head) ": ";
+      font-size:.82em;
+      font-weight:600;
+      color:var(--muted);
+    }
+    .opt-table:not(.has-head) .opt-body{display:block;}
+    .opt-table:not(.has-head) .letter{margin-right:.4em;}
+    .opt-table:not(.has-head) .opt-cell{text-align:left;}
+    .opt-table:not(.has-head) .opt-cell + .opt-cell::before{content:" · ";}
+  }
+
   .strike-toggle{
     margin-left:auto;
     flex-shrink:0;
