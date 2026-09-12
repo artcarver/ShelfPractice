@@ -254,11 +254,19 @@ Two steps: drop in a folder, add a line to the manifest.
      // "1": "<p class=\"exp-obj\">Educational Objective: …</p><p>…</p>"
      // Optional. Rendered as HTML below the choices once the block is graded.
    };
+   const WRITTEN = {
+     // "21": "all"  — items whose explanation carries text the capture did not
+     // print, written in the form's voice instead. The value names how much:
+     // "all", "part", "objective" or "objective+discussion". Optional; the
+     // engine draws the provenance line from it, so the wording lives in
+     // assets/exam.js and every form says it the same way.
+   };
    window.EXAM_DATA = {
      questions: QUESTIONS,
      images: IMAGES,
      answerKey: ANSWER_KEY,
-     explanations: EXPLANATIONS
+     explanations: EXPLANATIONS,
+     written: WRITTEN
    };
    })();
    ```

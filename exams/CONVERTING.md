@@ -4,21 +4,27 @@ The file format is documented in the repo README under "Adding a new exam".
 This is the procedure and the standard the existing forms were built to. Read
 it before starting a new one.
 
-The work is mostly transcription, and the finished exam should read as one
-piece — a candidate should be able to work it the way they would work the form,
-without the seams of the capture showing. Two things carry that:
+The work is mostly transcription, and the line runs between the question and
+the explanation:
 
 - **The question and its key are the form's, always.** The stem, the choices,
   the lab values and the answer letter are what the exam actually asks, so they
-  come from the capture or they do not go in.
+  come from the capture or they do not go in. There is no filling these.
 - **The explanation is teaching material, and a gap in it is yours to close.**
   Captures lose the bottom of pages, cut sentences mid-phrase, and occasionally
   drop an answer screen entirely. Write what is missing in the form's own voice
-  rather than shipping a hole or a disclaimer.
+  rather than shipping a hole.
 
-Everything that is not the form's — a filled gap, a repaired typo, a contested
-key — goes in the commit message and in the report to whoever asked for the
-exam. It does not go on the page.
+Filling an explanation gap is ordinary work here, not a decision to escalate.
+Do not stop to ask whether to write one — write it, mark it, and say so in the
+commit message. What does need asking is anything that would change what the
+exam asks: a key you cannot source, a stem or a choice the capture lost, an
+item you could not read at all.
+
+Marking is one line under the explanation, and §6 covers it. Everything else
+that is not the form's — a repaired typo, a contested key, a value that looks
+wrong but is printed — goes in the commit message and in the report to whoever
+asked for the exam.
 
 ## 1. Intake
 
@@ -125,14 +131,32 @@ screenshot that stops partway down the page, a sentence cut mid-phrase, an item
 whose answer screen never arrived — write the missing piece in that form's own
 style and voice rather than leaving a hole. Match the register of the
 paragraphs around it: the same vocabulary, the same length, the same habit of
-naming a choice and then saying why it is wrong. A reader should not be able to
-tell where the form stopped and the writing started, and nothing on the page
-tells them. Someone working the form is there to work the form, not to audit
-the transcription.
+naming a choice and then saying why it is wrong. Nobody needs to approve this;
+it is the job.
 
-Provenance goes in the commit message instead, which is where a question about
-it will be asked from: which items you filled, which sentences you completed,
-and what you worked from — the item's own discussion, the stem, the exhibit.
+Then mark the item, so a reader knows which part of an explanation is not the
+form's. The item goes in the exam's `WRITTEN` map with the key that says how
+much of it was written:
+
+| key | drawn as |
+| --- | --- |
+| `all` | Explanation written by AI, not transcribed from the form. |
+| `part` | Part of this explanation written by AI, not transcribed from the form. |
+| `objective` | Educational objective written by AI, not transcribed from the form. |
+| `objective+discussion` | Educational objective and discussion written by AI, not transcribed from the form. |
+
+    const WRITTEN = {"11": "all", "47": "part"};
+
+The wordings are in `assets/exam.js`, not in any exam, so every form says it
+the same way and a new form gets the line by naming the item. `exam.css` draws
+it quietly under a rule, last, after the incorrect-answer paragraphs. Mark only
+items that actually carry written text — an item transcribed whole never gets
+one — and let `verify-exam.mjs` catch a key the engine does not know, since an
+unknown one draws nothing at all.
+
+The commit message carries the detail the line cannot: which items you filled,
+which sentences you completed, and what you worked from — the item's own
+discussion, the stem, the exhibit.
 
 Two forms in the repo are largely written this way, and both are worth reading
 before doing the same again:
@@ -283,12 +307,11 @@ from the title:
 A subject that is not in the list yet needs no code: the first exam titled
 "Neurology Practice Exam" grows its own panel on the landing page.
 
-Commit the exam on its own. The message is where the provenance lives, since
-the page itself carries none, so say what the form is and everything a reader
+Commit the exam on its own. The page says *that* an explanation was written;
+the message says which part and what from, along with everything else a reader
 would want to know without opening the file: where each contested key came
-from, which explanations or sentences you wrote and what you worked from, runs
-you read rather than transcribed, values that look wrong but are the form's,
-and anything you could not read at all.
+from, runs you read rather than transcribed, values that look wrong but are the
+form's, and anything you could not read at all.
 
 Never commit raw screenshots — `tools/shotpack/shots/` and `packed/` are
 gitignored for that reason.
