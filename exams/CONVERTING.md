@@ -100,7 +100,14 @@ ends with the lead-in ("Laboratory studies show:"), `labs` holds the table, and
   has no rows, it is prose — put it in `stemTail`.
 
 Where the choices themselves are a small table (a row of values per choice),
-join each row into one string per choice so the letters still line up.
+join each row into one string per choice with ` · ` between the values — the
+engine splits it back out and draws the columns aligned, so the choices read
+the way the form prints them. Where the form heads those columns, the headings
+go in the item's `choiceHead`, one per column, and are drawn in a head row
+above the choices; where it names the order in the stem instead ("Values are
+listed in the order: ..."), that sentence is part of the stem and the item has
+no `choiceHead`. Take whichever the form does — Pediatrics Form 8 item 7 is the
+first, Medicine Form 10 item 13 the second.
 
 ## 4. Matched sets
 

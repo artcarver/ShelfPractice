@@ -133,6 +133,19 @@ repeated at the head of both stems, which is what each of the two screens
 prints. Either way the notice names both items rather than saying "the next 2
 items", since here you can arrive at either one from the grid.
 
+Some items ask not for a phrase but for a set of values — a form prints those
+choices as a small table, a heading over each column and a row to each choice.
+`data.js` keeps such a choice as one string with `·` between its values, so the
+letter, the key and the results file need no special case, and an item adds
+`choiceHead` when the form heads those columns. The engine splits the string
+back into cells and draws them as a table: the values in columns of equal
+width, the headings in a head row above them. It only does so when every choice
+yields the same number of cells, since a set that does not line up is prose
+that happens to contain the separator. Two or three columns keep their shape on
+a phone; four or more do not fit, so each value takes its own line named by the
+heading that stood over it, or runs on with its separator where the form gives
+no headings.
+
 Previous and Next sit under the answer choices rather than at the far edges of
 a wide window. After clicking a choice your hand is at the options column, and
 the button that moves you on should be a short reach from there, not in the

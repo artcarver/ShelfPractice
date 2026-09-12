@@ -63,6 +63,18 @@ for (const q of questions) {
   if (!key) fail(`${at}: no answer key`);
   else if (!letters.includes(key)) fail(`${at}: key "${key}" is not one of ${letters.join('')}`);
   if (q.stemTail && !q.labs) fail(`${at}: stemTail without labs`);
+  // Choices that are a row of values carry one heading per column, and the
+  // engine draws the head row only when the counts agree — so a miscount is
+  // silent on the page. Catch it here.
+  if (q.choiceHead) {
+    const widths = new Set((q.options || []).map(([, t]) => t.split(' · ').length));
+    if (!Array.isArray(q.choiceHead) || q.choiceHead.length < 2)
+      fail(`${at}: choiceHead is not a list of column headings`);
+    else if (widths.size > 1)
+      fail(`${at}: choiceHead, but the choices split into ${[...widths].join('/')} values`);
+    else if (![...widths][0] || [...widths][0] !== q.choiceHead.length)
+      fail(`${at}: ${q.choiceHead.length} column headings for ${[...widths][0]} value(s) per choice`);
+  }
   for (const g of q.labs || []) {
     if (!g.rows || !g.rows.length) fail(`${at}: a lab group has no rows`);
     const widths = new Set((g.rows || []).map((r) => r.length));
