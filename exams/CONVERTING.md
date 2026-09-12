@@ -255,19 +255,34 @@ degraded font turned g into a, y into v, p into n and u into ii —
 "Meaciirament of seriim nralactin cancentratian" for "Measurement of serum
 prolactin concentration".
 
-The substitution is regular, so read it where you can. Work out the mapping
-from the words you are sure of, apply it across the run, and check the result
-against the item — the objective usually restates the discussion, so the
-discussion will tell you whether you have read it right. Family Medicine Form 5
-item 47 was recovered that way: "frantmant natiante maw avnarianna itshina far
-cavaral" is "treatment patients may experience itching for several", and the
-sentence ran off the page a word short of the "weeks" its own discussion
-supplies. Say in the commit message that you read a run rather than transcribed
-it, and leave a run you cannot read in place rather than filling it with
-something that merely scans. Two exams still carry unread passages:
+**Look for a second pass before reading a single letter.** A degraded run is
+usually the overlap between two screenshots of the same page, and the other
+screenshot often rendered those same lines cleanly a paragraph later. Psychiatry
+Form 7 explanations 21 and 22 both looked like the worst damage in the repo and
+were nothing of the kind: each carried the same passage twice, once degraded and
+once clean, spliced end to end. Deleting the degraded pass and its duplicate
+left two explanations that are the form's own words from start to finish, and
+1,292 characters shorter. Nothing had to be read at all. Search the explanation
+for a phrase either side of the run before you do anything else.
 
-- psychiatry Form 7, explanations 21 and 22
-- obgyn Form 7, explanation 44 ("preanancy")
+Failing that, the substitution is regular, so read it. Work out the mapping from
+the words you are sure of — g becomes a, y becomes v, p becomes n, u becomes ii
+— apply it across the run, and check the result against the item, since the
+objective usually restates the discussion. A word the same sentence spells
+correctly a clause away settles it outright: obgyn Form 7's "early in preanancy"
+sits between two correct "pregnant"s, and its "0.4 ma daily" is a dose.
+Family Medicine Form 5 item 47 needed the mapping itself — "frantmant natiante
+maw avnarianna itshina far cavaral" is "treatment patients may experience
+itching for several" — and the sentence still ran off the page a word short of
+the "weeks" its own discussion supplies, so that item is marked as written and
+the others are not. Reading a run is transcription; supplying a word the form
+never printed is writing.
+
+Say in the commit message which runs you read and how. Leave one you cannot
+read rather than filling it with something that merely scans, and leave a
+splice where two readings are both plausible: obgyn Form 7 item 44 still says
+"starting at least 1 month prior to 1 to 3 months prior to conception", and
+picking either half would change the advice.
 
 obgyn Form 8 carried nine of these and no longer does: a second capture of the
 same form arrived and its clean text replaced them. That is the way out of a
@@ -278,8 +293,12 @@ exams' vocabulary did not recognise, and preferring the one that still
 addressed every ruled-out choice. Both captures lost the same clause in item
 41, which is still missing, and both agreed on the answer key for all 50 items,
 which is the strongest confirmation of a key the repo has.
-Psychiatry Form 4 has one of its own — "propranolol's 6. antagonism", where
-the 6 is a β and the form has to say whether a subscript follows.
+Psychiatry Form 4 had one of its own — "propranolol's 6. antagonism", where the
+6 is a β and the mark after it is a subscript. It now reads β2, which is the
+subscript the sentence argues for: it is about asthma, and it ends by saying the
+drug "blocks the bronchodilatory effect of albuterol", a β2-agonist. That is as
+far as a glyph should be pushed — the sentence had to name the subscript itself
+before it could be restored.
 
 Do the reading checks by hand as well:
 
