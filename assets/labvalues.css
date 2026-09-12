@@ -1,9 +1,8 @@
-/* Lab Values panel — reference window shown beside an exam or popped out.
+/* Lab Values panel — the reference window shown beside a question.
    The panel itself is a flex column with an internally-scrolling body. */
 
 .lv{
   --lv-navy:#0b4a73;
-  --lv-navy-dark:#083958;
   --lv-ink:#1c2b36;
   --lv-muted:#5f6f7a;
   --lv-line:#eaeff3;
@@ -22,7 +21,7 @@
   min-height:0;
   background:#fff;
   color:var(--lv-ink);
-  font-family:"Segoe UI",Arial,Helvetica,sans-serif;
+  font-family:var(--font);
 }
 
 /* ---- header ---- */
@@ -169,10 +168,6 @@ mark.lv-hit{
   color:inherit;
   border-radius:var(--r-xs);
 }
-
-/* ---- standalone popup window ---- */
-body.lv-standalone{margin:0;}
-body.lv-standalone .lv{height:100vh;}
 
 @media (max-width:520px){
   .lv-table{font-size:var(--fs-base);}

@@ -419,7 +419,7 @@
     font-family:inherit;line-height:normal;
   }
   .grid-cell:hover{border-color:var(--navy);box-shadow:0 1px 4px rgba(11,74,115,.2);}
-  .grid-cell.answered{background:#e5f4ec;border-color:var(--answered);color:#1f6b41;}
+  .grid-cell.answered{background:var(--correct-bg);border-color:var(--answered);color:#1f6b41;}
   /* the ring keeps the dot legible on the tinted correct/incorrect cells */
   .grid-cell.marked::after{
     content:"";position:absolute;top:2px;right:2px;width:8px;height:8px;border-radius:50%;
@@ -666,7 +666,7 @@
      the open-item chevron go first. Below phone width the stem goes too:
      a stem clipped to a dozen characters is not the feature, and keeping it
      would push Result — the one column the screen exists for — off the edge.
-     The full stem stays on the row as its tooltip and in its aria-label. */
+     The item itself is one tap away, which is where the full stem is. */
   @media (max-width:720px){
     .results-table .col-time,.results-table td.cell-time,
     .results-table .col-go,.results-table td.cell-go{display:none;}

@@ -37,7 +37,6 @@
      Violet also stays separable from the red/green pair for the common
      forms of colour blindness. */
   --marked:#6b3fa0;
-  --marked-tint:#f3eefa;    /* wash behind a marked control, not a marked row */
 
   /* The results table tints a whole row, where the grid tints one small cell.
      At that area the cell tints read as heavy and swallow the violet marked
@@ -67,9 +66,7 @@
   --fs-xl:23px;            /* page headings */
 
   /* --- elevation --- */
-  --shadow-sm:0 1px 3px rgba(11,74,115,.08);
   --shadow-md:0 3px 14px rgba(11,74,115,.12);
-  --shadow-lg:0 12px 40px rgba(0,0,0,.30);
 }
 
 *{box-sizing:border-box;}
@@ -118,11 +115,6 @@ a.brand:hover .brand-name{text-decoration:underline;}
 }
 
 /* --- small shared pieces --- */
-.chip{
-  display:inline-block;
-  padding:3px 10px;border-radius:var(--r-pill);
-  font-size:var(--fs-xs);font-weight:700;letter-spacing:.06em;text-transform:uppercase;
-}
 /* Text for a screen reader that would be noise on screen: a column whose
    meaning is carried by its cells, an icon-only control's name. */
 .sr-only{

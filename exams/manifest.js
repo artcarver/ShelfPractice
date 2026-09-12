@@ -10,6 +10,11 @@
      label       form/source line shown next to the item count
      items       number of questions, used by the landing page
      storageKey  optional; only needed to keep progress saved under an older key
+
+   Two browser keys are derived from an entry, and index.html and assets/exam.js
+   have to agree on both: progress is localStorage `storageKey` or
+   "exam_state_<id>", and the per-tab flag that lets a reload skip the start
+   screen is sessionStorage "exam_session_<id>".
 */
 window.EXAMS = [
   {
