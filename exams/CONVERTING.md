@@ -111,6 +111,19 @@ If the source has no explanation for an item, write one in that form's own
 style and voice, and **say which items you wrote** in your report. Medicine
 Form 9 item 36 and Medicine Form 6 item 30 are single items filled that way.
 
+Written text is also marked on the page, so a reader knows which part of an
+explanation is not the form's. The last paragraph of such an item carries the
+provenance line, which `assets/exam.css` draws quietly under a rule:
+
+    <p class="exp-note">Part of this explanation written by AI, not transcribed from the form.</p>
+
+Two wordings, and the item decides: "Part of this explanation" where the form
+printed some of it, "Explanation" where the item had none at all. The line goes
+last, after the incorrect-answer paragraphs, and only on items that actually
+carry written text — an item transcribed whole never gets one. Neurology Form 7
+names the piece instead ("Educational objective written by AI"), which is what
+was missing there.
+
 Neurology Form 7 is the large case, and worth reading before doing the same
 again. Seventeen of its 50 answer screenshots stop at the source app's
 navigation bar partway down the page, so those items reached the repo with no
@@ -127,6 +140,17 @@ ruling out the other choices. That is roughly 5% of the form's explanation
 text. None of it is recoverable by re-reading the file we have (the material
 is absent from the source PDF), so only a fresh capture of the form can
 replace it with what the form actually prints.
+
+Obstetrics and Gynecology Form 10 is the larger case, and a different shape of
+loss: its capture stops partway down every answer page, so the discussion of
+the correct answer survives but the incorrect-answer paragraphs mostly do not.
+Forty-nine of its 50 items carry written text — 111 choice paragraphs, the
+whole of item 21, the end of a cut sentence in twelve others, and the rest of
+the discussion in items 30 and 44 — and each of those items carries the note
+line. Only item 37 came through complete. The
+keys are unaffected: 46 items still print an intact "Incorrect Answers" line
+that agrees with the discussion, and the other four are argued for in the
+discussion itself.
 
 ## 7. The answer key
 
