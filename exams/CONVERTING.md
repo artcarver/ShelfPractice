@@ -244,10 +244,30 @@ catches, all of it found in exams already in the repo:
 | `brachia!`, `Fallo!`, `(MAO!)` | a word-final l, t, I |
 | `CS and C6`, `CB to T1` | C5, C8 |
 | `lmipramine`, `lgA`, `type Il` | Imipramine, IgA, type II |
+| `ill- defined`, `Guillain- Barre` | a hyphen broken at a line wrap |
 
 The findings are advisory — `~` really does mean "approximately" in a few
 places, dialogue really does end in "!", and some flagged words are simply
 rare. Read each one against the form.
+
+**A subscript usually comes through as a comma, and the scanner cannot see it**
+because `T,` and `B,` are punctuation rather than words. Grep for them yourself:
+
+| looked like | was |
+| --- | --- |
+| `vitamin B ,,`, `Vitamin B, (thiamine)` | B12, B1 |
+| `FEV ,:FVC`, `decreased FT,` | FEV1:FVC, FT4 |
+| `hemoglobin A,,`, `Hemoglobin Ay,` | hemoglobin A1c |
+| `serum T, and T,`, `a pronounced S,,` | T3 and T4, S2 |
+| `Determination oft:,. OD 450` | ΔOD 450 |
+
+The sentence names which subscript it wants, and that is the only thing that
+should decide it: "vitamin B, (thiamine)" is B1 because the form says thiamine,
+"conversion of T, to T," runs T4 to T3 because that is the direction the
+paragraph describes, and the pronounced `S,,` is S2 because the sentence is
+about the pulmonic valve closing. Where the sentence does not name it, leave it.
+Set the digits plain — `T4`, `B12`, `FEV1` — since that is how the repo already
+spells them, 102 times against 11.
 
 It also reports runs of three or more consecutive words no exam has ever used.
 Prose does not do that, so a run means the page was captured badly, where a
@@ -264,6 +284,14 @@ once clean, spliced end to end. Deleting the degraded pass and its duplicate
 left two explanations that are the form's own words from start to finish, and
 1,292 characters shorter. Nothing had to be read at all. Search the explanation
 for a phrase either side of the run before you do anything else.
+
+The same splice arrives without any degraded text to announce it, and then only
+the seam shows: a sentence that ends `.:` or `.;` and restarts mid-thought, a
+list with no lead-in, a paragraph that repeats the four words it just said, or
+the next item's stem pasted onto the end. Obgyn Form 7 carried six of these and
+obgyn Form 5 one. Most resolve to a dropped sentence boundary or a duplicate
+whose own paragraph survives intact further down — check that the choice is
+still addressed somewhere before writing anything, since usually it is.
 
 Failing that, the substitution is regular, so read it. Work out the mapping from
 the words you are sure of — g becomes a, y becomes v, p becomes n, u becomes ii
