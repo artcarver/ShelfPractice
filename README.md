@@ -21,6 +21,8 @@ exams/
     data.js         Questions, answer key, explanations — content only
     images/         Exhibit images, present only where the form has them
   CONVERTING.md     How a form becomes a data.js, and the standard to hold to
+  INTAKE.md         The transcription format to ask a reading pass for
+  CASES.md          What the damage in past captures turned out to be
 tools/
   verify-exam.mjs   Checks one exam before it is committed
   scan-ocr.mjs      Looks for capture damage in the transcribed text

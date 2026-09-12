@@ -5,29 +5,30 @@ step, no dependencies: `index.html` lists the exams, `exam.html` runs any one
 of them, `assets/` holds the engine, and each exam is a folder under `exams/`
 containing only content. `README.md` explains the structure.
 
-## Building a new exam from screenshots
+## Building a new exam
 
-This is the job that comes up most. Screenshots of a form arrive in
-`tools/shotpack/shots/<slug>/`, with the answer key beside them as
-`answer-key.txt`. A request as short as "build neurology form 9" means the run
-in `tools/shotpack/shots/neurology-form9/` and the whole procedure below.
+The job that comes up most, and "build neurology form 9" means the whole of it.
+Read `exams/CONVERTING.md` first: it is the standard the existing exams were
+built to, and it names the traps that have actually bitten. `exams/CASES.md`
+holds the precedents, to read when the form in front of you looks like one.
 
-1. **Read `exams/CONVERTING.md` first.** It is the standard the existing exams
-   were built to, and it names the traps that have actually bitten: OCR
-   look-alikes, tables parsed as prose, printed answer keys that were wrong.
-2. **Pack the shots** with `tools/shotpack/pack.py` (its README covers the
-   options). Captures made by hand are not named `iNNN-pNN.png` — read the item
-   number printed on each screenshot and rename them to that convention first
-   rather than guessing the grouping from file order. Tune `--crop` on two
-   items before doing the rest.
-3. **Report what the packer flags** — `MISSING items`, `no overlap found` —
-   before building anything. Both mean part of the form was never captured, and
-   the fix is a recapture, not a workaround.
-4. **Build `exams/<slug>/data.js`** from the packed tiles, transcribing
-   verbatim, then register the exam in `exams/manifest.js`.
-5. **Verify** with `node tools/verify-exam.mjs <slug>` and fix what it reports.
-6. **Commit on a branch.** Never commit the screenshots; `shots/` and `packed/`
-   are gitignored.
+The source arrives one of two ways:
+
+- **Screenshots**, in `tools/shotpack/shots/<slug>/` with the answer key beside
+  them. Pack them with `tools/shotpack/pack.py`, and report what the packer
+  flags — `MISSING items`, `no overlap found` — before building anything. Both
+  mean part of the form was never captured, and the fix is a recapture.
+- **A transcription**, questions in one file and answers in another.
+  `exams/INTAKE.md` is the format to ask for and the prompt that produces it.
+  Where the form prints a table and the intake did not describe its shape, ask
+  for that page rather than guessing at it.
+
+Either way: parse the source rather than retyping it; read every explanation
+once before building anything; keep the repairs as a table of find-and-replace
+pairs, since that table is what the commit message is written from; check the
+key three ways in code, never by eye; build `exams/<slug>/data.js` and register
+it in `exams/manifest.js`; verify with `node tools/verify-exam.mjs <slug>` and
+`node tools/scan-ocr.mjs <slug>`; commit on a branch, never the screenshots.
 
 Then report, every time: where each contested key came from, any explanation or
 sentence you had to write and what you worked from, any value that looks
