@@ -29,7 +29,7 @@ now, which `manifest.js` is the authority on:
 | --- | --- | --- |
 | Medicine | 3–10 | all 8 |
 | Neurology | 4–9 | all 6 |
-| Obstetrics & Gynecology | 4–8 | all 5 |
+| Obstetrics & Gynecology | 4–8, 10 | all 6 |
 | Psychiatry | 3–8 | 1 of 6 (Form 5, the Figure 1 / Figure 2 exhibit on item 48) |
 | Surgery | 3–9 | all 7 |
 
