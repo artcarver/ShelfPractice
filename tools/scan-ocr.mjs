@@ -20,11 +20,11 @@ import path from 'node:path';
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const only = process.argv[2];
 
-const slugs = readdirSync(path.join(root, 'exams'), { withFileTypes: true })
+const allSlugs = readdirSync(path.join(root, 'exams'), { withFileTypes: true })
   .filter((d) => d.isDirectory())
   .map((d) => d.name)
-  .filter((s) => !only || s === only)
   .sort();
+const slugs = allSlugs.filter((s) => !only || s === only);
 if (!slugs.length) {
   console.error(only ? `no exam "${only}"` : 'no exams found');
   process.exit(2);
@@ -40,8 +40,7 @@ const texts = new Map();
 const vocab = new Map();
 const bump = (w) => vocab.set(w, (vocab.get(w) || 0) + 1);
 
-for (const slug of readdirSync(path.join(root, 'exams'), { withFileTypes: true })
-  .filter((d) => d.isDirectory()).map((d) => d.name)) {
+for (const slug of allSlugs) {
   let src;
   try { src = readFileSync(path.join(root, 'exams', slug, 'data.js'), 'utf8'); }
   catch { continue; }

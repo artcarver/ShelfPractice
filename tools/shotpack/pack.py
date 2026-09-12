@@ -73,11 +73,10 @@ def crop(img, spec):
     return img.crop(box)
 
 
-def first_content_row(grey, start=0):
-    """First row at or after `start` that is not blank."""
-    rows = grey[start:, ::COL_STEP]
-    busy = np.where(rows.min(axis=1) < BLANK_MIN)[0]
-    return start + int(busy[0]) if busy.size else None
+def first_content_row(grey):
+    """First row that is not blank."""
+    busy = np.where(grey[:, ::COL_STEP].min(axis=1) < BLANK_MIN)[0]
+    return int(busy[0]) if busy.size else None
 
 
 def _match_band(prev_grey, next_grey, b0, height):

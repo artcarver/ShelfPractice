@@ -596,15 +596,28 @@ document.getElementById('markChk').addEventListener('change', (e) => {
   saveState();
 });
 
+/* Back to a blank block: the same erasure whether it is asked for from inside
+   the exam (Restart) or from the start screen (Start over). `running` is the
+   only difference between them — Restart hands you the first item with the
+   clock already going, where Start over leaves it stopped until you begin. */
+function clearProgress(running){
+  state.idx = 0;
+  state.answers = {}; state.marked = {}; state.struck = {}; state.highlights = {};
+  state.notes = {};
+  state.graded = false; state.score = null; state.onResults = false;
+  resultsFilter = 'all'; resultsAttrs.clear(); resultsSort = {key:'item', dir:'asc'};
+  expandedNotes.clear();
+  state.paused = false;
+  state.elapsedMs = 0; state.runningSince = running ? Date.now() : null;
+  state.itemMs = {};
+  state.itemSince = running ? Date.now() : null;
+  state.itemSinceN = running ? QUESTIONS[0].n : null;
+  saveState();
+}
+
 document.getElementById('restartBtn').addEventListener('click', () => {
   if(confirm('Restart the exam? This will clear all your selected answers and your score.')){
-    state.idx = 0; state.answers = {}; state.marked = {}; state.struck = {}; state.highlights = {}; state.graded = false;
-    state.notes = {};
-    state.score = null; state.onResults = false;
-    resultsFilter = 'all'; resultsAttrs.clear(); resultsSort = {key:'item', dir:'asc'};
-    state.elapsedMs = 0; state.runningSince = Date.now(); state.paused = false;
-    state.itemMs = {}; state.itemSince = Date.now(); state.itemSinceN = QUESTIONS[0].n;
-    saveState();
+    clearProgress(true);
     showQuestionView();
     renderPause();
     render();
@@ -771,7 +784,7 @@ function resultOf(n){
 /* The leading article carries nothing and costs the first characters of every
    row, where the width is scarcest. Everything after it is the form's own
    wording, untouched — the cell is clipped by CSS, not truncated here, so
-   nothing is lost and the full stem stays in the row's tooltip. */
+   the row shows as much of the stem as its width allows. */
 function stemSnippet(q){
   return (q.stem || '').replace(/\s+/g, ' ').trim().replace(/^(an?|the)\s+/i, '');
 }
@@ -1150,10 +1163,7 @@ function renderPauseFigures(){
   const rest = document.getElementById('pausedRest');
   if(rest){
     let text = 'on this block · ' + answered + ' of ' + QUESTIONS.length + ' answered';
-    if(answered){
-      const secs = Math.round(elapsedMs() / answered / 1000);
-      text += ' · ' + Math.floor(secs / 60) + ':' + pad(secs % 60) + ' an item';
-    }
+    if(answered) text += ' · ' + formatItemTime(elapsedMs() / answered) + ' an item';
     rest.textContent = text;
   }
 }
@@ -1165,7 +1175,7 @@ function renderPause(){
   screen.style.display = (state.paused && enteredExam) ? 'flex' : 'none';
   // the question must not be readable while the clock is stopped
   document.getElementById('examBody').style.visibility = state.paused ? 'hidden' : '';
-  if(typeof renderNotes === 'function') renderNotes();   // it floats outside examBody
+  renderNotes();   // it floats outside examBody, so it is not hidden for free
   if(state.paused) renderPauseFigures();
   tickTimer();
 }
@@ -1379,14 +1389,8 @@ document.getElementById('resumeBtn').addEventListener('click', enterExam);
 document.getElementById('startOverBtn').addEventListener('click', () => {
   // this throws away everything, so it asks first — the same guard Restart has
   if(!confirm('Start this exam over? This clears your answers, highlights and score.')) return;
-  state.idx = 0; state.answers = {}; state.marked = {}; state.struck = {}; state.highlights = {};
-  state.notes = {};
-  state.score = null; state.onResults = false;
-  resultsFilter = 'all'; resultsAttrs.clear(); resultsSort = {key:'item', dir:'asc'};
-  state.elapsedMs = 0; state.runningSince = null; state.paused = false; state.graded = false;
-  state.itemMs = {}; state.itemSince = null; state.itemSinceN = null;
-  saveState();
-  enterExam();
+  clearProgress(false);
+  enterExam();   // which starts the clock
 });
 
 /* ---------- per-item notes ---------- */

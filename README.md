@@ -20,6 +20,11 @@ exams/
   <subject>-form<N>/
     data.js         Questions, answer key, explanations — content only
     images/         Exhibit images, present only where the form has them
+  CONVERTING.md     How a form becomes a data.js, and the standard to hold to
+tools/
+  verify-exam.mjs   Checks one exam before it is committed
+  scan-ocr.mjs      Looks for capture damage in the transcribed text
+  shotpack/         Capture and stitch screenshots of a form (see its README)
 ```
 
 One folder per exam, named for the subject and the form. What is on the shelf
@@ -150,9 +155,11 @@ you missed (blanks included), wrapping at the end.
 The results table gives each item a row: the number, the opening of its stem,
 your answer against the key, the result, and how long you spent on it. Marking
 is a violet flag on the row rather than a column of its own — the same signal
-the item grid uses, and a control, so an item can be marked or unmarked from
-here without opening it. A row with a note carries the item grid's corner fold
-and expands in place to show what you wrote.
+the item grid uses. It is shown and not offered as a control: the mark records
+how the item felt while you were answering it, and marking it here, with the
+key in front of you, would overwrite that with hindsight. A row with a note
+carries the item grid's corner fold and expands in place to show what you
+wrote.
 
 Above the table, two kinds of filter. The state chips — All, Correct,
 Incorrect, Unanswered — replace one another; **Marked** and **Has a note**
@@ -292,8 +299,8 @@ file in the first place, and the standard the existing exams were built to.
 `tools/shotpack/` is for forms that only exist inside an app you cannot export
 from, and turns a run of screenshots into per-item images to read back.
 
-The surgery exams keep their exhibits as image files under their own `images/` folder,
-referenced by relative path. The engine also accepts inline `data:` URIs, but
-files are preferred: they keep `data.js` small enough to read and diff, avoid
-the ~33% base64 overhead, and let git store each image once instead of rewriting
-it into every revision of the data file.
+Every exam with exhibits keeps them as image files under its own `images/`
+folder, referenced by relative path. The engine also accepts inline `data:`
+URIs, but files are preferred: they keep `data.js` small enough to read and
+diff, avoid the ~33% base64 overhead, and let git store each image once instead
+of rewriting it into every revision of the data file.

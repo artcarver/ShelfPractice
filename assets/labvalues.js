@@ -1,6 +1,5 @@
 /* Shared "Lab Values" reference panel (UWorld-style).
    Exposes:
-     window.LAB_VALUES            – the reference data
      window.renderLabValues(root, opts)  – builds the panel UI into `root`
    opts: { showClose, onClose }
 
@@ -183,8 +182,6 @@ const CATEGORIES = [
     ]
   }
 ];
-
-window.LAB_VALUES = CATEGORIES;
 
 function beakerSVG(){
   return `<svg class="lv-beaker" width="22" height="22" viewBox="0 0 24 24" fill="none"

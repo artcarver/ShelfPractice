@@ -137,12 +137,16 @@
                    + '<code>exams/manifest.js</code> yet.</p>';
   }
 
-  /* Saved progress lives in localStorage under the same key the engine uses,
-     so a row can say where that exam stands without loading its data.js. */
+  /* Saved progress lives under the same two keys the engine writes — see the
+     note in exams/manifest.js — so a row can say where that exam stands, and
+     Clear can forget it, without loading its data.js. */
+  const stateKey   = e => e.storageKey || ('exam_state_' + e.id);
+  const sessionKey = e => 'exam_session_' + e.id;
+
   function progressOf(e){
     let s = null;
     try{
-      const raw = localStorage.getItem(e.storageKey || ('exam_state_' + e.id));
+      const raw = localStorage.getItem(stateKey(e));
       s = raw ? JSON.parse(raw) : null;
     }catch(err){}
     if(!s) return {kind:'new'};
@@ -219,8 +223,8 @@
   /* Remove every trace of one exam: the saved state the row reads, and the
      per-tab flag that lets a reload skip the start screen. */
   function forget(e){
-    try{ localStorage.removeItem(e.storageKey || ('exam_state_' + e.id)); }catch(err){}
-    try{ sessionStorage.removeItem('exam_session_' + e.id); }catch(err){}
+    try{ localStorage.removeItem(stateKey(e)); }catch(err){}
+    try{ sessionStorage.removeItem(sessionKey(e)); }catch(err){}
   }
 
   /* Sibling forms of one exam share a title — every surgery form is called
