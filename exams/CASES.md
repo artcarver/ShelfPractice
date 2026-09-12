@@ -42,6 +42,16 @@ closing word each in items 15, 20, 29 and 33. Two other objectives — items 20 
 overlap the second screenshot duplicated, so they were recovered rather than
 written, and those items carry no mark.
 
+Pediatrics Form 9 is the smallest version of it: two items, one paragraph each.
+Items 2 and 8 both lost their last incorrect-answer paragraph to the foot of the
+answer page, and the transcription says so in place of the text rather than
+running the item short — which is what made the gap obvious. Item 2's Choice D
+was written from the laboratory studies the item already prints, all within the
+reference ranges and so against the marrow infiltration that choice proposes;
+item 8's from the discussion above it, which has already explained that
+pulmonary vascular resistance falls rather than rises after birth. Two
+paragraphs out of roughly 500 in the form.
+
 ## The answer key, where the three sources disagreed
 
 The three sources CONVERTING.md §7 ranks do come apart. In Medicine Form 9 the

@@ -38,11 +38,11 @@ now, which `manifest.js` is the authority on:
 | Medicine | 3–10 | all 8 |
 | Neurology | 4–9 | all 6 |
 | Obstetrics & Gynecology | 4–8, 10 | all 6 |
-| Pediatrics | 8 | 1 of 1 (Form 8, the head CT on item 8 and the photograph on item 24) |
+| Pediatrics | 8, 9 | both 2 |
 | Psychiatry | 3–8 | 1 of 6 (Form 5, the Figure 1 / Figure 2 exhibit on item 48) |
 | Surgery | 3–9 | all 7 |
 
-Thirty-six forms, 1,800 items.
+Thirty-seven forms, 1,850 items.
 
 ## Design
 
