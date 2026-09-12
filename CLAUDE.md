@@ -29,15 +29,20 @@ in `tools/shotpack/shots/neurology-form9/` and the whole procedure below.
 6. **Commit on a branch.** Never commit the screenshots; `shots/` and `packed/`
    are gitignored.
 
-Then report, every time: any item whose key you derived rather than copied, any
-explanation you had to write, any value that looks clinically wrong but is what
-the form prints, and anything you could not read. Never invent content to fill
-a gap — flag it and leave it to the person who has the form.
+Then report, every time: where each contested key came from, any explanation or
+sentence you had to write and what you worked from, any value that looks
+clinically wrong but is what the form prints, and anything you could not read.
+The same goes in the commit message.
 
 ## House style
 
-Exam content is transcription, not authorship: the site should show what the
-form shows, including its mistakes. Engine changes belong in `assets/`, never
-in an exam's `data.js`, which carries content and nothing else — no title, no
-id, no configuration. Keep explanations to `<p>` and `<b>` with their angle
-brackets escaped, since they are injected as HTML.
+The question is the form's; the explanation is the site's to finish. Stems,
+choices, lab values and answer letters come from the capture or they do not go
+in, and the form's own mistakes stay in. Where the capture lost explanation
+text, write the missing piece in that form's voice and name the item in the
+exam's `WRITTEN` map — that is standing work, not something to stop and ask
+about. The provenance wording lives in `assets/exam.js`, so every form says it
+the same way and no `data.js` spells it out. Engine changes belong in
+`assets/`, never in an exam's `data.js`, which carries content and nothing else
+— no title, no id, no configuration. Keep explanations to `<p>` and `<b>` with
+their angle brackets escaped, since they are injected as HTML.

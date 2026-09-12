@@ -285,7 +285,8 @@ function render(){
   const expEl = document.getElementById('explanation');
   const expHtml = state.graded && EXAM.explanations ? EXAM.explanations[q.n] : null;
   if(expHtml){
-    expEl.innerHTML = '<div class="exp-h">Explanation</div>' + expHtml;
+    expEl.innerHTML = '<div class="exp-h">Explanation</div>' + expHtml
+                    + writtenNote(EXAM.written && EXAM.written[q.n]);
     expEl.style.display = '';
   }else{
     expEl.innerHTML = '';
@@ -440,6 +441,24 @@ function markUp(text, ranges, base){
   });
   html += escapeHtml(text.slice(pos));
   return html;
+}
+
+/* Where a capture lost part of an explanation, the missing text is written in
+   the form's voice and the item says so under a rule. The wordings live here
+   rather than in any exam's data.js, so every form says it the same way and a
+   new form gets the line by naming the item: an exam's WRITTEN maps an item
+   number to one of these keys. Anything else is ignored rather than drawn,
+   since a line nobody can read is worse than no line. */
+const WRITTEN_NOTE = {
+  all: 'Explanation written by AI, not transcribed from the form.',
+  part: 'Part of this explanation written by AI, not transcribed from the form.',
+  objective: 'Educational objective written by AI, not transcribed from the form.',
+  'objective+discussion':
+    'Educational objective and discussion written by AI, not transcribed from the form.'
+};
+function writtenNote(kind){
+  const text = WRITTEN_NOTE[kind];
+  return text ? '<p class="exp-note">' + escapeHtml(text) + '</p>' : '';
 }
 
 /* A lab row whose label is indented sits under the row above it, the way a

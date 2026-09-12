@@ -43,7 +43,7 @@ if (!entry) fail(`no manifest entry with slug "${slug}"`);
 
 const data = {};
 evalFile(`exams/${slug}/data.js`, { window: data });
-const { questions, images, answerKey, explanations } = data.EXAM_DATA;
+const { questions, images, answerKey, explanations, written } = data.EXAM_DATA;
 
 if (entry && entry.items !== questions.length)
   fail(`manifest says ${entry.items} items, data.js has ${questions.length}`);
@@ -94,6 +94,17 @@ for (const n of Object.keys(answerKey))
 const missingExp = questions.filter((q) => !explanations[String(q.n)]).map((q) => q.n);
 if (missingExp.length) console.log(`note: no explanation for item(s) ${missingExp.join(', ')}`);
 
+// The provenance note is drawn by the engine from this map, so a key it does
+// not know draws nothing at all — silently, on a page that should be saying
+// the text was written. Catch it here instead.
+const WRITTEN_KINDS = ['all', 'part', 'objective', 'objective+discussion'];
+for (const [n, kind] of Object.entries(written || {})) {
+  if (!seen.has(Number(n))) fail(`written names item ${n}, which has no question`);
+  else if (!explanations[n]) fail(`written names item ${n}, which has no explanation to mark`);
+  if (!WRITTEN_KINDS.includes(kind))
+    fail(`written item ${n}: "${kind}" is not one of ${WRITTEN_KINDS.join(', ')}`);
+}
+
 // Explanations may use only <p> and <b>, and must escape their own angle brackets.
 for (const [n, html] of Object.entries(explanations || {})) {
   const tags = [...html.matchAll(/<\/?([a-zA-Z][\w-]*)/g)].map((m) => m[1].toLowerCase());
@@ -104,7 +115,7 @@ for (const [n, html] of Object.entries(explanations || {})) {
   if (/&(?!amp;|lt;|gt;|quot;|#\d+;|[a-z]+;)/.test(html)) fail(`explanation ${n}: bare &`);
 }
 
-console.log(`${slug}: ${questions.length} items, ${Object.keys(explanations || {}).length} explanations, ${Object.keys(images || {}).length} exhibits`);
+console.log(`${slug}: ${questions.length} items, ${Object.keys(explanations || {}).length} explanations, ${Object.keys(images || {}).length} exhibits, ${Object.keys(written || {}).length} marked as written`);
 
 // A key or a choice list that is already wrong makes the browser run
 // meaningless, so stop here and let it be fixed first.

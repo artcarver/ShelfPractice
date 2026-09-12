@@ -32,11 +32,14 @@ now, which `manifest.js` is the authority on:
 
 | Subject | Forms | With exhibits |
 | --- | --- | --- |
+| Family Medicine | 5 | the 1 (three photographs, items 40, 47 and 49) |
 | Medicine | 3–10 | all 8 |
 | Neurology | 4–9 | all 6 |
 | Obstetrics & Gynecology | 4–8, 10 | all 6 |
 | Psychiatry | 3–8 | 1 of 6 (Form 5, the Figure 1 / Figure 2 exhibit on item 48) |
 | Surgery | 3–9 | all 7 |
+
+Thirty-four forms, 1,700 items.
 
 ## Design
 
@@ -254,11 +257,19 @@ Two steps: drop in a folder, add a line to the manifest.
      // "1": "<p class=\"exp-obj\">Educational Objective: …</p><p>…</p>"
      // Optional. Rendered as HTML below the choices once the block is graded.
    };
+   const WRITTEN = {
+     // "21": "all"  — items whose explanation carries text the capture did not
+     // print, written in the form's voice instead. The value names how much:
+     // "all", "part", "objective" or "objective+discussion". Optional; the
+     // engine draws the provenance line from it, so the wording lives in
+     // assets/exam.js and every form says it the same way.
+   };
    window.EXAM_DATA = {
      questions: QUESTIONS,
      images: IMAGES,
      answerKey: ANSWER_KEY,
-     explanations: EXPLANATIONS
+     explanations: EXPLANATIONS,
+     written: WRITTEN
    };
    })();
    ```

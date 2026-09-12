@@ -890,8 +890,10 @@
   }
   .explanation p.exp-note{
     /* Marks the part of an explanation the form did not print, where the
-       source screenshot cut off and the text had to be written instead.
-       Deliberately quiet: it is a provenance note, not part of the teaching. */
+       source capture cut off and the text had to be written instead. The
+       engine draws it from the exam's WRITTEN map, so the wording is the same
+       on every form. Deliberately quiet: it is a provenance note, not part of
+       the teaching. */
     margin-top:18px;
     padding-top:10px;
     border-top:1px solid var(--divider);
