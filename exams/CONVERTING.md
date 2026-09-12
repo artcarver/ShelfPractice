@@ -4,9 +4,21 @@ The file format is documented in the repo README under "Adding a new exam".
 This is the procedure and the standard the existing forms were built to. Read
 it before starting a new one.
 
-The work is transcription, not authorship. Everything in `data.js` should be
-what the form says, and anything that is not — a filled gap, a repaired typo, a
-key you had to derive — gets reported to whoever asked for the exam.
+The work is mostly transcription, and the finished exam should read as one
+piece — a candidate should be able to work it the way they would work the form,
+without the seams of the capture showing. Two things carry that:
+
+- **The question and its key are the form's, always.** The stem, the choices,
+  the lab values and the answer letter are what the exam actually asks, so they
+  come from the capture or they do not go in.
+- **The explanation is teaching material, and a gap in it is yours to close.**
+  Captures lose the bottom of pages, cut sentences mid-phrase, and occasionally
+  drop an answer screen entirely. Write what is missing in the form's own voice
+  rather than shipping a hole or a disclaimer.
+
+Everything that is not the form's — a filled gap, a repaired typo, a contested
+key — goes in the commit message and in the report to whoever asked for the
+exam. It does not go on the page.
 
 ## 1. Intake
 
@@ -107,65 +119,79 @@ Two house styles, and the source decides which:
 
 Do not mix the two inside one form.
 
-If the source has no explanation for an item, write one in that form's own
-style and voice, and **say which items you wrote** in your report. Medicine
-Form 9 item 36 and Medicine Form 6 item 30 are single items filled that way.
+The key is the part that has to be the form's. Everything else in an
+explanation is teaching material, and where the capture lost some of it — a
+screenshot that stops partway down the page, a sentence cut mid-phrase, an item
+whose answer screen never arrived — write the missing piece in that form's own
+style and voice rather than leaving a hole. Match the register of the
+paragraphs around it: the same vocabulary, the same length, the same habit of
+naming a choice and then saying why it is wrong. A reader should not be able to
+tell where the form stopped and the writing started, and nothing on the page
+tells them. Someone working the form is there to work the form, not to audit
+the transcription.
 
-Written text is also marked on the page, so a reader knows which part of an
-explanation is not the form's. The last paragraph of such an item carries the
-provenance line, which `assets/exam.css` draws quietly under a rule:
+Provenance goes in the commit message instead, which is where a question about
+it will be asked from: which items you filled, which sentences you completed,
+and what you worked from — the item's own discussion, the stem, the exhibit.
 
-    <p class="exp-note">Part of this explanation written by AI, not transcribed from the form.</p>
+Two forms in the repo are largely written this way, and both are worth reading
+before doing the same again:
 
-Two wordings, and the item decides: "Part of this explanation" where the form
-printed some of it, "Explanation" where the item had none at all. The line goes
-last, after the incorrect-answer paragraphs, and only on items that actually
-carry written text — an item transcribed whole never gets one. Neurology Form 7
-names the piece instead ("Educational objective written by AI"), which is what
-was missing there.
+- **Neurology Form 7.** Seventeen of its 50 answer screenshots stop at the
+  source app's navigation bar partway down the page, so those items arrived
+  with no Educational Objective, and item 34 with no paragraph defending its
+  answer at all. Written there: the objectives for items 3, 6, 7, 13, 14, 19,
+  22, 23, 26, 30, 31, 34, 38, 39, 40, 48 and 49; item 34's discussion; and the
+  ends of four cut sentences, in items 23, 39, 49 and item 33's objective — the
+  last of which is the form's own wording, recovered from the identical
+  sentence in its discussion. Each written objective summarises the discussion
+  that item already carries, so the gap was filled from the item's own
+  reasoning wherever the item still had any; item 34 is the exception, written
+  from the stem, the exhibit and the paragraph ruling out the other choices.
+  Roughly 5% of the form's explanation text.
+- **Obstetrics and Gynecology Form 10.** A different shape of loss: the capture
+  stops partway down every answer page, so the discussion of the correct answer
+  survives but the incorrect-answer paragraphs mostly do not. Forty-nine of its
+  50 items carry written text — 111 choice paragraphs, the whole of item 21,
+  the end of a cut sentence in twelve others, and the rest of the discussion in
+  items 30 and 44. Only item 37 came through complete. The keys are unaffected:
+  46 items still print an intact "Incorrect Answers" line that agrees with the
+  discussion, and the other four are argued for in the discussion itself.
 
-Neurology Form 7 is the large case, and worth reading before doing the same
-again. Seventeen of its 50 answer screenshots stop at the source app's
-navigation bar partway down the page, so those items reached the repo with no
-Educational Objective, and item 34 with no paragraph defending its answer at
-all. Written rather than transcribed there: the objectives for items 3, 6, 7,
-13, 14, 19, 22, 23, 26, 30, 31, 34, 38, 39, 40, 48 and 49; item 34's
-discussion; and the ends of four sentences the screenshot cut mid-phrase, in
-items 23, 39, 49 and item 33's objective, the last of which is the form's own
-wording recovered from the identical sentence in its discussion. Each written
-objective summarises the discussion that item already carries, so the gap was
-filled from the item's own reasoning wherever the item still had any; item 34
-is the exception and is written from the stem, the exhibit and the paragraph
-ruling out the other choices. That is roughly 5% of the form's explanation
-text. None of it is recoverable by re-reading the file we have (the material
-is absent from the source PDF), so only a fresh capture of the form can
-replace it with what the form actually prints.
-
-Obstetrics and Gynecology Form 10 is the larger case, and a different shape of
-loss: its capture stops partway down every answer page, so the discussion of
-the correct answer survives but the incorrect-answer paragraphs mostly do not.
-Forty-nine of its 50 items carry written text — 111 choice paragraphs, the
-whole of item 21, the end of a cut sentence in twelve others, and the rest of
-the discussion in items 30 and 44 — and each of those items carries the note
-line. Only item 37 came through complete. The
-keys are unaffected: 46 items still print an intact "Incorrect Answers" line
-that agrees with the discussion, and the other four are argued for in the
-discussion itself.
+Medicine Form 9 item 36, Medicine Form 6 item 30 and Family Medicine Form 5
+item 11 are single items filled the same way.
 
 ## 7. The answer key
 
-Derive the key from what each explanation actually argues, then compare it
-against any printed key. Where they disagree, the reasoning wins and the
-disagreement goes in your report.
+This is the one thing that cannot be written. Explanation prose can be
+completed from the item's own reasoning; a key cannot, because the candidate is
+graded against what the form answers and not against the literature. Every
+letter in `ANSWER_KEY` has to come from the capture.
 
-The strongest check is the "Incorrect Answers" section: the letters it rules
-out plus the one it defends should account for every choice. If a letter is
-both defended and ruled out, or none is defended, the header is wrong.
+The capture says it in three places, and they do not always agree:
 
-This is not hypothetical. In Medicine Form 9 the printed `Correct Answer`
-headers for items 8, 27 and 32 were rotated onto the wrong items and item 4's
-was simply wrong; the other 45 agreed. The key in the repo came from the
-explanation bodies.
+1. **The highlight on the review screen.** The source app draws the correct
+   choice on a yellow band, whatever the text below it says. This is the
+   strongest evidence there is, because it is the app's own record of the
+   answer rather than prose about it.
+2. **What the explanation argues.** Read the discussion and take the letter it
+   defends.
+3. **The printed `Correct Answer` header.** The weakest of the three — it is
+   the one that has been wrong.
+
+The check that ties them together is the "Incorrect Answers" section: the
+letters it rules out plus the one it defends should account for every choice.
+If a letter is both defended and ruled out, or none is defended, the header is
+wrong.
+
+None of this is hypothetical. In Medicine Form 9 the printed headers for items
+8, 27 and 32 were rotated onto the wrong items and item 4's was simply wrong;
+the other 45 agreed, and the key in the repo came from the explanation bodies.
+Family Medicine Form 5 item 11 is the sharper case: the form served item 10's
+answer screen a second time in its place, so the header reads `Correct Answer:
+C` and the body is item 10's explanation word for word — but the highlight on
+the review screen sits on A, and A is the key. Where the three disagree, take
+them in the order above and say so in the commit message.
 
 ## 8. Verify before committing
 
@@ -200,17 +226,24 @@ places, dialogue really does end in "!", and some flagged words are simply
 rare. Read each one against the form.
 
 It also reports runs of three or more consecutive words no exam has ever used.
-Prose does not do that, so a run means the page was captured badly. Those are
-the ones to flag rather than repair, where a degraded font turned g into a, y
-into v, p into n and u into ii — "Meaciirament of seriim nralactin
-cancentratian" for "Measurement of serum prolactin concentration". Two exams
-still carry such passages:
+Prose does not do that, so a run means the page was captured badly, where a
+degraded font turned g into a, y into v, p into n and u into ii —
+"Meaciirament of seriim nralactin cancentratian" for "Measurement of serum
+prolactin concentration".
+
+The substitution is regular, so read it where you can. Work out the mapping
+from the words you are sure of, apply it across the run, and check the result
+against the item — the objective usually restates the discussion, so the
+discussion will tell you whether you have read it right. Family Medicine Form 5
+item 47 was recovered that way: "frantmant natiante maw avnarianna itshina far
+cavaral" is "treatment patients may experience itching for several", and the
+sentence ran off the page a word short of the "weeks" its own discussion
+supplies. Say in the commit message that you read a run rather than transcribed
+it, and leave a run you cannot read in place rather than filling it with
+something that merely scans. Two exams still carry unread passages:
 
 - psychiatry Form 7, explanations 21 and 22
 - obgyn Form 7, explanation 44 ("preanancy")
-
-Leave them alone. The substitution is regular enough to guess at, and a guess
-is invented content: only a fresh capture of those pages can fix them.
 
 obgyn Form 8 carried nine of these and no longer does: a second capture of the
 same form arrived and its clean text replaced them. That is the way out of a
@@ -250,17 +283,23 @@ from the title:
 A subject that is not in the list yet needs no code: the first exam titled
 "Neurology Practice Exam" grows its own panel on the landing page.
 
-Commit the exam on its own. Say in the message what the form is and anything a
-reader would want to know without opening the file: keys you derived rather
-than copied, explanations you wrote, values that look wrong but are the form's.
+Commit the exam on its own. The message is where the provenance lives, since
+the page itself carries none, so say what the form is and everything a reader
+would want to know without opening the file: where each contested key came
+from, which explanations or sentences you wrote and what you worked from, runs
+you read rather than transcribed, values that look wrong but are the form's,
+and anything you could not read at all.
 
 Never commit raw screenshots — `tools/shotpack/shots/` and `packed/` are
 gitignored for that reason.
 
 ## 10. Never
 
-- Never invent a clinical value, a choice, or an explanation presented as the
-  form's.
+- Never invent a clinical value, a stem, or a choice. These are what the
+  candidate is asked about, and a written one asks a different question.
+- Never write a key. Explanation prose can be completed; a letter cannot.
+- Never guess a key letter to make the count come out at 50.
 - Never "correct" a number the form prints. Report it.
 - Never drop an item you could not read. Say which one and why.
-- Never guess a key letter to make the count come out at 50.
+- Never let written text contradict the form — not its key, not its stem, and
+  not the argument the surviving paragraphs make.

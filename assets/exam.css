@@ -888,15 +888,4 @@
     padding:12px 14px;
     margin-bottom:16px;
   }
-  .explanation p.exp-note{
-    /* Marks the part of an explanation the form did not print, where the
-       source screenshot cut off and the text had to be written instead.
-       Deliberately quiet: it is a provenance note, not part of the teaching. */
-    margin-top:18px;
-    padding-top:10px;
-    border-top:1px solid var(--divider);
-    font-size:calc(var(--fs-xs) * var(--content-scale));
-    line-height:1.5;
-    color:var(--faint);
-  }
   .explanation p b{color:var(--navy-dark);}
