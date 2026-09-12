@@ -306,11 +306,21 @@ the "weeks" its own discussion supplies, so that item is marked as written and
 the others are not. Reading a run is transcription; supplying a word the form
 never printed is writing.
 
+Where a splice leaves two readings and both scan, **let the item's own
+Educational Objective decide**. It is the form compressing that same discussion
+into three sentences, so when it names a number, that is the number the
+discussion printed. obgyn Form 7 item 44 read "0.4 mg daily, starting at least
+1 month prior to 1 to 3 months prior to conception" — two phrasings of the
+folic acid timing pasted together, and both are in the literature. Its
+objective says "Folic acid supplementation should begin 1 to 3 months prior to
+conception", so the other half is the overlap. The item now says 1 to 3 months
+in both places, which is the test: a resolution that leaves the item
+disagreeing with itself is the wrong one. Choosing between two readings is not
+transcription, so the item is marked.
+
 Say in the commit message which runs you read and how. Leave one you cannot
 read rather than filling it with something that merely scans, and leave a
-splice where two readings are both plausible: obgyn Form 7 item 44 still says
-"starting at least 1 month prior to 1 to 3 months prior to conception", and
-picking either half would change the advice.
+splice that nothing in the item decides.
 
 obgyn Form 8 carried nine of these and no longer does: a second capture of the
 same form arrived and its clean text replaced them. That is the way out of a
