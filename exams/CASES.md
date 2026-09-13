@@ -77,6 +77,30 @@ from the item's own reasoning:
   argument is the form's and is preserved; the prose around it is written, in
   that form's plain-paragraph style, and the item is marked `all`.
 
+Medicine Form 6 item 30 is the one item in the repo with no official
+explanation to transcribe. A second transcription of that form's answer pages,
+read against the repo in a later pass, says so in place of the text — "Item 30
+has no official NBME explanation in the source" — and carries only an
+unofficial note attributed to Reddit. The explanation the repo draws was
+written, and it argues what that note argues and what the item's own values
+support: metformin is contraindicated at this degree of renal impairment and
+his nausea and muscle pain fit lactic acidosis, glyburide accumulates and adds
+weight in a patient at a BMI of 36 kg/m², and an A1c of 9.2% needs more than
+his current regimen, so both oral agents stop and insulin starts. It had been
+shipped unmarked; the item is now marked `all`. The same pass settled the other
+question that form raises — several of its explanations are much shorter than
+any other form's — and the answer is that its source is terse, not that
+anything was lost: every item but three matches the second transcription
+sentence for sentence, typography aside, and two of those three are the items
+whose source prints a table (item 15's Ranson criteria, item 42's two-by-two),
+which the repo sets as prose since an explanation may use only `<p>` and `<b>`.
+Four wording slips did turn up and are repaired: `LMHW` for LMWH in item 18, a
+stray slash in item 19, `ionotropic` for inotropic in item 31, and `Reynaud` for
+Raynaud in item 36. One difference runs the other way and the repo keeps its
+reading: item 6 describes a restrictive pattern as "decreased FEV1 and FVC",
+where the second transcription has the subscript-comma damage `FEV,` in place
+of FVC.
+
 ## The answer key, where the three sources disagreed
 
 The three sources CONVERTING.md §7 ranks do come apart. In Medicine Form 9 the
