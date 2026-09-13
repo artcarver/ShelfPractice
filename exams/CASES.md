@@ -52,6 +52,31 @@ item 8's from the discussion above it, which has already explained that
 pulmonary vascular resistance falls rather than rises after birth. Two
 paragraphs out of roughly 500 in the form.
 
+Four more single items turned up in a sweep for forms that mix the two
+explanation styles — a form whose other 49 items open with an Educational
+Objective and one item that does not is a gap, not a style. Each was filled
+from the item's own reasoning:
+
+- **Psychiatry Form 5 item 33** was not a gap at all. Its objective is
+  transcribed, but it had been left glued to the end of the incorrect-answers
+  paragraph rather than lifted to the front, so the page drew no objective. It
+  was moved, verbatim, plural label and all, and the item carries no mark.
+- **Psychiatry Form 6 item 8** and **Surgery Form 9 item 34** lost only the
+  objective line; both discussions and every incorrect-answer paragraph
+  survive, so each objective is a compression of the item's own discussion and
+  each item is marked `objective`.
+- **Obstetrics and Gynecology Form 6 item 36** arrived as two sentences of
+  shorthand — the diagnosis and the rule behind it, no objective and no
+  incorrect-answer paragraphs. The surviving sentences stay as the discussion;
+  the objective and the paragraph ruling out the four protraction disorders
+  were written from them and from the labor curve the stem prints, and the item
+  is marked `part`.
+- **Medicine Form 4 item 50** had a transcriber's note in place of an
+  explanation ("D) all HIV positive patients should be on 3 drug ART as soon as
+  possible …"), in a form whose other 49 items are full prose. The note's
+  argument is the form's and is preserved; the prose around it is written, in
+  that form's plain-paragraph style, and the item is marked `all`.
+
 ## The answer key, where the three sources disagreed
 
 The three sources CONVERTING.md §7 ranks do come apart. In Medicine Form 9 the
