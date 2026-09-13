@@ -213,7 +213,9 @@ for confirmation, since it throws away every answer.
 The landing page groups the forms by subject, and each subject is a panel you
 open rather than a heading you scroll past — past a dozen or so forms the list
 had become a scroll rather than a choice, so the page opens as one row per
-subject.
+subject. The list sorts itself rather than following the manifest: subjects
+read alphabetically, and the forms inside a subject read by label with digits
+counted as numbers, so Form 9 comes before Form 10 rather than after it.
 The panel's head carries the subject, how many forms are inside, and, only when
 there is something to say, how many of them you have started or scored. Which
 panels are open is remembered per browser, so you come back to the list you

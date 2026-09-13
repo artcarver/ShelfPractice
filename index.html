@@ -231,12 +231,26 @@
      "Surgery Practice Exam" — so the page groups by subject and lets each row
      lead with what distinguishes it: the form label. Under a page called
      Practice exams, the heading only needs the subject. */
-  const groups = new Map();
+  /* The list reads alphabetically rather than in whatever order the manifest
+     happens to be written in: subjects by name, and the forms inside a subject
+     by their label. The collator counts digits as numbers, so Form 9 comes
+     before Form 10 rather than after it, which is the order a shelf of forms
+     is spoken in. */
+  const byName = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'});
+  const collected = new Map();
   exams.forEach(e => {
     const subject = e.title.replace(/\s*practice exams?\s*$/i, '') || e.title;
-    if(!groups.has(subject)) groups.set(subject, []);
-    groups.get(subject).push(e);
+    if(!collected.has(subject)) collected.set(subject, []);
+    collected.get(subject).push(e);
   });
+  const groups = new Map(
+    Array.from(collected.entries())
+      .sort((a, b) => byName.compare(a[0], b[0]))
+      .map(([subject, members]) => [
+        subject,
+        members.slice().sort((a, b) => byName.compare(a.label || a.title, b.label || b.title))
+      ])
+  );
 
   /* Which subjects are open is remembered per browser, so the list you came
      back to is the one you left. Nothing is open on a first visit — the point
