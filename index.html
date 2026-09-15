@@ -98,6 +98,29 @@
   .row-go svg{color:#b3c1cb;transition:color .12s, transform .12s;}
   a.row:hover .row-go svg{color:var(--navy);transform:translateX(2px);}
 
+  /* The list alone does not say what an exam is. People arriving here have
+     assumed the forms are stacks of screenshots and left without opening one,
+     so the page says what they are before the first row: a link that looks
+     like the rows it sits above, leading to the screen itself. */
+  a.tour{
+    display:flex;align-items:center;gap:14px;
+    margin-top:18px;padding:15px 18px;
+    background:#fff;border:1px solid var(--border);border-left:4px solid var(--navy);
+    border-radius:var(--r-md);
+    text-decoration:none;color:inherit;
+    transition:background .12s;
+  }
+  a.tour:hover{background:var(--navy-tint);}
+  .tour-text{flex:1 1 auto;min-width:0;font-size:var(--fs-sm);line-height:1.55;color:var(--muted);}
+  .tour-text b{display:block;color:var(--navy-dark);font-size:var(--fs-md);margin-bottom:2px;}
+  .tour-go{
+    flex:none;display:flex;align-items:center;gap:5px;
+    font-size:var(--fs-sm);font-weight:600;color:var(--navy);white-space:nowrap;
+  }
+  a.tour:hover .tour-go svg{transform:translateX(2px);}
+  .tour-go svg{color:#b3c1cb;transition:color .12s, transform .12s;}
+  a.tour:hover .tour-go svg{color:var(--navy);}
+
   .foot{margin-top:30px;font-size:var(--fs-xs);color:var(--faint);text-align:center;}
   .empty{
     background:#fff;border:1px solid var(--border);border-radius:var(--r-md);
@@ -120,6 +143,14 @@
     <h1>Practice exams</h1>
     <p class="lede">Every item has a full explanation. Your answers, highlights and notes
       stay in this browser.</p>
+
+    <a class="tour" href="walkthrough.html">
+      <span class="tour-text"><b>New here? These are not screenshots.</b>
+        Every form runs as a question interface &mdash; one item at a time, a clock,
+        cross&#8209;outs, highlighting and notes &mdash; and a written explanation on
+        every item once you end the block.</span>
+      <span class="tour-go"><span>See how it works</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></span>
+    </a>
 
     <!-- Built from exams/manifest.js — add an exam there, not here. -->
     <div id="examList"></div>

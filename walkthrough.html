@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%230b4a73'/%3E%3Crect x='5.4' y='5.6' width='3.2' height='12.8' rx='1.3' fill='%23fff'/%3E%3Crect x='10.4' y='8.2' width='3.2' height='10.2' rx='1.3' fill='%23fff'/%3E%3Crect x='15.4' y='10.6' width='3.2' height='7.8' rx='1.3' fill='%23fff'/%3E%3C/svg%3E">
+<title>How it works &mdash; Shelf Practice</title>
+<link rel="stylesheet" href="assets/theme.css">
+<!-- The tour shows the exam screen by building it out of the exam page's own
+     stylesheet rather than describing it in prose or pasting a picture of it.
+     Every .opt, .explanation, .grid-cell and .results-table below is the real
+     rule from assets/exam.css, so this page cannot drift out of date with the
+     thing it is explaining — if the exam changes, so does the tour. -->
+<link rel="stylesheet" href="assets/exam.css">
+<style>
+  /* This page wears the landing page's flat bar, not the exam page's, so it
+     reads as part of the site around the exam rather than as an exam you have
+     already started. exam.css styles header.topbar, which the demo frame
+     below needs, so the page's own bar answers to a different name. */
+  header.pagebar{
+    background:var(--navy);
+    height:52px;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 22px;
+  }
+  header.pagebar :focus-visible{outline-color:#fff;}
+  .bar-link{color:#dce8f0;text-decoration:none;font-size:var(--fs-sm);}
+  .bar-link:hover{color:#fff;text-decoration:underline;}
+
+  /* exam.css sets a bare `main` for the question column; this page's own
+     column is wider and needs its own measure. */
+  main.page{max-width:980px;margin:0 auto;padding:32px 22px 64px;}
+  main.page h1{margin:0 0 8px;font-size:var(--fs-xl);color:var(--navy-dark);letter-spacing:-.2px;}
+  .lede{margin:0 0 6px;color:var(--muted);font-size:var(--fs-md);line-height:1.6;max-width:66ch;}
+
+  /* The one sentence the whole page exists to say, so it is not left to be
+     inferred from the screens below it. */
+  .claim{
+    margin:20px 0 0;
+    background:#fff;border:1px solid var(--border);border-left:5px solid var(--navy);
+    border-radius:var(--r-md);
+    padding:16px 20px;
+    font-size:var(--fs-md);line-height:1.6;max-width:72ch;
+  }
+  .claim b{color:var(--navy-dark);}
+
+  .step{margin-top:44px;}
+  .step-head{display:flex;align-items:baseline;gap:12px;margin-bottom:8px;}
+  .step-n{
+    flex:none;
+    width:26px;height:26px;border-radius:50%;
+    background:var(--navy);color:#fff;
+    font-size:var(--fs-sm);font-weight:700;
+    display:inline-flex;align-items:center;justify-content:center;
+    align-self:center;
+  }
+  .step h2{margin:0;font-size:var(--fs-lg);color:var(--navy-dark);}
+  .step-say{margin:0 0 16px 38px;color:var(--muted);font-size:var(--fs-base);line-height:1.6;max-width:68ch;}
+  @media (max-width:560px){ .step-say{margin-left:0;} }
+
+  /* A screen inside the page. The border and the shadow are what say "this is
+     the app", the way the exam page's own #app does against the grey. */
+  .frame{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:var(--r-md);
+    overflow:hidden;
+    box-shadow:var(--shadow-md);
+  }
+  .frame main{padding:22px 24px 26px;}
+  .frame header.topbar{border-radius:0;}
+
+  /* Controls that drive the demonstration are not part of the exam, so they
+     sit outside the frame and look like page furniture, never like chrome. */
+  .frame-drive{
+    display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    margin-top:14px;
+  }
+  .frame-note{
+    margin:10px 0 0;font-size:var(--fs-xs);color:var(--faint);line-height:1.55;max-width:72ch;
+  }
+
+  /* What to actually do with the live item, since a reader who does not touch
+     it learns exactly as much as a screenshot would have taught them. */
+  .try{
+    list-style:none;margin:0 0 16px 38px;padding:0;
+    display:grid;grid-template-columns:1fr 1fr;gap:9px 26px;
+    max-width:760px;
+  }
+  .try li{
+    display:flex;gap:9px;
+    font-size:var(--fs-sm);line-height:1.5;
+  }
+  .try li::before{
+    content:"";flex:none;width:6px;height:6px;margin-top:7px;
+    border-radius:50%;background:var(--navy);
+  }
+  /* The sentence is one flex item, not one per <b> and <kbd> — otherwise the
+     gap between items opens up around the commas. */
+  .try li span{flex:1 1 auto;min-width:0;}
+  .try b{font-weight:600;color:var(--navy-dark);}
+  @media (max-width:640px){ .try{grid-template-columns:1fr;margin-left:0;} }
+
+  /* Two screens that belong side by side: the item grid you jump from, and
+     the score sheet you land on. */
+  .pair{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;}
+  @media (max-width:860px){ .pair{grid-template-columns:1fr;} }
+  .pair .frame{box-shadow:none;}
+  .pane-head{
+    padding:12px 18px;border-bottom:1px solid var(--divider);
+    background:var(--navy-tint);
+    font-size:var(--fs-sm);font-weight:600;color:var(--navy-dark);
+  }
+  .pane-body{padding:18px;}
+  .pane-body .grid-nav{grid-template-columns:repeat(8,1fr);gap:6px;margin:12px 0 16px;}
+  .pane-body .score-card{margin:0 0 14px;padding:16px 18px;gap:20px;}
+  .pane-body .score-percent{font-size:34px;}
+  .pane-body .table-wrap{border:0;padding:0;}
+  /* The results table is laid out fixed, and its real column widths are set
+     for the full exam window. In half a pane they add up to more than there
+     is, and the stem — the column that makes the sheet readable as a list of
+     items — is the one that gets squeezed to nothing. So the pane sets its
+     own widths and leaves the rest to the stem. */
+  .pane-body .results-table .col-item{width:56px;}
+  .pane-body .results-table .col-ans{width:50px;}
+  .pane-body .results-table .col-key{width:50px;}
+  .pane-body .results-table .col-res{width:112px;}
+  .pane-body .results-table th,.pane-body .results-table td{padding-left:10px;padding-right:10px;}
+  .cap{margin:10px 0 0;font-size:var(--fs-xs);color:var(--faint);line-height:1.55;}
+
+  /* The rest of the toolbar, which the single-item demo has no room to act
+     out: named, said plainly, and left at that. */
+  .rest{
+    display:grid;grid-template-columns:1fr 1fr;gap:16px 28px;
+    background:#fff;border:1px solid var(--border);border-radius:var(--r-md);
+    padding:22px 24px;
+  }
+  @media (max-width:640px){ .rest{grid-template-columns:1fr;} }
+  .rest-item{display:flex;gap:11px;font-size:var(--fs-sm);line-height:1.55;}
+  .rest-item svg{flex:0 0 auto;color:var(--navy);margin-top:2px;}
+  .rest-item b{display:block;color:var(--navy-dark);font-size:var(--fs-base);margin-bottom:2px;}
+
+  .end{
+    margin-top:44px;text-align:center;
+    background:#fff;border:1px solid var(--border);border-radius:var(--r-md);
+    padding:28px 24px;
+  }
+  .end h2{margin:0 0 6px;font-size:var(--fs-lg);color:var(--navy-dark);}
+  .end p{margin:0 0 18px;color:var(--muted);font-size:var(--fs-base);}
+  .end .btn{display:inline-block;padding:11px 24px;text-decoration:none;}
+
+  .foot{margin-top:28px;font-size:var(--fs-xs);color:var(--faint);text-align:center;}
+
+  /* The demo owns one item, so the bar's Previous and Next have nowhere to
+     go. They stay in place, disabled, rather than being cut out of the
+     picture — where they sit is part of what the reader came to see. */
+  .frame .nav-btn:disabled,.frame .btn:disabled{cursor:default;}
+</style>
+</head>
+<body>
+  <header class="pagebar">
+    <a class="brand" href="index.html"><svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><rect x="1.5" y="1.5" width="21" height="21" rx="5.5"/><rect class="mark-bar" x="6" y="6" width="2.9" height="12" rx="1.2"/><rect class="mark-bar" x="10.6" y="8.4" width="2.9" height="9.6" rx="1.2"/><rect class="mark-bar" x="15.2" y="10.6" width="2.9" height="7.4" rx="1.2"/></svg><span class="brand-name">Shelf Practice</span></a>
+    <a class="bar-link" href="index.html">All practice exams</a>
+  </header>
+
+  <main class="page">
+    <h1>How it works</h1>
+    <p class="lede">A tour of the exam screen, with a working item in it.</p>
+
+    <p class="claim">These are not screenshots of a question bank. Each form runs
+      as a <b>question interface</b> &mdash; one item at a time, a running clock,
+      cross&#8209;outs, highlighting, marked items and notes &mdash; and when you
+      end the block, <b>every item reopens with a full written explanation</b>.
+      The item below is live. Answer it.</p>
+
+    <!-- ---------- 1. the exam screen ---------- -->
+    <section class="step">
+      <div class="step-head"><span class="step-n">1</span><h2>Work the item</h2></div>
+      <p class="step-say">This is the exam screen, built from the exam page's own
+        stylesheet &mdash; not a picture of it. Everything in the frame responds.</p>
+      <ul class="try">
+        <li><span><b>Click a choice</b>, or press <kbd>A</kbd>&ndash;<kbd>E</kbd>, to answer it</span></li>
+        <li><span><b>Right&#8209;click a choice</b>, or click its <b>ab</b> tab, to cross it out</span></li>
+        <li><span><b>Drag across the stem</b> to highlight; click a highlight to lift it</span></li>
+        <li><span><b>Tick Mark for review</b> to flag the item for a second pass</span></li>
+      </ul>
+
+      <div class="frame" id="demo">
+        <header class="topbar">
+          <div class="topbar-left">
+            <span class="brand" aria-hidden="true"><svg class="mark" viewBox="0 0 24 24"><rect x="1.5" y="1.5" width="21" height="21" rx="5.5"/><rect class="mark-bar" x="6" y="6" width="2.9" height="12" rx="1.2"/><rect class="mark-bar" x="10.6" y="8.4" width="2.9" height="9.6" rx="1.2"/><rect class="mark-bar" x="15.2" y="10.6" width="2.9" height="7.4" rx="1.2"/></svg><span class="brand-name">Shelf Practice</span></span>
+            <div class="item-box">Item <span>12</span> of <span>50</span></div>
+            <div class="exam-title">Medicine Practice Exam</div>
+            <span class="form-tag">Form 6</span>
+          </div>
+          <div class="topbar-center">
+            <button class="nav-btn" disabled title="One item in this demo">
+              <span class="nav-circle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg></span>
+              Previous
+            </button>
+            <div class="counter">12 / 50</div>
+            <button class="nav-btn" disabled title="One item in this demo">
+              <span class="nav-circle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></span>
+              Next
+            </button>
+          </div>
+          <div class="topbar-right">
+            <span class="tb-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6M10 3v6l-5.6 9.6A2 2 0 0 0 6.1 21h11.8a2 2 0 0 0 1.7-2.4L14 9V3"/><path d="M7.2 15.5h9.6"/></svg><div>Lab Values</div></span>
+            <span class="tb-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h9l5 5v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14 3v5h5"/><path d="M8 12h8M8 16h5"/></svg><div>Notes</div></span>
+            <span class="tb-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 18.5 6.5 8l4 10.5"/><path d="M3.8 15.2h5.4"/><path d="M13.5 18.5 17.75 5l4.25 13.5"/><path d="M14.9 14.6h5.7"/></svg><div>Text size</div></span>
+            <span class="tb-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7.5" height="7.5" rx="1"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1"/></svg><div>Review</div></span>
+            <span class="tb-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg><div>Pause</div></span>
+          </div>
+        </header>
+
+        <div class="subbar">
+          <label class="mark-flag"><input type="checkbox" id="dMark"> Mark for review</label>
+          <div class="subbar-status">
+            <span class="answered-note" id="dAnsweredNote">11 of 50 answered</span>
+            <div class="timer" id="dTimer">Elapsed: 00:18:42</div>
+          </div>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="dProgress" style="width:22%"></div></div>
+
+        <main>
+          <div class="graded-banner" id="dBanner" aria-live="polite"></div>
+          <div class="stem" id="dStem">A 58-year-old man comes to the emergency department because of crushing substernal chest pain that began 2 hours ago while he was mowing his lawn. The pain radiates to his left jaw and is accompanied by diaphoresis and nausea. He has smoked one pack of cigarettes daily for 30 years. His pulse is 98/min, respirations are 20/min, and blood pressure is 148/92 mm Hg. Cardiac examination shows no murmurs or gallops. An ECG shows 3-mm ST-segment elevation in leads II, III, and aVF. The nearest catheterization laboratory is in this hospital and can be ready in 30 minutes. Which of the following is the most appropriate next step in management?</div>
+          <div class="options" id="dOpts"></div>
+          <div class="explanation" id="dExp" style="display:none"></div>
+        </main>
+
+        <footer class="botbar">
+          <div class="botbar-row">
+            <button class="btn secondary" disabled>Previous</button>
+            <button class="btn" disabled>Next</button>
+          </div>
+        </footer>
+      </div>
+
+      <p class="frame-note">The item above was written for this page so that the tour
+        gives nothing away. The forms themselves carry the NBME's own stems, choices
+        and answer letters, unedited.</p>
+    </section>
+
+    <!-- ---------- 2. grading ---------- -->
+    <section class="step">
+      <div class="step-head"><span class="step-n">2</span><h2>End the block, and the item explains itself</h2></div>
+      <p class="step-say">Nothing is revealed while you are working &mdash; the block
+        runs the way the shelf does. When you end it, every item reopens with the
+        correct answer marked, your own answer marked beside it, and the form's
+        explanation underneath. Press the button and the item above will change.</p>
+      <div class="frame-drive">
+        <button class="btn" id="dGrade">End the block and see the answer</button>
+        <button class="btn secondary" id="dReset" style="display:none">Put the item back</button>
+      </div>
+      <p class="frame-note">In a real exam this lives behind <b>Review &rarr; End block
+        and see results</b>, and it asks first if you have left items unanswered.</p>
+    </section>
+
+    <!-- ---------- 3. review grid and results ---------- -->
+    <section class="step">
+      <div class="step-head"><span class="step-n">3</span><h2>Then the whole block opens up</h2></div>
+      <p class="step-say">Every item stays reachable. The grid is how you move around
+        the block while you are still in it; the score sheet is where you land when
+        it is over, and every row reopens its item with the explanation showing.</p>
+      <div class="pair">
+        <div class="frame">
+          <div class="pane-head">Review &mdash; jump to any item</div>
+          <div class="pane-body">
+            <div class="legend">
+              <span><span class="dot c"></span> Correct</span>
+              <span><span class="dot x"></span> Incorrect</span>
+              <span><span class="dot m"></span> Marked</span>
+            </div>
+            <div class="grid-nav" id="dGrid"></div>
+            <div class="summary-row"><span><b>12</b> of 50 answered</span><span><b>6</b> marked</span></div>
+            <p class="cap" style="margin-top:8px">Items 1&ndash;24 of 50 shown.</p>
+          </div>
+        </div>
+        <div class="frame">
+          <div class="pane-head">Results &mdash; where the block ends</div>
+          <div class="pane-body">
+            <div class="score-card">
+              <div>
+                <div class="score-percent">78%</div>
+                <div class="score-frac">39 of 50 correct</div>
+                <div class="score-time">1:42:10 &middot; 2:02 per item</div>
+              </div>
+              <div class="score-breakdown">
+                <div class="b-correct"><b>39</b><span>Correct</span></div>
+                <div class="b-incorrect"><b>11</b><span>Incorrect</span></div>
+              </div>
+            </div>
+            <div class="filter-row">
+              <span class="filter-chip active">All 50</span>
+              <span class="filter-chip">Incorrect 11</span>
+              <span class="filter-sep"></span>
+              <span class="filter-chip attr">Marked 6</span>
+            </div>
+            <div class="table-wrap" style="margin-top:12px">
+              <table class="results-table">
+                <thead>
+                  <tr><th class="col-item">Item</th><th class="col-stem">Stem</th><th class="col-ans">You</th><th class="col-key">Key</th><th class="col-res">Result</th></tr>
+                </thead>
+                <tbody>
+                  <tr class="item-row row-correct"><td class="cell-item">10</td><td class="cell-stem"><span class="stem-text">A 34-year-old woman has had fatigue for&hellip;</span></td><td class="cell-ans">D</td><td class="cell-key">D</td><td class="cell-res"><span class="result-pill c"><span class="g" aria-hidden="true">&#10003;</span>Correct</span></td></tr>
+                  <tr class="item-row row-incorrect is-marked"><td class="cell-item">11<span class="flag-ico" aria-hidden="true"></span></td><td class="cell-stem"><span class="stem-text">A 6-month-old boy is brought to the&hellip;</span></td><td class="cell-ans">A</td><td class="cell-key">C</td><td class="cell-res"><span class="result-pill x"><span class="g" aria-hidden="true">&#10007;</span>Incorrect</span></td></tr>
+                  <tr class="item-row row-correct"><td class="cell-item">12</td><td class="cell-stem"><span class="stem-text">A 58-year-old man comes to the emergency&hellip;</span></td><td class="cell-ans">C</td><td class="cell-key">C</td><td class="cell-res"><span class="result-pill c"><span class="g" aria-hidden="true">&#10003;</span>Correct</span></td></tr>
+                  <tr class="item-row row-unanswered"><td class="cell-item">13</td><td class="cell-stem"><span class="stem-text">A 71-year-old woman is admitted after a&hellip;</span></td><td class="cell-ans"><span class="blank">&mdash;</span></td><td class="cell-key">B</td><td class="cell-res"><span class="result-pill u"><span class="g" aria-hidden="true">&ndash;</span>Unanswered</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="cap">Sample figures. The score sheet also records how long each item
+        took and flags the ones that ran long, sorts by item, result or time, and
+        downloads as a text file.</p>
+    </section>
+
+    <!-- ---------- 4. the rest of the toolbar ---------- -->
+    <section class="step">
+      <div class="step-head"><span class="step-n">4</span><h2>The rest of the bar</h2></div>
+      <p class="step-say">One item cannot act all of this out, so here it is in words.</p>
+      <div class="rest">
+        <div class="rest-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6M10 3v6l-5.6 9.6A2 2 0 0 0 6.1 21h11.8a2 2 0 0 0 1.7-2.4L14 9V3"/><path d="M7.2 15.5h9.6"/></svg>
+          <div><b>Lab Values</b>The reference ranges, searchable and tabbed, in a panel
+            beside the question &mdash; the same table the real exam gives you.</div>
+        </div>
+        <div class="rest-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h9l5 5v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14 3v5h5"/><path d="M8 12h8M8 16h5"/></svg>
+          <div><b>Notes</b>A small window you drag where you like and leave open. One
+            note per item, saved as you type, and shown again on the score sheet.</div>
+        </div>
+        <div class="rest-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
+          <div><b>Pause</b>Stops the clock and hides the question. Leave the page
+            paused and it is still paused when you come back.</div>
+        </div>
+        <div class="rest-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 18.5 6.5 8l4 10.5"/><path d="M3.8 15.2h5.4"/><path d="M13.5 18.5 17.75 5l4.25 13.5"/><path d="M14.9 14.6h5.7"/></svg>
+          <div><b>Text size</b>Four steps, applied to the stem, the choices and the
+            explanation &mdash; the chrome keeps its own size.</div>
+        </div>
+        <div class="rest-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12h8"/></svg>
+          <div><b>Exhibits</b>Where a form prints an image, the item carries it and
+            clicking it opens it full size.</div>
+        </div>
+        <div class="rest-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+          <div><b>It saves itself</b>Answers, highlights, cross&#8209;outs, marks, notes
+            and the clock stay in your browser. Close the tab mid&#8209;block and pick
+            it up later. Nothing is uploaded and there is no account.</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="end">
+      <h2>That is the whole of it</h2>
+      <p>Forty forms, fifty items each, every one with an explanation.</p>
+      <a class="btn" href="index.html">Open a practice exam</a>
+    </div>
+
+    <p class="foot">Runs entirely in your browser &mdash; nothing is uploaded, no account needed.</p>
+  </main>
+
+<script>
+(() => {
+  /* One item, driven by a cut-down copy of the engine's own behaviour: select,
+     cross out, highlight, grade. It is deliberately not assets/exam.js — that
+     engine wants a manifest entry, a data.js and saved state, none of which a
+     tour should be creating. What it does share is the markup and the classes,
+     so what you see here is what the exam page draws. */
+
+  const OPTIONS = [
+    ['A', 'Administer a β-adrenergic blocking agent and admit for observation'],
+    ['B', 'Obtain CT angiography of the chest'],
+    ['C', 'Perform percutaneous coronary intervention'],
+    ['D', 'Schedule an exercise stress test for the morning'],
+    ['E', 'Begin heparin therapy alone and repeat the ECG in 6 hours']
+  ];
+  const KEY = 'C';
+
+  const EXPLANATION =
+    '<p class="exp-obj">Educational objective: ST-segment elevation in two or more '
+  + 'contiguous leads in a patient with ischemic chest pain is an ST-elevation '
+  + 'myocardial infarction, and the treatment is reperfusion. Percutaneous coronary '
+  + 'intervention is preferred whenever it can be performed promptly.</p>'
+  + '<p>This patient has crushing substernal pain with diaphoresis and nausea, and an '
+  + 'ECG showing 3-mm ST-segment elevation in leads II, III, and aVF — an acute '
+  + 'inferior myocardial infarction. The occluded artery is the problem, and the '
+  + 'sooner it is opened the more myocardium survives. Where a catheterization '
+  + 'laboratory is available within 90 minutes of first medical contact, as it is '
+  + 'here, <b>percutaneous coronary intervention</b> restores flow more reliably '
+  + 'than fibrinolysis and carries none of its risk of intracranial hemorrhage.</p>'
+  + '<p>A β-adrenergic blocking agent (<b>choice A</b>) and heparin '
+  + '(<b>choice E</b>) are part of the medical management of an infarction, but '
+  + 'neither opens the vessel, and neither substitutes for reperfusion. CT '
+  + 'angiography (<b>choice B</b>) would be the study if aortic dissection were the '
+  + 'concern; the ECG here has already made the diagnosis, and the delay would cost '
+  + 'myocardium. An exercise stress test (<b>choice D</b>) is contraindicated during '
+  + 'an acute infarction.</p>'
+  + '<p class="exp-note">Sample item and explanation, written for this walkthrough. '
+  + 'On a real form this line appears only where a capture lost text, and says so.</p>';
+
+  const optsEl  = document.getElementById('dOpts');
+  const stemEl  = document.getElementById('dStem');
+  const expEl   = document.getElementById('dExp');
+  const bannerEl= document.getElementById('dBanner');
+  const gradeBtn= document.getElementById('dGrade');
+  const resetBtn= document.getElementById('dReset');
+  const noteEl  = document.getElementById('dAnsweredNote');
+  const progEl  = document.getElementById('dProgress');
+
+  let selected = null;
+  const struck = {};
+  let graded = false;
+
+  const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  function renderOptions(){
+    optsEl.innerHTML = '';
+    OPTIONS.forEach(([letter, text]) => {
+      const row = document.createElement('div');
+      let cls = 'opt' + (selected === letter ? ' selected' : '')
+                      + (struck[letter] ? ' struck' : '');
+      let tag = '';
+      if(graded){
+        cls += ' graded';
+        if(letter === KEY){ cls += ' correct-answer'; tag = '<span class="tag">Correct answer</span>'; }
+        else if(letter === selected){ cls += ' wrong-selected'; tag = '<span class="tag">Your answer</span>'; }
+      }
+      row.className = cls;
+      const strike = graded ? ''
+        : '<span class="strike-toggle' + (struck[letter] ? ' active' : '')
+        + '" title="Cross out this choice">ab</span>';
+      row.innerHTML =
+        '<input type="radio" name="demoOpt" ' + (selected === letter ? 'checked' : '')
+      + ' ' + (graded ? 'disabled' : '') + ' aria-label="Choice ' + letter + '">'
+      + '<label><span class="letter">' + letter + '.</span> ' + esc(text) + '</label>'
+      + tag + strike;
+
+      if(!graded){
+        row.addEventListener('click', e => {
+          if(e.target.closest('.strike-toggle')) return;
+          selected = letter;
+          renderOptions();
+          renderStatus();
+        });
+        row.addEventListener('contextmenu', e => {
+          e.preventDefault();
+          struck[letter] = !struck[letter];
+          renderOptions();
+        });
+        const st = row.querySelector('.strike-toggle');
+        st.addEventListener('click', e => {
+          e.stopPropagation();
+          struck[letter] = !struck[letter];
+          renderOptions();
+        });
+      }
+      optsEl.appendChild(row);
+    });
+  }
+
+  /* The subbar counts you in: an unanswered item reads 11 of 50, and answering
+     it reads 12, the way the real one does. */
+  function renderStatus(){
+    const n = selected ? 12 : 11;
+    noteEl.textContent = n + ' of 50 answered';
+    progEl.style.width = (n / 50 * 100).toFixed(0) + '%';
+  }
+
+  function renderGraded(){
+    optsEl.classList.toggle('graded', graded);
+    if(graded){
+      bannerEl.className = 'graded-banner show '
+        + (!selected ? 'unanswered-banner'
+          : selected === KEY ? 'correct-banner' : 'incorrect-banner');
+      bannerEl.textContent = !selected
+        ? 'Not answered. Correct answer: ' + KEY + '.'
+        : selected === KEY
+          ? 'Correct — you selected ' + selected + '.'
+          : 'Incorrect — you selected ' + selected + '. Correct answer: ' + KEY + '.';
+      expEl.innerHTML = '<div class="exp-h">Explanation</div>' + EXPLANATION;
+      expEl.style.display = '';
+      progEl.classList.add('graded');
+    }else{
+      bannerEl.className = 'graded-banner';
+      bannerEl.textContent = '';
+      expEl.innerHTML = '';
+      expEl.style.display = 'none';
+      progEl.classList.remove('graded');
+    }
+    gradeBtn.style.display = graded ? 'none' : '';
+    resetBtn.style.display = graded ? '' : 'none';
+  }
+
+  gradeBtn.addEventListener('click', () => {
+    graded = true;
+    renderOptions();
+    renderGraded();
+    document.getElementById('demo').scrollIntoView({behavior:'smooth', block:'start'});
+  });
+  resetBtn.addEventListener('click', () => {
+    graded = false;
+    renderOptions();
+    renderGraded();
+  });
+
+  /* A–E answers the item, the way the exam page binds it. There is no text
+     input anywhere on this page, so the key never has anything to interrupt. */
+  document.addEventListener('keydown', e => {
+    if(graded || e.ctrlKey || e.metaKey || e.altKey) return;
+    const k = e.key.toUpperCase();
+    if(k >= 'A' && k <= 'E' && k.length === 1){
+      selected = k;
+      renderOptions();
+      renderStatus();
+    }
+  });
+
+  /* Highlighting: the engine stores offsets against the stem text and redraws
+     from them; one item with nothing to persist can wrap the range where it
+     stands. Both end up as the same <mark class="hl"> the exam page draws, and
+     clicking one lifts it. */
+  stemEl.addEventListener('mouseup', () => {
+    const sel = window.getSelection();
+    if(!sel || sel.isCollapsed) return;
+    const range = sel.getRangeAt(0);
+    if(!stemEl.contains(range.commonAncestorContainer)) return;
+    if(!range.toString().trim()) return;
+    const mark = document.createElement('mark');
+    mark.className = 'hl';
+    mark.title = 'Click to remove this highlight';
+    try{ range.surroundContents(mark); }catch(err){ return; }
+    sel.removeAllRanges();
+  });
+  stemEl.addEventListener('click', e => {
+    const mark = e.target.closest('mark.hl');
+    if(!mark) return;
+    const parent = mark.parentNode;
+    while(mark.firstChild) parent.insertBefore(mark.firstChild, mark);
+    parent.removeChild(mark);
+    parent.normalize();
+  });
+
+  /* The clock runs. A still timer in a still frame is exactly the impression
+     this page exists to correct. */
+  let elapsed = 18 * 60 + 42;
+  const timerEl = document.getElementById('dTimer');
+  setInterval(() => {
+    elapsed++;
+    const h = String(Math.floor(elapsed / 3600)).padStart(2, '0');
+    const m = String(Math.floor(elapsed / 60) % 60).padStart(2, '0');
+    const s = String(elapsed % 60).padStart(2, '0');
+    timerEl.textContent = 'Elapsed: ' + h + ':' + m + ':' + s;
+  }, 1000);
+
+  /* The review grid, as a block eleven items in: answered behind, current on
+     12, two of them marked. Static — the picture is the point here, not the
+     jump. */
+  const grid = document.getElementById('dGrid');
+  const marked = new Set([4, 11, 19, 23, 31, 44]);
+  for(let n = 1; n <= 24; n++){
+    const cell = document.createElement('div');
+    let cls = 'grid-cell';
+    if(n < 12) cls += ' answered';
+    if(n === 12) cls += ' current answered';
+    if(marked.has(n)) cls += ' marked';
+    cell.className = cls;
+    cell.textContent = n;
+    grid.appendChild(cell);
+  }
+
+  renderOptions();
+  renderStatus();
+  renderGraded();
+})();
+</script>
+</body>
+</html>
