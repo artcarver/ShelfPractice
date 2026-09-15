@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="assets/theme.css">
 <link rel="stylesheet" href="assets/exam.css">
 <link rel="stylesheet" href="assets/labvalues.css">
+<link rel="stylesheet" href="assets/transfer.css">
 </head>
 <body>
 
@@ -200,7 +201,8 @@
 
         <div class="results-actions">
           <button class="btn" id="backToExamBtn">Back to exam</button>
-          <button class="btn secondary" id="downloadBtn">Download my results (.txt)</button>
+          <button class="btn secondary" id="downloadBtn"
+                  title="A readable report, and the progress itself so another browser can take it back">Download results and progress</button>
         </div>
         <div class="filter-row" id="resultsFilters"></div>
         <div class="table-wrap">
@@ -262,6 +264,16 @@
         <button class="btn" id="finishBtn">End block and see results</button>
       </div>
     </div>
+  </div>
+
+  <!-- Two tabs of one exam share one saved record, and the last to write wins.
+       Nothing here can merge them, so the tab that is now out of date says so
+       rather than quietly overwriting what the other one did. -->
+  <div class="stale-note" id="staleNote" role="status" hidden>
+    <span class="stale-say">Saved progress for this exam changed in another tab.
+      Carrying on here will overwrite it.</span>
+    <button type="button" class="btn secondary" id="staleReload">Reload</button>
+    <button type="button" class="stale-x" id="staleDismiss" aria-label="Dismiss this notice">&times;</button>
   </div>
 
   <!-- Enlarged exhibit -->

@@ -958,6 +958,34 @@
     .notes-grip{display:none;}
   }
 
+  /* A tab that has gone out of date says so along the foot of the window: it
+     has to be noticed, and it must not stop anyone working, so it is a bar
+     rather than a dialog and it can be waved away. */
+  .stale-note{
+    position:fixed;left:50%;transform:translateX(-50%);
+    bottom:18px;z-index:120;
+    display:flex;align-items:center;gap:14px;
+    max-width:min(640px, calc(100vw - 32px));
+    padding:12px 14px 12px 18px;
+    background:#fff;
+    border:1px solid var(--border);
+    border-left:4px solid var(--slow);
+    border-radius:var(--r-md);
+    box-shadow:0 6px 24px rgba(0,0,0,.18);
+  }
+  .stale-note[hidden]{display:none;}
+  .stale-say{font-size:var(--fs-sm);line-height:1.5;color:var(--text);}
+  .stale-note .btn{flex:none;}
+  .stale-x{
+    flex:none;background:none;border:0;padding:0 2px;
+    font-size:var(--fs-lg);line-height:1;color:var(--faint);cursor:pointer;
+  }
+  .stale-x:hover{color:var(--text);}
+  @media (max-width:560px){
+    .stale-note{flex-wrap:wrap;bottom:10px;}
+    .stale-say{flex:1 1 100%;}
+  }
+
   /* ---------- answer explanation (shown during review) ---------- */
   .explanation{
     margin:26px 0 10px;

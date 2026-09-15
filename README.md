@@ -17,6 +17,7 @@ assets/
   labvalues.css     Styles for the Lab Values reference panel
   labvalues.js      Lab Values data + panel (searchable, tabbed)
   transfer.js       Export and import of saved progress, shared by both pages
+  transfer.css      The import dialog, which both pages can open
 exams/
   manifest.js       The catalog: one entry per exam
   <subject>-form<N>/
@@ -92,12 +93,38 @@ results screen still downloads the readable report it always did, and now
 appends the same data block to it, so one file is both the record of the
 attempt and the thing that puts the attempt back somewhere else. An exam's
 start screen can import too, since writing over saved progress is a thing to
-do on the way in rather than mid-block.
+do on the way in rather than mid-block. Both files are named
+`shelfpractice-…-<date>.txt` so they sit together in a downloads folder.
 
 The block is delimited plain JSON under a line saying what it is, so the file
-survives being read by a person. Import takes the *last* block in a file,
-accepts a bare `.json` export as well, and names what it will add, what it will
-write over and what this site has no exam for before it writes anything.
+survives being read by a person. Finding it by slicing between the markers is
+the obvious approach and is wrong: the report prints your notes, the payload
+carries them too, and a note containing the marker text moved the slice into
+the middle of the JSON. So the markers are a signpost for a person, and the
+parser looks for a line that is itself a payload, taken from the end so a file
+appended to twice restores the newer one. A bare `.json` export works, and so
+does a file whose long line was wrapped in transit.
+
+Import opens a dialog rather than a run of native confirm boxes, because a
+confirm can only ask yes or no to a whole file and the useful question is which
+exams to take. Every exam in the file gets a row saying what it holds and what
+taking it would do. A row that would replace work already in this browser says
+so in red and starts unticked; a row for an exam this browser has nothing for
+starts ticked. Exams the file names that this site does not have, and records
+too damaged to read, are listed as not offered. A file that is not an export at
+all is told what a real one looks like and where to get one, rather than being
+a dead end.
+
+A record whose state is missing, the wrong type, or carries no answers, notes,
+marks or time is refused rather than written. An export cannot produce one, so
+it is damage, and writing it would have destroyed whatever was there and then
+reported success.
+
+Two tabs of one exam share one saved record and the last to write wins. Nothing
+here can merge them, so the exam page listens for the `storage` event — which
+fires only in the tabs that did *not* do the writing — and the tab that is now
+out of date says so along the foot of the window, with a Reload beside it. The
+exam list rebuilds itself on the same event.
 
 Two details are not simply a copy of the record. A clock that is still running
 is stored as banked time plus the timestamp it has been running since, so the

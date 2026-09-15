@@ -1123,7 +1123,13 @@ document.getElementById('downloadBtn').addEventListener('click', () => {
     EXAM.label ? EXAM.label : null,
     `Score: ${correct} of ${total} correct (${pct}%)`,
     `Incorrect: ${incorrect}    Unanswered: ${unanswered}`,
-    `Time on block: ${formatDuration(elapsedMs())}`, ''].filter(l => l !== null);
+    `Time on block: ${formatDuration(elapsedMs())}`,
+    '',
+    // the file is restorable, and the only place that said so was buried at the
+    // foot of it, inside the block a reader is least likely to reach
+    'This file can be read back: Import progress at the foot of the exam list',
+    'puts these answers, notes and highlights into another browser.',
+    ''].filter(l => l !== null);
   QUESTIONS.forEach(q => {
     const ans = state.answers[q.n] || '(unanswered)';
     const correctLetter = ANSWER_KEY[q.n] || '?';
@@ -1152,7 +1158,11 @@ document.getElementById('downloadBtn').addEventListener('click', () => {
   saveState();
   const text = lines.join('\n')
              + SHELF_TRANSFER.wrap(SHELF_TRANSFER.payload([EXAM]));
-  SHELF_TRANSFER.download(EXAM.id + '_results.txt', text);
+  /* Named so it sits beside the exam list's own export in a downloads folder,
+     and so the name says which form it is rather than repeating the title. */
+  SHELF_TRANSFER.download(
+    'shelfpractice-' + EXAM.slug + '-' + new Date().toISOString().slice(0, 10) + '.txt',
+    text);
 });
 
 /* Import lives on the start screen, before an exam is under way: it writes
@@ -1160,12 +1170,25 @@ document.getElementById('downloadBtn').addEventListener('click', () => {
    middle. It restores every exam the file holds, not only this one, and the
    reload is what makes the engine pick up what was written. */
 document.getElementById('startImportBtn').addEventListener('click', () => {
-  SHELF_TRANSFER.pick(text => {
-    SHELF_TRANSFER.importFrom(text, window.EXAMS || [], done => {
-      alert('Restored ' + done.length + ': ' + done.join(', ') + '.');
-      location.reload();
-    });
+  SHELF_TRANSFER.pick((text, name) => {
+    SHELF_TRANSFER.importFrom(text == null ? '' : text, window.EXAMS || [],
+      () => location.reload(), name);
   });
+});
+
+/* Another tab writing this exam's record — importing into it, or simply being
+   the same exam open twice — leaves this tab holding a copy that is no longer
+   what is saved, and the next thing it saves would overwrite the other. There
+   is nothing here to merge with, so the notice says what is true and leaves the
+   choice alone. The storage event does not fire in the tab that did the
+   writing, so this only ever speaks about somebody else's change. */
+window.addEventListener('storage', (e) => {
+  if(e.key !== STORAGE_KEY) return;
+  document.getElementById('staleNote').hidden = false;
+});
+document.getElementById('staleReload').addEventListener('click', () => location.reload());
+document.getElementById('staleDismiss').addEventListener('click', () => {
+  document.getElementById('staleNote').hidden = true;
 });
 
 // timer

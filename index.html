@@ -9,6 +9,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%230b4a73'/%3E%3Crect x='5.4' y='5.6' width='3.2' height='12.8' rx='1.3' fill='%23fff'/%3E%3Crect x='10.4' y='8.2' width='3.2' height='10.2' rx='1.3' fill='%23fff'/%3E%3Crect x='15.4' y='10.6' width='3.2' height='7.8' rx='1.3' fill='%23fff'/%3E%3C/svg%3E">
 <title>Shelf Practice Exams</title>
 <link rel="stylesheet" href="assets/theme.css">
+<link rel="stylesheet" href="assets/transfer.css">
 <style>
   body{min-height:100vh;}
 
@@ -450,13 +451,15 @@
   });
 
   document.getElementById('importBtn').addEventListener('click', () => {
-    SHELF_TRANSFER.pick(text => {
-      SHELF_TRANSFER.importFrom(text, exams, done => {
-        renderList();
-        alert('Restored ' + done.length + ': ' + done.join(', ') + '.');
-      });
+    SHELF_TRANSFER.pick((text, name) => {
+      SHELF_TRANSFER.importFrom(text == null ? '' : text, exams, () => renderList(), name);
     });
   });
+
+  /* Another tab of this site can change what is saved — most obviously by
+     importing into it — and the storage event fires only in the tabs that did
+     not do the writing, which is exactly the set that is now out of date. */
+  window.addEventListener('storage', () => renderList());
 
   if(exams.length){
     describeShelf();
