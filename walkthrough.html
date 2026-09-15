@@ -3,8 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- A private thing passed between people who already know what it is. It has
+     no reason to be in anyone's search results, and a crawler has to be able to
+     read the page to see this, so it stays a meta tag rather than a robots.txt
+     rule, which Google does not honour for noindex. One line to delete if the
+     site should ever be findable. -->
+<meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%230b4a73'/%3E%3Crect x='5.4' y='5.6' width='3.2' height='12.8' rx='1.3' fill='%23fff'/%3E%3Crect x='10.4' y='8.2' width='3.2' height='10.2' rx='1.3' fill='%23fff'/%3E%3Crect x='15.4' y='10.6' width='3.2' height='7.8' rx='1.3' fill='%23fff'/%3E%3C/svg%3E">
-<title>How it works | Shelf Practice</title>
+<title>Try a question | Shelf Practice</title>
 <link rel="stylesheet" href="assets/theme.css">
 <!-- The tour shows the exam screen by building it out of the exam page's own
      stylesheet rather than describing it in prose or pasting a picture of it.
@@ -33,16 +39,6 @@
   main.page h1{margin:0 0 8px;font-size:var(--fs-xl);color:var(--navy-dark);letter-spacing:-.2px;}
   .lede{margin:0 0 6px;color:var(--muted);font-size:var(--fs-md);line-height:1.6;max-width:66ch;}
 
-  /* The one sentence the whole page exists to say, so it is not left to be
-     inferred from the screens below it. */
-  .claim{
-    margin:20px 0 0;
-    background:#fff;border:1px solid var(--border);border-left:5px solid var(--navy);
-    border-radius:var(--r-md);
-    padding:16px 20px;
-    font-size:var(--fs-md);line-height:1.6;max-width:72ch;
-  }
-  .claim b{color:var(--navy-dark);}
 
   .step{margin-top:44px;}
   .step-head{display:flex;align-items:baseline;gap:12px;margin-bottom:8px;}
@@ -164,20 +160,14 @@
   </header>
 
   <main class="page">
-    <h1>How it works</h1>
-    <p class="lede">A tour of the exam screen, with a working item in it.</p>
-
-    <p class="claim">These are not screenshots of a question bank. Each form runs
-      as a <b>question interface</b>. You get one item at a time, a running clock,
-      cross&#8209;outs, highlighting, marked items and notes, and when you end the
-      block <b>every item reopens with a full written explanation</b>.
-      The item below is live. Answer it.</p>
+    <h1>Try a question</h1>
+    <p class="lede">These are not screenshots. Every form runs as a question interface,
+      and what follows is that screen with one live item in it, built out of the exam
+      page's own stylesheet rather than pictured. Everything in the frame responds.</p>
 
     <!-- ---------- 1. the exam screen ---------- -->
     <section class="step">
       <div class="step-head"><span class="step-n">1</span><h2>Work the item</h2></div>
-      <p class="step-say">This is the exam screen, built out of the exam page's own
-        stylesheet rather than pictured. Everything in the frame responds.</p>
       <ul class="try">
         <li><span><b>Click a choice</b>, or press <kbd>A</kbd>&ndash;<kbd>E</kbd>, to answer it</span></li>
         <li><span><b>Right&#8209;click a choice</b>, or click its <b>ab</b> tab, to cross it out</span></li>
@@ -237,29 +227,23 @@
         </footer>
       </div>
 
-      <p class="frame-note">The item above was written for this page so that the tour
-        gives nothing away. The forms themselves carry the NBME's own stems, choices
-        and answer letters, unedited.</p>
-    </section>
-
-    <!-- ---------- 2. grading ---------- -->
-    <section class="step">
-      <div class="step-head"><span class="step-n">2</span><h2>End the block, and the item explains itself</h2></div>
-      <p class="step-say">Nothing is revealed while you are working, because the block
-        runs the way the shelf does. When you end it, every item reopens with the
-        correct answer marked, your own answer beside it, and the form's explanation
-        underneath. Press the button and the item above will change.</p>
       <div class="frame-drive">
         <button class="btn" id="dGrade">End the block and see the answer</button>
         <button class="btn secondary" id="dReset" style="display:none">Put the item back</button>
       </div>
-      <p class="frame-note">In a real exam this lives behind <b>Review &rarr; End block
+      <p class="frame-note">Nothing is revealed while you are working, because the block
+        runs the way the shelf does. Ending it reopens every item with the correct
+        answer marked, your own answer beside it, and the form's explanation
+        underneath. In a real exam the button lives behind <b>Review &rarr; End block
         and see results</b>, and it asks first if you have left items unanswered.</p>
+      <p class="frame-note">The item itself was written for this page so that the tour
+        gives nothing away. The forms carry the NBME's own stems, choices and answer
+        letters, unedited.</p>
     </section>
 
-    <!-- ---------- 3. review grid and results ---------- -->
+    <!-- ---------- 2. review grid and results ---------- -->
     <section class="step">
-      <div class="step-head"><span class="step-n">3</span><h2>Then the whole block opens up</h2></div>
+      <div class="step-head"><span class="step-n">2</span><h2>Then the whole block opens up</h2></div>
       <p class="step-say">Every item stays reachable. The grid is how you move around
         the block while you are still in it; the score sheet is where you land when
         it is over, and every row reopens its item with the explanation showing.</p>
@@ -320,7 +304,7 @@
 
     <!-- ---------- 4. the rest of the toolbar ---------- -->
     <section class="step">
-      <div class="step-head"><span class="step-n">4</span><h2>The rest of the bar</h2></div>
+      <div class="step-head"><span class="step-n">3</span><h2>The rest of the bar</h2></div>
       <p class="step-say">One item cannot act all of this out, so here it is in words.</p>
       <div class="rest">
         <div class="rest-item">
@@ -363,7 +347,7 @@
       <a class="btn" href="index.html">Open a practice exam</a>
     </div>
 
-    <p class="foot">Runs entirely in your browser &mdash; nothing is uploaded, no account needed.</p>
+    <p class="foot">Runs entirely in your browser. Nothing is uploaded, no account needed.</p>
   </main>
 
 <script>
@@ -482,8 +466,8 @@
       bannerEl.textContent = !selected
         ? 'Not answered. Correct answer: ' + KEY + '.'
         : selected === KEY
-          ? 'Correct — you selected ' + selected + '.'
-          : 'Incorrect — you selected ' + selected + '. Correct answer: ' + KEY + '.';
+          ? 'Correct. You selected ' + selected + '.'
+          : 'Incorrect. You selected ' + selected + ', and the correct answer is ' + KEY + '.';
       expEl.innerHTML = '<div class="exp-h">Explanation</div>' + EXPLANATION;
       expEl.style.display = '';
       progEl.classList.add('graded');

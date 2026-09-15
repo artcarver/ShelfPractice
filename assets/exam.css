@@ -78,6 +78,14 @@
     line-height:1.5;
   }
   /* Start Over throws work away, so its link is quiet until you reach for it. */
+  /* Quiet, and under Begin rather than over it: someone who already knows what
+     this is should not have to step over an explanation to start. */
+  .start-tour{
+    margin:14px 0 0;
+    font-size:var(--fs-xs);color:var(--faint);
+  }
+  .start-tour a{color:var(--muted);}
+
   .start-over-line .text-link{color:var(--muted);}
   .start-over-line .text-link:hover{color:var(--incorrect);}
   @media (max-width:560px){

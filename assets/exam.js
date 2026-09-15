@@ -222,10 +222,10 @@ function render(){
       banner.textContent = `Not answered. Correct answer: ${correctLetter}.`;
     }else if(selected === correctLetter){
       banner.className = 'graded-banner show correct-banner';
-      banner.textContent = `Correct — you selected ${selected}.`;
+      banner.textContent = `Correct. You selected ${selected}.`;
     }else{
       banner.className = 'graded-banner show incorrect-banner';
-      banner.textContent = `Incorrect — you selected ${selected}. Correct answer: ${correctLetter}.`;
+      banner.textContent = `Incorrect. You selected ${selected}, and the correct answer is ${correctLetter}.`;
     }
   }else{
     banner.className = 'graded-banner';
