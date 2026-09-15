@@ -122,6 +122,7 @@
      gap between items opens up around the commas. */
   .try li span{flex:1 1 auto;min-width:0;}
   .try b{font-weight:600;color:var(--navy-dark);}
+  .try li:last-child{grid-column:1 / -1;}
   @media (max-width:640px){ .try{grid-template-columns:1fr;} }
 
   .end{
