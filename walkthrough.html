@@ -41,19 +41,7 @@
   .lede{margin:0 0 6px;color:var(--muted);font-size:var(--fs-md);line-height:1.6;max-width:66ch;}
 
 
-  .step{margin-top:44px;}
-  .step-head{display:flex;align-items:baseline;gap:12px;margin-bottom:8px;}
-  .step-n{
-    flex:none;
-    width:26px;height:26px;border-radius:50%;
-    background:var(--navy);color:#fff;
-    font-size:var(--fs-sm);font-weight:700;
-    display:inline-flex;align-items:center;justify-content:center;
-    align-self:center;
-  }
-  .step h2{margin:0;font-size:var(--fs-lg);color:var(--navy-dark);}
-  .step-say{margin:0 0 16px 38px;color:var(--muted);font-size:var(--fs-base);line-height:1.6;max-width:68ch;}
-  @media (max-width:560px){ .step-say{margin-left:0;} }
+  .step{margin-top:24px;}
 
   /* A screen inside the page. The border and the shadow are what say "this is
      the app", the way the exam page's own #app does against the grey. */
@@ -118,7 +106,7 @@
   /* What to actually do with the live item, since a reader who does not touch
      it learns exactly as much as a screenshot would have taught them. */
   .try{
-    list-style:none;margin:0 0 16px 38px;padding:0;
+    list-style:none;margin:0 0 16px;padding:0;
     display:grid;grid-template-columns:1fr 1fr;gap:9px 26px;
     max-width:760px;
   }
@@ -134,46 +122,7 @@
      gap between items opens up around the commas. */
   .try li span{flex:1 1 auto;min-width:0;}
   .try b{font-weight:600;color:var(--navy-dark);}
-  @media (max-width:640px){ .try{grid-template-columns:1fr;margin-left:0;} }
-
-  /* Two screens that belong side by side: the item grid you jump from, and
-     the score sheet you land on. */
-  .pair{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;}
-  @media (max-width:860px){ .pair{grid-template-columns:1fr;} }
-  .pair .frame{box-shadow:none;}
-  .pane-head{
-    padding:12px 18px;border-bottom:1px solid var(--divider);
-    background:var(--navy-tint);
-    font-size:var(--fs-sm);font-weight:600;color:var(--navy-dark);
-  }
-  .pane-body{padding:18px;}
-  .pane-body .grid-nav{grid-template-columns:repeat(8,1fr);gap:6px;margin:12px 0 16px;}
-  .pane-body .score-card{margin:0 0 14px;padding:16px 18px;gap:20px;}
-  .pane-body .score-percent{font-size:34px;}
-  .pane-body .table-wrap{border:0;padding:0;}
-  /* The results table is laid out fixed, and its real column widths are set
-     for the full exam window. In half a pane they add up to more than there
-     is, and the stem — the column that makes the sheet readable as a list of
-     items — is the one that gets squeezed to nothing. So the pane sets its
-     own widths and leaves the rest to the stem. */
-  .pane-body .results-table .col-item{width:56px;}
-  .pane-body .results-table .col-ans{width:50px;}
-  .pane-body .results-table .col-key{width:50px;}
-  .pane-body .results-table .col-res{width:112px;}
-  .pane-body .results-table th,.pane-body .results-table td{padding-left:10px;padding-right:10px;}
-  .cap{margin:10px 0 0;font-size:var(--fs-xs);color:var(--faint);line-height:1.55;}
-
-  /* The rest of the toolbar, which the single-item demo has no room to act
-     out: named, said plainly, and left at that. */
-  .rest{
-    display:grid;grid-template-columns:1fr 1fr;gap:16px 28px;
-    background:#fff;border:1px solid var(--border);border-radius:var(--r-md);
-    padding:22px 24px;
-  }
-  @media (max-width:640px){ .rest{grid-template-columns:1fr;} }
-  .rest-item{display:flex;gap:11px;font-size:var(--fs-sm);line-height:1.55;}
-  .rest-item svg{flex:0 0 auto;color:var(--navy);margin-top:2px;}
-  .rest-item b{display:block;color:var(--navy-dark);font-size:var(--fs-base);margin-bottom:2px;}
+  @media (max-width:640px){ .try{grid-template-columns:1fr;} }
 
   .end{
     margin-top:44px;text-align:center;
@@ -200,13 +149,14 @@
 
   <main class="page">
     <h1>Try a question</h1>
-    <p class="lede">These are not screenshots. Every form runs as a question interface,
-      and what follows is that screen with one live item in it, built out of the exam
-      page's own stylesheet rather than pictured. Everything in the frame responds.</p>
+    <p class="lede">This is the exam screen, with one live item in it. Work it.</p>
 
-    <!-- ---------- 1. the exam screen ---------- -->
+    <!-- The page had grown three sections, a mocked-up score sheet and a card
+         of features, and the button that opens a real exam sat two thousand
+         pixels below the moment that earns it. One screen, one item, one way
+         out: everything that was arguing a case the frame already wins is
+         gone. -->
     <section class="step">
-      <div class="step-head"><span class="step-n">1</span><h2>Work the item</h2></div>
       <ul class="try">
         <li><span><b>Click a choice</b>, or press <kbd>A</kbd>&ndash;<kbd>E</kbd>, to answer it</span></li>
         <li><span><b>Right&#8209;click a choice</b>, or click its <b>ab</b> tab, to cross it out</span></li>
@@ -324,90 +274,19 @@
         <button class="btn" id="dGrade">End the block and see the answer</button>
         <button class="btn secondary" id="dReset" style="display:none">Put the item back</button>
       </div>
-      <p class="frame-note">Nothing is revealed while you are working, because the block
-        runs the way the shelf does. Ending it reopens every item with the correct
-        answer marked, your own answer beside it, and the form's explanation
-        underneath. The same button sits inside <b>Review</b>, which is where the exam
-        keeps it; there it asks first if you have left items unanswered.</p>
-      <p class="frame-note">The item itself was written for this page so that the tour
-        gives nothing away. The forms carry the NBME's own stems, choices and answer
-        letters, unedited. <b>Lab Values</b> in the bar above is not a mock-up of the
-        panel either: it is the same component the exam loads, with the same ranges
-        and the same search.</p>
+      <p class="frame-note">Nothing is revealed until the block ends. Then every item
+        reopens like this, and a score sheet lists the lot: what you picked, what the
+        key was, how long each took, and filters for the ones you missed or flagged.</p>
+      <p class="frame-note">This item was written for the tour so it gives nothing away;
+        the forms carry the NBME's own wording, unedited. <b>Lab Values</b> is not a
+        mock-up either, but the panel the exam itself loads.</p>
     </section>
 
-    <!-- ---------- 2. review grid and results ---------- -->
-    <section class="step">
-      <div class="step-head"><span class="step-n">2</span><h2>Then the whole block opens up</h2></div>
-      <p class="step-say">The grid behind <b>Review</b> in the frame above is how you
-        move around a block while you are still in it. This is where it ends: every
-        row reopens its item with the explanation showing.</p>
-      <div class="frame">
-        <div class="pane-head">Results: the end of the block</div>
-        <div class="pane-body">
-          <div class="score-card">
-            <div>
-              <div class="score-percent">78%</div>
-              <div class="score-frac">39 of 50 correct</div>
-              <div class="score-time">1:42:10 &middot; 2:02 per item</div>
-            </div>
-            <div class="score-breakdown">
-              <div class="b-correct"><b>39</b><span>Correct</span></div>
-              <div class="b-incorrect"><b>11</b><span>Incorrect</span></div>
-            </div>
-          </div>
-          <div class="filter-row">
-            <span class="filter-chip active">All 50</span>
-            <span class="filter-chip">Incorrect 11</span>
-            <span class="filter-sep"></span>
-            <span class="filter-chip attr">Marked 6</span>
-          </div>
-          <div class="table-wrap" style="margin-top:12px">
-            <table class="results-table">
-              <thead>
-                <tr><th class="col-item">Item</th><th class="col-stem">Stem</th><th class="col-ans">You</th><th class="col-key">Key</th><th class="col-res">Result</th></tr>
-              </thead>
-              <tbody>
-                <tr class="item-row row-correct"><td class="cell-item">10</td><td class="cell-stem"><span class="stem-text">A 34-year-old woman has had fatigue for&hellip;</span></td><td class="cell-ans">D</td><td class="cell-key">D</td><td class="cell-res"><span class="result-pill c"><span class="g" aria-hidden="true">&#10003;</span>Correct</span></td></tr>
-                <tr class="item-row row-incorrect is-marked"><td class="cell-item">11<span class="flag-ico" aria-hidden="true"></span></td><td class="cell-stem"><span class="stem-text">A 6-month-old boy is brought to the&hellip;</span></td><td class="cell-ans">A</td><td class="cell-key">C</td><td class="cell-res"><span class="result-pill x"><span class="g" aria-hidden="true">&#10007;</span>Incorrect</span></td></tr>
-                <tr class="item-row row-correct"><td class="cell-item">12</td><td class="cell-stem"><span class="stem-text">A 58-year-old man comes to the emergency&hellip;</span></td><td class="cell-ans">C</td><td class="cell-key">C</td><td class="cell-res"><span class="result-pill c"><span class="g" aria-hidden="true">&#10003;</span>Correct</span></td></tr>
-                <tr class="item-row row-unanswered"><td class="cell-item">13</td><td class="cell-stem"><span class="stem-text">A 71-year-old woman is admitted after a&hellip;</span></td><td class="cell-ans"><span class="blank">&mdash;</span></td><td class="cell-key">B</td><td class="cell-res"><span class="result-pill u"><span class="g" aria-hidden="true">&ndash;</span>Unanswered</span></td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-      <p class="cap">Sample figures. The score sheet also records how long each item
-        took and flags the ones that ran long, sorts by item, result or time, and
-        downloads as a text file.</p>
-    </section>
-
-    <!-- ---------- 4. the rest of the toolbar ---------- -->
-    <section class="step">
-      <div class="step-head"><span class="step-n">3</span><h2>What the frame leaves out</h2></div>
-      <p class="step-say">Three things one item on one page cannot act out.</p>
-      <div class="rest">
-        <div class="rest-item">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12h8"/></svg>
-          <div><b>Exhibits</b>Where a form prints an image, the item carries it and
-            clicking it opens it full size.</div>
-        </div>
-        <div class="rest-item">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
-          <div><b>It saves itself</b>Answers, highlights, cross&#8209;outs, marks, notes
-            and the clock stay in your browser. Close the tab mid&#8209;block and pick
-            it up later. Nothing is uploaded and there is no account.</div>
-        </div>
-        <div class="rest-item">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
-          <div><b>And it can leave</b>Export progress at the foot of the exam list
-            writes everything to a file, and Import puts it into another browser, so
-            a block worked on a laptop can be finished on a phone.</div>
-        </div>
-      </div>
     <div class="end">
       <h2>That is the whole of it</h2>
-      <p>Forty forms, fifty items each, every one with an explanation.</p>
+      <p>Forty forms, fifty items each, every one with an explanation. Exhibits where
+        the form prints them, progress kept in this browser, and a file you can carry
+        to another one.</p>
       <a class="btn" href="index.html">Open a practice exam</a>
     </div>
 

@@ -159,8 +159,14 @@ element, which is the engine's own mechanism, and since nothing outside the
 frame reads `--content-scale` only the frame changes. **Review** opens a grid
 that reads the demo's own state and carries End block, which is where the exam
 keeps grading. **Pause** stops the clock and puts the card over the frame.
-Because all five work, the sections below the frame describe only what one item
-on one page cannot act out: exhibits, saved progress, and export/import. The item and its
+Because all five work, nothing below the frame needs to describe them, and the
+page is one screen: a line, the item, the button that grades it, and the way
+into a real exam. It had grown to three numbered sections, a mocked-up score
+sheet and a card of features, which put the button that opens an exam two
+thousand pixels below the moment that earns it. The mock-up was the worst of
+it — a picture of a screen, on the page whose whole argument is that these are
+not pictures of screens. What the frame genuinely cannot show is now one
+sentence in its caption and one in the closing line. The item and its
 explanation were written for the page, and it says so under the frame, so the
 tour gives away nothing that is on a form.
 
