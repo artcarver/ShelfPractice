@@ -1145,15 +1145,27 @@ document.getElementById('downloadBtn').addEventListener('click', () => {
       lines.push('');
     });
   }
-  const blob = new Blob([lines.join('\n')], {type:'text/plain'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = EXAM.id + '_results.txt';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  /* The report is for reading; the block underneath it is the same block the
+     exam list exports, so this one file is both the record of the attempt and
+     the thing that puts the attempt back in another browser. saveState first,
+     since the block is read out of storage rather than out of `state`. */
+  saveState();
+  const text = lines.join('\n')
+             + SHELF_TRANSFER.wrap(SHELF_TRANSFER.payload([EXAM]));
+  SHELF_TRANSFER.download(EXAM.id + '_results.txt', text);
+});
+
+/* Import lives on the start screen, before an exam is under way: it writes
+   over saved progress, which is a thing to do on the way in and not in the
+   middle. It restores every exam the file holds, not only this one, and the
+   reload is what makes the engine pick up what was written. */
+document.getElementById('startImportBtn').addEventListener('click', () => {
+  SHELF_TRANSFER.pick(text => {
+    SHELF_TRANSFER.importFrom(text, window.EXAMS || [], done => {
+      alert('Restored ' + done.length + ': ' + done.join(', ') + '.');
+      location.reload();
+    });
+  });
 });
 
 // timer

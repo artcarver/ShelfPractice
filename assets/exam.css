@@ -85,6 +85,14 @@
     font-size:var(--fs-xs);color:var(--faint);
   }
   .start-tour a{color:var(--muted);}
+  .start-sep{margin:0 7px;opacity:.6;}
+  /* A button doing a link's job, dressed as the link beside it. */
+  .start-import{
+    font-family:inherit;font-size:inherit;
+    background:none;border:0;padding:0;
+    color:var(--muted);text-decoration:underline;cursor:pointer;
+  }
+  .start-import:hover{color:var(--navy);}
 
   .start-over-line .text-link{color:var(--muted);}
   .start-over-line .text-link:hover{color:var(--incorrect);}

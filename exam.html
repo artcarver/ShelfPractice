@@ -83,7 +83,8 @@
     <div class="start-actions" id="beginRow" style="display:none">
       <button class="btn" id="beginBtn">Begin exam</button>
     </div>
-    <p class="start-tour">First time? <a href="walkthrough.html">Try a question first</a>.</p>
+    <p class="start-tour">First time? <a href="walkthrough.html">Try a question first</a>.<span
+      class="start-sep">&middot;</span><button type="button" class="start-import" id="startImportBtn">Import progress from a file</button></p>
   </div>
 </div>
 
@@ -271,6 +272,7 @@
 <!-- One shell for every exam. The catalog entry comes from the manifest, the
      questions from that exam's own data.js; the engine below is shared. -->
 <script src="exams/manifest.js"></script>
+<script src="assets/transfer.js"></script>
 <script>
 (() => {
   const slug = new URLSearchParams(location.search).get('exam');

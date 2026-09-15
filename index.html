@@ -140,6 +140,16 @@
   .foot a{color:var(--faint);text-decoration:underline;}
   .foot a:hover{color:var(--navy);}
   .foot .sep{margin:0 8px;opacity:.55;}
+  /* Export and Import are buttons doing a link's job, so they are dressed as
+     the link beside them rather than given a shape of their own. */
+  .foot-link{
+    font-family:inherit;font-size:inherit;
+    background:none;border:0;padding:0;
+    color:var(--faint);text-decoration:underline;cursor:pointer;
+  }
+  .foot-link:hover{color:var(--navy);}
+  .foot-tools{margin-top:7px;}
+  .foot-tools [hidden]{display:none;}
   .empty{
     background:#fff;border:1px solid var(--border);border-radius:var(--r-md);
     padding:20px;color:var(--muted);font-size:var(--fs-base);
@@ -171,9 +181,17 @@
 
     <p class="foot">Runs entirely in your browser. Nothing is uploaded, no account
       needed.<span class="sep">&middot;</span><a href="walkthrough.html">How it works</a></p>
+    <!-- Saved progress lives in this browser and nowhere else, which is the
+         point and also the catch: a second device knows nothing about it. These
+         two carry it across. Export appears only when there is something to
+         export. -->
+    <p class="foot foot-tools"><span id="exportWrap" hidden><button type="button"
+      class="foot-link" id="exportBtn">Export progress</button><span class="sep">&middot;</span></span><button
+      type="button" class="foot-link" id="importBtn">Import progress</button></p>
   </main>
 
 <script src="exams/manifest.js"></script>
+<script src="assets/transfer.js"></script>
 <script>
   const list  = document.getElementById('examList');
   const exams = window.EXAMS || [];
@@ -331,6 +349,7 @@
   function renderList(){
     list.innerHTML = '';
     placeTourCard();
+    placeTransfer();
     const open = readOpen();
 
     groups.forEach((members, subject) => {
@@ -393,6 +412,51 @@
     const started = exams.some(e => progressOf(e).kind !== 'new');
     document.getElementById('tourCard').hidden = started;
   }
+
+  /* ---------- carrying progress to another browser ---------- */
+
+  /* The file is meant to survive being looked at: it opens with what is in it,
+     in the words the list uses, and the block a machine reads comes after. */
+  function exportText(started){
+    const stamp = new Date();
+    const lines = ['ShelfPractice saved progress',
+                   'Exported ' + stamp.toISOString().slice(0, 10), ''];
+    started.forEach(e => {
+      const p = progressOf(e);
+      const where = p.kind === 'done'
+        ? 'scored ' + p.pct + '%, ' + p.correct + ' of ' + p.total + ' correct'
+        : p.answered + ' of ' + (e.items || '?') + ' answered';
+      lines.push('  ' + (e.title + (e.label ? ' ' + e.label : '')) + ' - ' + where);
+    });
+    lines.push('', 'To load this into another browser, open the exam list there and',
+                   'choose Import progress at the foot of the page.');
+    return lines.join('\n') + SHELF_TRANSFER.wrap(SHELF_TRANSFER.payload(started));
+  }
+
+  function startedExams(){
+    return exams.filter(e => progressOf(e).kind !== 'new');
+  }
+
+  function placeTransfer(){
+    document.getElementById('exportWrap').hidden = !startedExams().length;
+  }
+
+  document.getElementById('exportBtn').addEventListener('click', () => {
+    const started = startedExams();
+    if(!started.length) return;
+    SHELF_TRANSFER.download(
+      'shelfpractice-progress-' + new Date().toISOString().slice(0, 10) + '.txt',
+      exportText(started));
+  });
+
+  document.getElementById('importBtn').addEventListener('click', () => {
+    SHELF_TRANSFER.pick(text => {
+      SHELF_TRANSFER.importFrom(text, exams, done => {
+        renderList();
+        alert('Restored ' + done.length + ': ' + done.join(', ') + '.');
+      });
+    });
+  });
 
   if(exams.length){
     describeShelf();

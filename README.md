@@ -16,6 +16,7 @@ assets/
                     cross-outs, lab tables, saved progress)
   labvalues.css     Styles for the Lab Values reference panel
   labvalues.js      Lab Values data + panel (searchable, tabbed)
+  transfer.js       Export and import of saved progress, shared by both pages
 exams/
   manifest.js       The catalog: one entry per exam
   <subject>-form<N>/
@@ -77,6 +78,35 @@ plus `exam.html` is shared machinery and never changes when you add an exam.
 Everything under `exams/` is content. `exam.html` merges an exam's catalog entry
 from `manifest.js` with its `data.js` into `window.EXAM`, then hands that to the
 engine — so the engine has no knowledge of any particular exam.
+
+### Carrying progress between browsers
+
+Everything an exam knows about you lives in this browser's `localStorage` and
+nowhere else. That is the point, and it is also the catch: a block worked on a
+laptop is invisible on a phone, and clearing a browser takes the lot.
+`assets/transfer.js` is the way across, and both pages load it.
+
+The foot of the exam list has **Export progress**, which appears only when
+there is progress, and **Import progress**, which is always there. An exam's
+results screen still downloads the readable report it always did, and now
+appends the same data block to it, so one file is both the record of the
+attempt and the thing that puts the attempt back somewhere else. An exam's
+start screen can import too, since writing over saved progress is a thing to
+do on the way in rather than mid-block.
+
+The block is delimited plain JSON under a line saying what it is, so the file
+survives being read by a person. Import takes the *last* block in a file,
+accepts a bare `.json` export as well, and names what it will add, what it will
+write over and what this site has no exam for before it writes anything.
+
+Two details are not simply a copy of the record. A clock that is still running
+is stored as banked time plus the timestamp it has been running since, so the
+export banks the running time and closes the clock; carried to another browser
+on another day, that timestamp would otherwise turn the gap between the two
+into hours on the block. The same goes for the per-item clock. And the
+`sessionStorage` flag that lets a reload skip the start screen is not carried
+at all: it belongs to the tab it was set in, so an imported exam opens on its
+start screen, which is where someone who has just restored it wants to be.
 
 ### The walkthrough
 
