@@ -101,27 +101,29 @@
   .row-go svg{color:#b3c1cb;transition:color .12s, transform .12s;}
   a.row:hover .row-go svg{color:var(--navy);transform:translateX(2px);}
 
-  /* The list alone does not say what an exam is, and people have assumed the
-     forms are stacks of screenshots and left without opening one. So the page
-     says otherwise before the first row, in one quiet line: a note, not a
-     banner, which is why it takes the tint rather than white and no accent
-     bar. It is there to be read once and then never to be in the way. */
+  /* One line above the list, offering the tour to someone who has not seen it.
+     It has to read as a different kind of thing from the exam rows without
+     reading as a disabled one, so it keeps their white and their hairline and
+     takes a navy rule down its left edge instead: an accent marks it, a wash
+     would only have dimmed it. */
   a.tour{
     display:flex;align-items:center;gap:12px;
-    margin-top:16px;padding:9px 14px;
-    background:var(--navy-tint);border:1px solid var(--divider);
+    margin-top:16px;padding:9px 14px 9px 12px;
+    background:#fff;
+    border:1px solid var(--border);
+    border-left:3px solid var(--navy);
     border-radius:var(--r-sm);
     text-decoration:none;color:inherit;
-    transition:background .12s, border-color .12s;
+    transition:background .12s;
   }
-  a.tour:hover{background:#eef4f8;border-color:var(--border);}
+  a.tour:hover{background:var(--navy-tint);}
   .tour-text{
     flex:1 1 auto;min-width:0;
-    font-size:var(--fs-xs);line-height:1.5;color:var(--muted);
+    font-size:var(--fs-sm);line-height:1.5;color:var(--text);
   }
   .tour-go{
     flex:none;display:flex;align-items:center;gap:4px;
-    font-size:var(--fs-xs);font-weight:600;color:var(--navy);white-space:nowrap;
+    font-size:var(--fs-sm);font-weight:600;color:var(--navy);white-space:nowrap;
   }
   .tour-go svg{color:#b3c1cb;transition:color .12s, transform .12s;}
   a.tour:hover .tour-go svg{color:var(--navy);transform:translateX(2px);}
@@ -158,8 +160,7 @@
       and notes stay in this browser.</p>
 
     <a class="tour" href="walkthrough.html" id="tourCard" hidden>
-      <span class="tour-text">These are not screenshots. Every form runs as a
-        question interface.</span>
+      <span class="tour-text">New here?</span>
       <span class="tour-go"><span>Try a question</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></span>
     </a>
 
