@@ -102,31 +102,34 @@
   a.row:hover .row-go svg{color:var(--navy);transform:translateX(2px);}
 
   /* One line above the list, offering the tour to someone who has not seen it.
-     It has to read as a different kind of thing from the exam rows without
-     reading as a disabled one, so it keeps their white and their hairline and
-     takes a navy rule down its left edge instead: an accent marks it, a wash
-     would only have dimmed it. */
+     A white box with an accent was still a variation on an exam row, and a
+     tinted one read as a row switched off. So it is filled, in the navy the
+     top bar already wears: the one surface on this page that is not a white
+     panel on grey, which is what makes it legible as a different kind of
+     thing at a glance rather than on inspection. It stays one line, and it
+     goes for good once an exam has been started. */
   a.tour{
     display:flex;align-items:center;gap:12px;
-    margin-top:16px;padding:9px 14px 9px 12px;
-    background:#fff;
-    border:1px solid var(--border);
-    border-left:3px solid var(--navy);
+    margin-top:16px;padding:10px 14px;
+    background:var(--navy);
+    border:1px solid var(--navy);
     border-radius:var(--r-sm);
-    text-decoration:none;color:inherit;
-    transition:background .12s;
+    text-decoration:none;
+    transition:background .12s, border-color .12s;
   }
-  a.tour:hover{background:var(--navy-tint);}
+  a.tour:hover{background:var(--navy-dark);border-color:var(--navy-dark);}
+  a.tour:focus-visible{outline:2px solid var(--navy-dark);outline-offset:2px;}
   .tour-text{
     flex:1 1 auto;min-width:0;
-    font-size:var(--fs-sm);line-height:1.5;color:var(--text);
+    font-size:var(--fs-sm);line-height:1.5;
+    color:#dce8f0;
   }
   .tour-go{
     flex:none;display:flex;align-items:center;gap:4px;
-    font-size:var(--fs-sm);font-weight:600;color:var(--navy);white-space:nowrap;
+    font-size:var(--fs-sm);font-weight:600;color:#fff;white-space:nowrap;
   }
-  .tour-go svg{color:#b3c1cb;transition:color .12s, transform .12s;}
-  a.tour:hover .tour-go svg{color:var(--navy);transform:translateX(2px);}
+  .tour-go svg{color:rgba(255,255,255,.6);transition:color .12s, transform .12s;}
+  a.tour:hover .tour-go svg{color:#fff;transform:translateX(2px);}
   /* a.tour is a flex box, which outranks the [hidden] attribute on its own */
   a.tour[hidden]{display:none;}
 
@@ -156,8 +159,7 @@
 
   <main>
     <h1>Practice exams</h1>
-    <p class="lede" id="lede">Every item has a full explanation. Your answers, highlights
-      and notes stay in this browser.</p>
+    <p class="lede" id="lede">Every item has a full explanation. Progress saves in this browser.</p>
 
     <a class="tour" href="walkthrough.html" id="tourCard" hidden>
       <span class="tour-text">New here?</span>
@@ -380,9 +382,8 @@
       items
         ? forms.charAt(0).toUpperCase() + forms.slice(1) + ', '
           + items.toLocaleString() + ' items, every one with a full explanation. '
-          + 'Your answers, highlights and notes stay in this browser.'
-        : 'Every item has a full explanation. Your answers, highlights and notes '
-          + 'stay in this browser.';
+          + 'Progress saves in this browser.'
+        : 'Every item has a full explanation. Progress saves in this browser.';
   }
 
   /* The card exists to answer "is this just screenshots", and anyone who has
