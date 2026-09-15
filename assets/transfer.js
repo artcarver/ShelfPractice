@@ -211,6 +211,19 @@
     return done;
   }
 
+  /* What a saved state amounts to, in the words the exam list already uses, so
+     a row in the dialog reads the way the row on the list reads. */
+  function describe(st, items){
+    if(!st) return 'nothing saved';
+    if(st.graded && st.score && st.score.total)
+      return 'scored ' + Math.round((st.score.correct / st.score.total) * 100) + '%'
+           + ', ' + st.score.correct + ' of ' + st.score.total + ' correct';
+    const answered = Object.keys(st.answers || {}).length;
+    if(answered) return answered + ' of ' + (items || '?') + ' answered';
+    if(st.elapsedMs) return 'started, nothing answered yet';
+    return 'nothing answered';
+  }
+
   /* ---------- files ---------- */
 
   function download(filename, text){
@@ -235,8 +248,8 @@
       const file = input.files && input.files[0];
       if(file){
         const reader = new FileReader();
-        reader.onload  = () => { onText(String(reader.result || '')); cleanup(); };
-        reader.onerror = () => { alert('That file could not be read.'); cleanup(); };
+        reader.onload  = () => { onText(String(reader.result || ''), file.name); cleanup(); };
+        reader.onerror = () => { onText(null, file.name); cleanup(); };
         reader.readAsText(file);
       }else cleanup();
     });
@@ -245,41 +258,175 @@
     input.click();
   }
 
-  /* The whole round trip, so neither page has to spell out the prompts and
-     both of them word it the same way. Returns nothing; it talks to the
-     person and calls back only when something was actually written. */
-  function importFrom(text, exams, onDone){
+  /* ---------- the dialog ---------- */
+
+  let overlay = null;
+
+  function el(tag, cls, text){
+    const n = document.createElement(tag);
+    if(cls) n.className = cls;
+    if(text != null) n.textContent = text;
+    return n;
+  }
+
+  function closeDialog(){
+    if(!overlay) return;
+    overlay.classList.remove('show');
+    document.removeEventListener('keydown', onEsc, true);
+    if(overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    overlay = null;
+  }
+  function onEsc(e){ if(e.key === 'Escape'){ e.stopPropagation(); closeDialog(); } }
+
+  /* One shell, filled differently depending on whether there is a choice to
+     make, nothing to do, or a result to report. Escape and the backdrop close
+     it, and nothing is written until the button in it is pressed. */
+  function openDialog(title, from, build){
+    closeDialog();
+    overlay = el('div', 'tr-overlay');
+    const modal = el('div', 'tr-modal');
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', title);
+
+    const head = el('div', 'tr-head');
+    head.append(el('h2', null, title));
+    if(from) head.append(el('p', 'tr-from', 'From ' + from));
+    const body = el('div', 'tr-body');
+    const foot = el('div', 'tr-foot');
+    modal.append(head, body, foot);
+    overlay.append(modal);
+    overlay.addEventListener('mousedown', e => { if(e.target === overlay) closeDialog(); });
+    document.body.appendChild(overlay);
+    document.addEventListener('keydown', onEsc, true);
+    build(body, foot, modal);
+    overlay.classList.add('show');
+    const first = modal.querySelector('input, button');
+    if(first) first.focus();
+    return {body, foot, modal};
+  }
+
+  function closeButton(label){
+    const b = el('button', 'btn secondary', label || 'Close');
+    b.type = 'button';
+    b.addEventListener('click', closeDialog);
+    return b;
+  }
+
+  /* The whole round trip. Neither page spells out the wording, so both of them
+     say it the same way, and the choice of what to take is made here rather
+     than assumed. */
+  function importFrom(text, exams, onDone, from){
     let data;
     try{ data = read(text); }
-    catch(e){ alert(e.message); return; }
-
-    const {fresh, overwrite, unknown, damaged} = plan(data, exams);
-    if(!fresh.length && !overwrite.length){
-      alert(damaged.length
-          ? 'Nothing in that file could be read back.\n\nThe saved progress for '
-            + damaged.join(', ') + ' is missing or damaged, so it has been left alone.'
-          : 'Nothing in that file matches an exam on this site.'
-            + (unknown.length ? '\n\nIt holds: ' + unknown.join(', ') : ''));
+    catch(e){
+      openDialog('Import progress', from, (body, foot) => {
+        body.append(el('p', 'tr-say', e.message));
+        body.append(el('p', 'tr-say',
+          'A file you can import is made by Export progress at the foot of the '
+        + 'exam list, or by the download button on an exam\u2019s results screen. '
+        + 'Keep the whole file, including the block at the end of it.'));
+        foot.append(el('span', 'tr-note', ''), closeButton('Close'));
+      });
       return;
     }
-    const lines = [];
-    if(fresh.length)     lines.push('Restore ' + fresh.length + ': ' + fresh.map(f => f.name).join(', '));
-    if(overwrite.length) lines.push('Write over saved progress in ' + overwrite.length + ': '
-                                  + overwrite.map(f => f.name).join(', '));
-    if(unknown.length)   lines.push('Skip, no such exam here: ' + unknown.join(', '));
-    if(damaged.length)   lines.push('Skip, damaged in the file: ' + damaged.join(', '));
-    lines.push('', 'Anything written over cannot be recovered.');
-    if(!confirm(lines.join('\n'))) return;
 
-    const done = apply(fresh.concat(overwrite));
-    if(!done.length){ alert('Nothing could be saved. This browser may be blocking site storage.'); return; }
-    if(onDone) onDone(done);
+    const {fresh, overwrite, unknown, damaged} = plan(data, exams);
+    const takeable = fresh.concat(overwrite);
+
+    if(!takeable.length){
+      openDialog('Import progress', from, (body, foot) => {
+        body.append(el('p', 'tr-say', damaged.length
+          ? 'Nothing in that file could be read back, so nothing has been changed.'
+          : 'That file holds no exam that is on this site, so nothing has been changed.'));
+        if(damaged.length) body.append(el('p', 'tr-say',
+          'The saved progress for ' + damaged.join(', ') + ' is missing or damaged in the file.'));
+        if(unknown.length) body.append(el('p', 'tr-say',
+          'It holds ' + unknown.join(', ') + ', which this site has no exam for. '
+        + 'If that exam should be here, it needs adding to the site first.'));
+        foot.append(el('span', 'tr-note', ''), closeButton('Close'));
+      });
+      return;
+    }
+
+    openDialog('Import progress', from, (body, foot) => {
+      body.append(el('p', 'tr-say',
+        'Choose what to take from this file. Nothing is changed until you press Import.'));
+
+      const list = el('ul', 'tr-list');
+      takeable.forEach((item, i) => {
+        const current = readState(item.entry);
+        const row = el('label', 'tr-row' + (current ? ' is-over' : ''));
+        const box = document.createElement('input');
+        box.type = 'checkbox';
+        /* Restoring something this browser does not have is safe and is what
+           the file is usually for, so it is ticked. Replacing work already
+           here is not, so it is not: it has to be asked for. */
+        box.checked = !current;
+        box.dataset.i = String(i);
+        const txt = el('span');
+        txt.append(el('b', 'tr-name', item.name));
+        const what = el('span', 'tr-what');
+        what.append(document.createTextNode('In the file: ' + describe(item.state, item.entry.items) + '. '));
+        if(current){
+          const warn = el('b', null, 'Replaces ' + describe(current, item.entry.items) + ' saved here.');
+          what.append(warn);
+        }else{
+          what.append(document.createTextNode('Nothing saved here yet.'));
+        }
+        txt.append(what);
+        row.append(box, txt);
+        list.append(row);
+      });
+      body.append(list);
+
+      if(unknown.length || damaged.length){
+        const skip = el('div', 'tr-skip');
+        skip.append(el('b', null, 'Not offered'));
+        if(unknown.length) skip.append(document.createTextNode(
+          'No exam on this site for ' + unknown.join(', ') + '. '));
+        if(damaged.length) skip.append(document.createTextNode(
+          'Missing or damaged in the file: ' + damaged.join(', ') + '.'));
+        body.append(skip);
+      }
+
+      const note = el('span', 'tr-note', 'Anything replaced cannot be recovered.');
+      const go = el('button', 'btn', 'Import');
+      go.type = 'button';
+      const cancel = closeButton('Cancel');
+
+      function refresh(){
+        const n = body.querySelectorAll('input:checked').length;
+        go.textContent = n ? 'Import ' + n + (n === 1 ? ' exam' : ' exams') : 'Import';
+        go.disabled = !n;
+      }
+      body.addEventListener('change', refresh);
+      refresh();
+
+      go.addEventListener('click', () => {
+        const chosen = Array.from(body.querySelectorAll('input:checked'))
+          .map(b => takeable[Number(b.dataset.i)]);
+        const done = apply(chosen);
+        body.innerHTML = '';
+        foot.innerHTML = '';
+        body.append(el('p', 'tr-say', done.length
+          ? 'Restored ' + done.length + (done.length === 1 ? ' exam' : ' exams') + ': ' + done.join(', ') + '.'
+          : 'Nothing could be saved. This browser may be blocking site storage.'));
+        const ok = el('button', 'btn', 'Done');
+        ok.type = 'button';
+        ok.addEventListener('click', () => { closeDialog(); if(done.length && onDone) onDone(done); });
+        foot.append(el('span', 'tr-note tr-done', done.length ? 'Saved in this browser.' : ''), ok);
+        ok.focus();
+      });
+
+      foot.append(note, cancel, go);
+    });
   }
 
   window.SHELF_TRANSFER = {
     VERSION, OPEN, CLOSE,
     stateKey, sessionKey, readState, settle,
-    payload, wrap, read, plan, apply, sanitize,
-    download, pick, importFrom
+    payload, wrap, read, plan, apply, sanitize, describe,
+    download, pick, importFrom, closeDialog
   };
 })();
