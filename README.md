@@ -147,7 +147,20 @@ settles the question is clicking a choice and watching it respond. One sample
 item in that frame is live. It selects, crosses out, highlights, and grades
 itself when you press the button directly under it, driven by a short script in
 the page rather than by `assets/exam.js`, since the engine wants a manifest
-entry and a `data.js` that a tour has no business inventing. The item and its
+entry and a `data.js` that a tour has no business inventing.
+
+The toolbar works too, which matters on a page arguing that the screen
+responds: five drawn buttons that did nothing were the weakest thing on it.
+**Lab Values** is not a mock-up — `assets/labvalues.js` exposes
+`renderLabValues(root)`, the same call the exam page makes, so the tour mounts
+the real panel with the real ranges and the real search. **Notes** opens the
+same floating window and drags. **Text size** sets `data-text-size` on the root
+element, which is the engine's own mechanism, and since nothing outside the
+frame reads `--content-scale` only the frame changes. **Review** opens a grid
+that reads the demo's own state and carries End block, which is where the exam
+keeps grading. **Pause** stops the clock and puts the card over the frame.
+Because all five work, the sections below the frame describe only what one item
+on one page cannot act out: exhibits, saved progress, and export/import. The item and its
 explanation were written for the page, and it says so under the frame, so the
 tour gives away nothing that is on a form.
 
