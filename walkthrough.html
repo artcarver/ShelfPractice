@@ -495,9 +495,17 @@
   });
 
   /* A–E answers the item, the way the exam page binds it. There is no text
-     input anywhere on this page, so the key never has anything to interrupt. */
+     input on this page for the key to interrupt, but there is a page: bound to
+     the document alone it also answered the item from two screens away, where
+     nobody could see it happen. So it only fires while the frame is actually
+     in front of you. */
+  function frameOnScreen(){
+    const r = document.getElementById('demo').getBoundingClientRect();
+    return r.bottom > 0 && r.top < (window.innerHeight || 0);
+  }
   document.addEventListener('keydown', e => {
     if(graded || e.ctrlKey || e.metaKey || e.altKey) return;
+    if(!frameOnScreen()) return;
     const k = e.key.toUpperCase();
     if(k >= 'A' && k <= 'E' && k.length === 1){
       selected = k;

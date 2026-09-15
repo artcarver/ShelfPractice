@@ -84,28 +84,60 @@
       CLOSE, '' ].join('\n');
   }
 
-  /* Reads the last block in a file, so a file that has been appended to twice
-     restores the newer one. A bare .json export is accepted too. */
+  function parsePayload(str){
+    let data;
+    try{ data = JSON.parse(str); }catch(e){ return null; }
+    return (data && typeof data === 'object' && data.shelfpractice) ? data : null;
+  }
+
+  /* Finding the payload by slicing between the marker lines looks obvious and
+     is wrong: a note is free text, the report prints your notes, and the
+     payload carries them too, so a note containing the marker moved the slice
+     into the middle of the JSON and the whole file became unreadable. The
+     markers are therefore a signpost for a person and nothing more. What the
+     parser looks for is a line that is itself a payload, taken from the end so
+     a file appended to twice restores the newer one.
+  
+     The joined fallback is for a file that has been through something that
+     wraps long lines. JSON has no raw newlines inside it, so putting the lines
+     back together with nothing between them restores the original exactly. */
   function read(text){
     if(typeof text !== 'string' || !text.trim()) throw new Error('That file is empty.');
-    let json = null;
-    const start = text.lastIndexOf(OPEN);
-    if(start !== -1){
-      const end = text.indexOf(CLOSE, start);
-      const body = text.slice(start + OPEN.length, end === -1 ? undefined : end);
-      json = (body.match(/^\s*\{.*\}\s*$/m) || [])[0] || null;
+    const lines = text.split(/\r?\n/);
+
+    for(let i = lines.length - 1; i >= 0; i--){
+      const t = lines[i].trim();
+      if(t.charAt(0) !== '{' || t.charAt(t.length - 1) !== '}') continue;
+      const data = parsePayload(t);
+      if(data) return check(data);
     }
-    if(json === null){
-      const t = text.trim();
-      if(t.startsWith('{')) json = t;
+
+    // a bare .json export, pretty-printed or not
+    const whole = parsePayload(text.trim());
+    if(whole) return check(whole);
+
+    /* A payload whose line was wrapped somewhere in transit. Where the join
+       stops is the whole difficulty: cutting at the first run of equals signs
+       cuts inside the payload the moment a note happens to contain one, which
+       is exactly the trap the marker slicing fell into. So it stops at a line
+       that is the closing marker and nothing else, and failing that at the end
+       of the file, and each candidate opening line is tried in turn. */
+    for(let i = 0; i < lines.length; i++){
+      if(lines[i].trim().charAt(0) !== '{') continue;
+      let close = lines.length;
+      for(let j = i; j < lines.length; j++){
+        if(lines[j].trim() === CLOSE){ close = j; break; }
+      }
+      for(const end of (close === lines.length ? [lines.length] : [close, lines.length])){
+        const data = parsePayload(lines.slice(i, end).join('').trim());
+        if(data) return check(data);
+      }
     }
-    if(json === null)
-      throw new Error('No ShelfPractice progress block in that file. Export one from the exam list, or from the results screen of an exam.');
-    let data;
-    try{ data = JSON.parse(json); }
-    catch(e){ throw new Error('The progress block in that file is damaged and could not be read.'); }
-    if(!data || typeof data !== 'object' || !data.shelfpractice)
-      throw new Error('That file does not look like a ShelfPractice export.');
+
+    throw new Error('No ShelfPractice progress block in that file. Export one from the exam list, or from the results screen of an exam.');
+  }
+
+  function check(data){
     if(data.shelfpractice > VERSION)
       throw new Error('That file was written by a newer version of this site.');
     if(!Array.isArray(data.exams) || !data.exams.length)
@@ -113,27 +145,61 @@
     return data;
   }
 
+  /* Only these, and only at these types. A field of the wrong type is dropped
+     rather than carried into storage, where the engine would read it back and
+     behave strangely a long way from here. */
+  const MAPS = ['answers','marked','struck','highlights','notes','itemMs'];
+  const NUMS = ['idx','elapsedMs','runningSince','itemSince','itemSinceN'];
+  const BOOLS = ['notesOpen','graded','paused','onResults'];
+
+  function sanitize(raw){
+    if(!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+    const out = {};
+    MAPS.forEach(k => {
+      const v = raw[k];
+      if(v && typeof v === 'object' && !Array.isArray(v)) out[k] = v;
+    });
+    NUMS.forEach(k => { if(typeof raw[k] === 'number' && isFinite(raw[k])) out[k] = raw[k]; });
+    BOOLS.forEach(k => { if(typeof raw[k] === 'boolean') out[k] = raw[k]; });
+    if(raw.score && typeof raw.score === 'object') out.score = raw.score;
+    if(raw.notesPos && typeof raw.notesPos === 'object') out.notesPos = raw.notesPos;
+    return out;
+  }
+
+  /* A record that carries nothing is not a restore, it is an erasure wearing
+     one: writing it over an exam you had worked would destroy it and then say
+     "restored". An export never produces one, so anything that looks like this
+     is damage, and damage is refused rather than applied. */
+  function carriesNothing(st){
+    const empty = k => !st[k] || !Object.keys(st[k]).length;
+    return MAPS.every(empty) && !st.graded && !st.elapsedMs;
+  }
+
   /* Writing is deliberate and reversible only by the person doing it, so the
      caller is handed the whole picture first — what will be added, what will be
-     written over, and what this site has no exam for — and decides. */
+     written over, what this site has no exam for, and what could not be read —
+     and decides. */
   function plan(data, exams){
     const bySlug = new Map(exams.map(e => [e.slug, e]));
     const byId   = new Map(exams.map(e => [e.id, e]));
-    const fresh = [], overwrite = [], unknown = [];
+    const fresh = [], overwrite = [], unknown = [], damaged = [];
     data.exams.forEach(rec => {
       const entry = bySlug.get(rec.slug) || byId.get(rec.id);
-      if(!entry){ unknown.push(rec.label ? rec.title + ' ' + rec.label : (rec.slug || rec.id)); return; }
+      const label = rec && (rec.label ? rec.title + ' ' + rec.label : (rec.title || rec.slug || rec.id));
+      if(!entry){ unknown.push(label || 'an unnamed exam'); return; }
       const name = (entry.label ? entry.title + ' ' + entry.label : entry.title);
-      (readState(entry) ? overwrite : fresh).push({entry, rec, name});
+      const state = sanitize(rec.state);
+      if(!state || carriesNothing(state)){ damaged.push(name); return; }
+      (readState(entry) ? overwrite : fresh).push({entry, state, name});
     });
-    return {fresh, overwrite, unknown};
+    return {fresh, overwrite, unknown, damaged};
   }
 
   function apply(items){
     const done = [];
-    items.forEach(({entry, rec, name}) => {
+    items.forEach(({entry, state, name}) => {
       try{
-        localStorage.setItem(stateKey(entry), JSON.stringify(settle(rec.state || {})));
+        localStorage.setItem(stateKey(entry), JSON.stringify(settle(state)));
         /* The per-tab flag that lets a reload skip the start screen belongs to
            the browser it was set in, not to the progress. Clearing it means an
            imported exam opens on its start screen, which is where someone who
@@ -187,10 +253,13 @@
     try{ data = read(text); }
     catch(e){ alert(e.message); return; }
 
-    const {fresh, overwrite, unknown} = plan(data, exams);
+    const {fresh, overwrite, unknown, damaged} = plan(data, exams);
     if(!fresh.length && !overwrite.length){
-      alert('Nothing in that file matches an exam on this site.'
-          + (unknown.length ? '\n\nIt holds: ' + unknown.join(', ') : ''));
+      alert(damaged.length
+          ? 'Nothing in that file could be read back.\n\nThe saved progress for '
+            + damaged.join(', ') + ' is missing or damaged, so it has been left alone.'
+          : 'Nothing in that file matches an exam on this site.'
+            + (unknown.length ? '\n\nIt holds: ' + unknown.join(', ') : ''));
       return;
     }
     const lines = [];
@@ -198,6 +267,7 @@
     if(overwrite.length) lines.push('Write over saved progress in ' + overwrite.length + ': '
                                   + overwrite.map(f => f.name).join(', '));
     if(unknown.length)   lines.push('Skip, no such exam here: ' + unknown.join(', '));
+    if(damaged.length)   lines.push('Skip, damaged in the file: ' + damaged.join(', '));
     lines.push('', 'Anything written over cannot be recovered.');
     if(!confirm(lines.join('\n'))) return;
 
@@ -209,7 +279,7 @@
   window.SHELF_TRANSFER = {
     VERSION, OPEN, CLOSE,
     stateKey, sessionKey, readState, settle,
-    payload, wrap, read, plan, apply,
+    payload, wrap, read, plan, apply, sanitize,
     download, pick, importFrom
   };
 })();
