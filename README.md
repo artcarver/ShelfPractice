@@ -84,13 +84,20 @@ engine — so the engine has no knowledge of any particular exam.
 screenshots. It is a tour of the exam screen that builds the screen out of
 `assets/exam.css` rather than picturing it: the top bar, the subbar, the stem,
 the choice rows, the graded tags and the explanation panel are the real rules,
-so the tour cannot drift out of date with the thing it explains. One sample
-item in the frame is live — it selects, crosses out, highlights, and grades
-itself when you press the button under it — driven by a short script in the
-page rather than by `assets/exam.js`, since the engine wants a manifest entry
-and a `data.js` that a tour has no business inventing. The item and its
+so the tour cannot drift out of date with the thing it explains. The page leads
+with the frame rather than with an argument for it, since the thing that
+settles the question is clicking a choice and watching it respond. One sample
+item in that frame is live. It selects, crosses out, highlights, and grades
+itself when you press the button directly under it, driven by a short script in
+the page rather than by `assets/exam.js`, since the engine wants a manifest
+entry and a `data.js` that a tour has no business inventing. The item and its
 explanation were written for the page, and it says so under the frame, so the
 tour gives away nothing that is on a form.
+
+The landing page carries it as a card above the first subject, which shows on a
+first visit and hides once any exam has been started; an exam's start screen
+carries the same link under **Begin**. All three pages carry a `noindex` meta
+tag, since the site is passed between people who already know what it is.
 
 A **Pause** button in the toolbar (or the <kbd>Esc</kbd> key) stops the clock and
 hides the question behind an overlay until you resume. The elapsed time is banked
