@@ -8,6 +8,7 @@ A collection of self-contained, browser-based shelf practice exams. No server or
 index.html          Landing page; builds its list from exams/manifest.js
 exam.html           The exam page — one shell shared by every exam,
                     selected with ?exam=<slug>
+walkthrough.html    What the exam screen is, shown with a working item in it
 assets/
   theme.css         Design tokens shared by every page
   exam.css          Exam page styles
@@ -76,6 +77,20 @@ plus `exam.html` is shared machinery and never changes when you add an exam.
 Everything under `exams/` is content. `exam.html` merges an exam's catalog entry
 from `manifest.js` with its `data.js` into `window.EXAM`, then hands that to the
 engine — so the engine has no knowledge of any particular exam.
+
+### The walkthrough
+
+`walkthrough.html` exists because the landing page was being read as a list of
+screenshots. It is a tour of the exam screen that builds the screen out of
+`assets/exam.css` rather than picturing it: the top bar, the subbar, the stem,
+the choice rows, the graded tags and the explanation panel are the real rules,
+so the tour cannot drift out of date with the thing it explains. One sample
+item in the frame is live — it selects, crosses out, highlights, and grades
+itself when you press the button under it — driven by a short script in the
+page rather than by `assets/exam.js`, since the engine wants a manifest entry
+and a `data.js` that a tour has no business inventing. The item and its
+explanation were written for the page, and it says so under the frame, so the
+tour gives away nothing that is on a form.
 
 A **Pause** button in the toolbar (or the <kbd>Esc</kbd> key) stops the clock and
 hides the question behind an overlay until you resume. The elapsed time is banked
