@@ -101,32 +101,40 @@
   .row-go svg{color:#b3c1cb;transition:color .12s, transform .12s;}
   a.row:hover .row-go svg{color:var(--navy);transform:translateX(2px);}
 
-  /* The list alone does not say what an exam is. People arriving here have
-     assumed the forms are stacks of screenshots and left without opening one,
-     so the page says what they are before the first row: a link that looks
-     like the rows it sits above, leading to the screen itself. */
+  /* The list alone does not say what an exam is, and people have assumed the
+     forms are stacks of screenshots and left without opening one. So the page
+     says otherwise before the first row, in one quiet line: a note, not a
+     banner, which is why it takes the tint rather than white and no accent
+     bar. It is there to be read once and then never to be in the way. */
   a.tour{
-    display:flex;align-items:center;gap:14px;
-    margin-top:18px;padding:15px 18px;
-    background:#fff;border:1px solid var(--border);border-left:4px solid var(--navy);
-    border-radius:var(--r-md);
+    display:flex;align-items:center;gap:12px;
+    margin-top:16px;padding:9px 14px;
+    background:var(--navy-tint);border:1px solid var(--divider);
+    border-radius:var(--r-sm);
     text-decoration:none;color:inherit;
-    transition:background .12s;
+    transition:background .12s, border-color .12s;
   }
-  a.tour:hover{background:var(--navy-tint);}
-  .tour-text{flex:1 1 auto;min-width:0;font-size:var(--fs-sm);line-height:1.55;color:var(--muted);}
-  .tour-text b{display:block;color:var(--navy-dark);font-size:var(--fs-md);margin-bottom:2px;}
+  a.tour:hover{background:#eef4f8;border-color:var(--border);}
+  .tour-text{
+    flex:1 1 auto;min-width:0;
+    font-size:var(--fs-xs);line-height:1.5;color:var(--muted);
+  }
   .tour-go{
-    flex:none;display:flex;align-items:center;gap:5px;
-    font-size:var(--fs-sm);font-weight:600;color:var(--navy);white-space:nowrap;
+    flex:none;display:flex;align-items:center;gap:4px;
+    font-size:var(--fs-xs);font-weight:600;color:var(--navy);white-space:nowrap;
   }
-  a.tour:hover .tour-go svg{transform:translateX(2px);}
   .tour-go svg{color:#b3c1cb;transition:color .12s, transform .12s;}
-  a.tour:hover .tour-go svg{color:var(--navy);}
+  a.tour:hover .tour-go svg{color:var(--navy);transform:translateX(2px);}
   /* a.tour is a flex box, which outranks the [hidden] attribute on its own */
   a.tour[hidden]{display:none;}
 
   .foot{margin-top:30px;font-size:var(--fs-xs);color:var(--faint);text-align:center;}
+  /* Once the note above has done its work it goes, but the tour itself stays
+     reachable from here for good: someone who half-remembers a control and
+     wants to look it up should not have to have kept the banner. */
+  .foot a{color:var(--faint);text-decoration:underline;}
+  .foot a:hover{color:var(--navy);}
+  .foot .sep{margin:0 8px;opacity:.55;}
   .empty{
     background:#fff;border:1px solid var(--border);border-radius:var(--r-md);
     padding:20px;color:var(--muted);font-size:var(--fs-base);
@@ -150,17 +158,16 @@
       and notes stay in this browser.</p>
 
     <a class="tour" href="walkthrough.html" id="tourCard" hidden>
-      <span class="tour-text"><b>New here? These are not screenshots.</b>
-        Every form runs as a question interface. One item at a time, a clock,
-        cross&#8209;outs, highlighting and notes, plus a written explanation on
-        every item once you end the block.</span>
-      <span class="tour-go"><span>Try a question</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></span>
+      <span class="tour-text">These are not screenshots. Every form runs as a
+        question interface.</span>
+      <span class="tour-go"><span>Try a question</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></span>
     </a>
 
     <!-- Built from exams/manifest.js — add an exam there, not here. -->
     <div id="examList"></div>
 
-    <p class="foot">Runs entirely in your browser. Nothing is uploaded, no account needed.</p>
+    <p class="foot">Runs entirely in your browser. Nothing is uploaded, no account
+      needed.<span class="sep">&middot;</span><a href="walkthrough.html">How it works</a></p>
   </main>
 
 <script src="exams/manifest.js"></script>
