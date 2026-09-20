@@ -1237,6 +1237,7 @@ function renderToolbar(){
   document.querySelector('.topbar-center').style.display = onResults ? 'none' : '';
   document.querySelector('.item-box').style.display = onResults ? 'none' : '';
   document.querySelector('.subbar').style.display = onResults ? 'none' : '';
+  measureBars();
 }
 
 /* Items that were not answered correctly — wrong answers and blanks alike,
@@ -1477,6 +1478,8 @@ function enteredThisSession(){
 function enterExam(){
   document.getElementById('startScreen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
+  /* The bars had no height to measure while the start screen covered them. */
+  measureBars();
   enteredExam = true;
   markSessionEntered();
   startClock();          // no-op if the exam is paused or already graded
@@ -1546,6 +1549,37 @@ function renderNotes(){
 const NOTES_MIN_W = 240, NOTES_MIN_H = 170;
 
 function notesDocked(){ return window.innerWidth <= 640; }
+
+/* ---------- the pinned bars ---------- */
+
+/* The toolbar, the subbar and the progress track stay put while the question
+   scrolls. The stylesheet pins them; it cannot know how tall they are, and the
+   toolbar reflows with the window — the subject line drops out at 1180px, the
+   item box at 760px, and the whole bar wraps to two rows when the tools no
+   longer fit. So the heights are measured and published as --topbar-h and
+   --subbar-h, which is what the bars below them offset against.
+   Rounding up by a hair: a fractional height left a one-pixel line of the
+   scrolling question showing between two bars that are meant to touch. */
+function measureBars(){
+  const root = document.documentElement.style;
+  const bar  = document.querySelector('header.topbar');
+  const sub  = document.querySelector('.subbar');
+  root.setProperty('--topbar-h', (bar ? Math.ceil(bar.getBoundingClientRect().height) : 0) + 'px');
+  /* The subbar is hidden on the results screen, where it has no height to
+     give; getBoundingClientRect says 0 for it, which is the right answer. */
+  root.setProperty('--subbar-h', (sub ? Math.ceil(sub.getBoundingClientRect().height) : 0) + 'px');
+}
+measureBars();
+if(window.ResizeObserver){
+  const barWatch = new ResizeObserver(measureBars);
+  ['header.topbar', '.subbar'].forEach(sel => {
+    const el = document.querySelector(sel);
+    if(el) barWatch.observe(el);
+  });
+}else{
+  /* No observer: a resize is the case that actually moves these heights. */
+  window.addEventListener('resize', measureBars);
+}
 
 function topbarBottom(){
   const bar = document.querySelector('header.topbar');

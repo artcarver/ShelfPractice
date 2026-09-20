@@ -100,7 +100,25 @@
     .start-how{grid-template-columns:1fr;}
   }
 
+  /* The toolbar and the row under it stay put while the question scrolls, the
+     way a testing interface does. Which item you are on, Previous and Next,
+     the clock and Mark for review are all things you reach for in the middle
+     of reading, and a long stem with an exhibit should not put them a scroll
+     away — nor should answering the last choice on the screen mean scrolling
+     back up to move on.
+
+     The toolbar pins to the top; the subbar and its progress track pin
+     directly beneath it. Those two need to know how tall the things above them
+     are, and the toolbar reflows with the window width, so the heights come
+     from --topbar-h and --subbar-h, which assets/exam.js measures. The
+     fallbacks are 0 so the bars are merely unpinned, never floating in the
+     wrong place, if that measurement has not run yet. */
   header.topbar{
+    position:sticky;
+    top:0;
+    /* above the question and the floating notes window, below the review
+       overlay and the enlarged exhibit, which are modal */
+    z-index:50;
     background:var(--navy);
     color:#fff;
     display:flex;
@@ -190,6 +208,9 @@
   .tb-item[aria-expanded="true"]{opacity:1;background:rgba(255,255,255,.15);}
 
   .subbar{
+    position:sticky;
+    top:var(--topbar-h, 0px);
+    z-index:45;
     display:flex;
     align-items:center;
     justify-content:space-between;
@@ -203,7 +224,12 @@
   .subbar-status{display:flex;align-items:center;gap:16px;}
   .answered-note{color:var(--muted);font-size:var(--fs-sm);}
   .timer{color:var(--muted);font-variant-numeric:tabular-nums;}
-  .progress-track{height:3px;background:#e3e9ed;}
+  .progress-track{
+    position:sticky;
+    top:calc(var(--topbar-h, 0px) + var(--subbar-h, 0px));
+    z-index:45;
+    height:3px;background:#e3e9ed;
+  }
   .progress-fill{height:100%;width:0;background:var(--navy);transition:width .25s;}
   .progress-fill.graded{background:var(--correct);}
   .timer.is-paused{color:var(--marked);font-weight:600;}
@@ -807,6 +833,12 @@
     .topbar-right{gap:12px;font-size:var(--fs-xs);}
     main{padding:18px 16px 30px;}
     footer.botbar{padding:12px 16px;}
+    /* The toolbar wraps to two rows at this width, so it alone is 120px of a
+       phone screen. Pinning the subbar and its track under it put a fifth of
+       the viewport permanently out of use before the question started. The
+       toolbar holds, because that is the one you reach for mid-question; the
+       clock and Mark for review scroll with the stem and are a flick away. */
+    .subbar, .progress-track{position:static;}
   }
 
   @media (prefers-reduced-motion: reduce){
@@ -838,6 +870,11 @@
     min-width:0;
     overflow-y:auto;
   }
+  /* With the panel open the question column is the thing that scrolls and the
+     toolbar is outside it, so the bars pin to the top of that column rather
+     than allowing for a toolbar that is already out of the way. */
+  #app.lab-open .subbar{top:0;}
+  #app.lab-open .progress-track{top:var(--subbar-h, 0px);}
   .lv-side{
     flex:0 0 46%;
     max-width:760px;
