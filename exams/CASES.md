@@ -228,3 +228,19 @@ So a text transcription is a complete source for a form's words and an
 incomplete one for its pages. Ask for the pictures at intake, alongside the
 shape of the tables, rather than finding out which items want one by reading
 their stems.
+
+Form 3 is also the one exam in the repo that is copy-edited rather than
+strictly transcribed, at its owner's direction: sixteen of the form's own
+grammatical slips and internal inconsistencies are corrected in its
+explanations, and item 34's predictive values carry the percent signs the
+table prints on its sensitivity and specificity but not on them. The line held
+is the one that matters — no stem, choice, clinical value or answer letter is
+touched, and nothing was corrected whose intent the item's own surrounding
+text does not settle. Two things were therefore left alone: item 32 teaches
+zoster vaccination at 60 and pneumococcal at 65, which was right when the form
+was written and is what its key depends on, and item 19 calls granulomatous
+inflammation restricted to the mucosa characteristic of ulcerative colitis,
+which is the form's clinical mistake rather than its grammar. Correcting
+either would change what the form teaches or what it answers, which is past
+where copy-editing stops. `CONVERTING.md` still describes the strict
+transcription the other forty forms were built to.
