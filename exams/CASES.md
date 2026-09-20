@@ -229,18 +229,27 @@ incomplete one for its pages. Ask for the pictures at intake, alongside the
 shape of the tables, rather than finding out which items want one by reading
 their stems.
 
-Form 3 is also the one exam in the repo that is copy-edited rather than
-strictly transcribed, at its owner's direction: sixteen of the form's own
-grammatical slips and internal inconsistencies are corrected in its
-explanations, and item 34's predictive values carry the percent signs the
-table prints on its sensitivity and specificity but not on them. The line held
-is the one that matters — no stem, choice, clinical value or answer letter is
-touched, and nothing was corrected whose intent the item's own surrounding
-text does not settle. Two things were therefore left alone: item 32 teaches
-zoster vaccination at 60 and pneumococcal at 65, which was right when the form
-was written and is what its key depends on, and item 19 calls granulomatous
+Form 3 is also where the repo's copy-editing rule was worked out. At its
+owner's direction it was built as a reader-cleaned edition rather than a strict
+transcription: sixteen of the form's own grammatical slips and internal
+inconsistencies are corrected in its explanations. The line held is the one
+that matters — no stem, choice, clinical value or answer letter is touched, and
+nothing was corrected whose intent the item's own surrounding text does not
+settle. Two things were therefore left alone: item 32 teaches zoster
+vaccination at 60 and pneumococcal at 65, which was right when the form was
+written and is what its key depends on, and item 19 calls granulomatous
 inflammation restricted to the mucosa characteristic of ulcerative colitis,
-which is the form's clinical mistake rather than its grammar. Correcting
-either would change what the form teaches or what it answers, which is past
-where copy-editing stops. `CONVERTING.md` still describes the strict
-transcription the other forty forms were built to.
+which is the form's clinical mistake rather than its grammar. Correcting either
+would change what the form teaches or what it answers, which is past where
+copy-editing stops. `CONVERTING.md` §6 now carries that boundary as the
+standard for every form, not as an exception for this one.
+
+One change in Form 3 sits outside that boundary, and is left standing as a
+one-off rather than as permission. Item 34's stem table prints its sensitivity
+and specificity as "90%" and its two predictive values as bare numbers; the
+build added the percent signs, so the table now reads "36%" and "99%". That is
+the question side, which §6 says is never touched. It stays because the numbers
+are the same percentages either way, answer D does not turn on them, and a
+table carrying percent signs on two rows and not on the two beneath them reads
+on the page as a transcription defect rather than as the form. Anywhere else, a
+table the form prints inconsistently is reported, not tidied.

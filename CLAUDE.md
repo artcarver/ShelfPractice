@@ -37,13 +37,20 @@ The same goes in the commit message.
 
 ## House style
 
-The question is the form's; the explanation is the site's to finish. Stems,
-choices, lab values and answer letters come from the capture or they do not go
-in, and the form's own mistakes stay in. Where the capture lost explanation
-text, write the missing piece in that form's voice and name the item in the
-exam's `WRITTEN` map — that is standing work, not something to stop and ask
-about. The provenance wording lives in `assets/exam.js`, so every form says it
-the same way and no `data.js` spells it out. Engine changes belong in
+The question is the form's; the explanation is the site's to finish and to
+copy-edit. Stems, choices, lab values and answer letters come from the capture
+or they do not go in, and the form's own mistakes stay in on that side — a wrong
+number or a misspelling in a stem is part of the question. In an explanation,
+correct the form's grammar, punctuation, and inconsistency with itself wherever
+the item's own surrounding text settles the intent, as a table of
+find-and-replace pairs the build asserts on and the commit message carries.
+Never where the item's key depends on it, never a clinical claim — that is
+authorship, so report it instead — and never the question side. Where the
+capture lost explanation text, write the missing piece in that form's voice and
+name the item in the exam's `WRITTEN` map — that is standing work, not something
+to stop and ask about. A copy-edit is an edit rather than written text, and
+takes no mark. The provenance wording lives in `assets/exam.js`, so every form
+says it the same way and no `data.js` spells it out. Engine changes belong in
 `assets/`, never in an exam's `data.js`, which carries content and nothing else
 — no title, no id, no configuration. Keep explanations to `<p>` and `<b>` with
 their angle brackets escaped, since they are injected as HTML.
