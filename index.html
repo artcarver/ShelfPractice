@@ -37,6 +37,7 @@
     overflow:hidden;
     margin-top:14px;
   }
+  .subject-h{margin:0;font-size:inherit;font-weight:inherit;}
   .subject-head{
     width:100%;
     display:flex;align-items:center;gap:14px;
@@ -48,6 +49,7 @@
   .subject-head:hover{background:var(--navy-tint);}
   .subject-name{
     flex:1 1 auto;min-width:0;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
     font-size:var(--fs-md);font-weight:600;color:var(--navy-dark);
   }
   .subject-meta{font-size:var(--fs-xs);color:var(--faint);white-space:nowrap;}
@@ -92,7 +94,10 @@
      nothing rather than repeating "Not started" down the whole list. */
   .row-state{font-size:var(--fs-sm);color:var(--muted);white-space:nowrap;}
   .row-state b{color:var(--text);font-weight:600;}
-  .row-state .pct{color:var(--correct);font-weight:600;}
+  /* The results screen prints the score in navy, not in the correct-green —
+     a percentage is a number, not a verdict, and 42% set in the green that
+     means "you got this right" reads as praise. The two screens now agree. */
+  .row-state .pct{color:var(--navy-dark);font-weight:600;}
 
   .row-go{
     display:flex;align-items:center;gap:5px;
@@ -156,6 +161,16 @@
     padding:20px;color:var(--muted);font-size:var(--fs-base);
   }
   .empty code{background:var(--bg);padding:1px 5px;border-radius:var(--r-xs);}
+
+  /* Every motion on this page is decoration on a hover or a disclosure, so
+     there is nothing to keep when someone has asked for less of it. */
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none !important;}
+    /* The open chevron keeps its quarter turn: with the transition gone it is
+       a state indicator drawn in one position, not a movement. */
+    a.row:hover .row-go svg,
+    a.tour:hover .tour-go svg{transform:none;}
+  }
 
   @media (max-width:520px){
     main{padding:24px 14px 40px;}
@@ -269,7 +284,7 @@
       clear.textContent = 'Clear';
       clear.title = 'Forget this exam and start it fresh';
       clear.setAttribute('aria-label',
-        'Clear saved progress for ' + (e.label || e.title) + ' ' + e.title);
+        [('Clear saved progress for ' + e.title), e.label].filter(Boolean).join(' '));
       clear.addEventListener('click', () => {
         const what = p.kind === 'done'
           ? 'your score and answers'
@@ -296,11 +311,13 @@
      "Surgery Practice Exam" — so the page groups by subject and lets each row
      lead with what distinguishes it: the form label. Under a page called
      Practice exams, the heading only needs the subject. */
-  /* The list reads alphabetically rather than in whatever order the manifest
-     happens to be written in: subjects by name, and the forms inside a subject
-     by their label. The collator counts digits as numbers, so Form 9 comes
-     before Form 10 rather than after it, which is the order a shelf of forms
-     is spoken in. */
+  /* The list reads in a fixed order rather than in whatever order the manifest
+     happens to be written in. Subjects run alphabetically, since a subject is
+     something you go looking for by name. Forms run newest first, since a
+     higher form number is the more recent paper and the one most people want:
+     the newest form of each subject is the first row under its head. The
+     collator counts digits as numbers, so Form 10 sorts above Form 9 rather
+     than beside Form 1. */
   const byName = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'});
   const collected = new Map();
   exams.forEach(e => {
@@ -313,7 +330,7 @@
       .sort((a, b) => byName.compare(a[0], b[0]))
       .map(([subject, members]) => [
         subject,
-        members.slice().sort((a, b) => byName.compare(a.label || a.title, b.label || b.title))
+        members.slice().sort((a, b) => byName.compare(b.label || b.title, a.label || a.title))
       ])
   );
 
@@ -385,9 +402,17 @@
         writeOpen(open);
       });
 
+      /* A screen reader gets seven subjects to jump between rather than one
+         undifferentiated run of buttons. The h2 carries no styling of its
+         own — the button inside it is still what is drawn. */
+      const heading = document.createElement('h2');
+      heading.className = 'subject-h';
+      heading.append(head);
+
       const block = document.createElement('section');
       block.className = 'subject-block';
-      block.append(head, box);
+      block.setAttribute('aria-label', subject);
+      block.append(heading, box);
       list.append(block);
     });
   }
