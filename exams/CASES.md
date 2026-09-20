@@ -217,8 +217,14 @@ with an audit naming twelve exhibits, but an exhibit on an NBME page is either a
 table or a picture, and only the tables survive being written down. The nine
 laboratory tables were rebuilt from the indentation and the group headings the
 transcription kept — items 4, 12, 14, 19, 34, 36, 41, 46 and 48. The three
-pictures did not arrive at all, so items 8 (an ECG), 16 and 47 (clinical
-photographs) carry no image, and their stems still say one is shown. Nothing was
-invented to stand in for them: each item's own explanation names what the picture
-shows, which is enough to work the item but is not the picture. A recapture of
-those three pages is what the form still needs.
+pictures — item 8's ECG and the clinical photographs on items 16 and 47 — were
+not in the transcription at all, and the form was built once without them: those
+items carried no image while their stems still said one was shown. Nothing was
+invented to stand in for them, because an item's explanation naming what the
+picture shows is enough to work the item but is not the picture. They arrived
+afterwards as three PNGs and went in unchanged.
+
+So a text transcription is a complete source for a form's words and an
+incomplete one for its pages. Ask for the pictures at intake, alongside the
+shape of the tables, rather than finding out which items want one by reading
+their stems.

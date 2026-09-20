@@ -37,7 +37,7 @@ now, which `manifest.js` is the authority on:
 
 | Subject | Forms | With exhibits |
 | --- | --- | --- |
-| Family Medicine | 3–5 | Forms 4 and 5, 2 each; Form 3 none |
+| Family Medicine | 3–5 | all 3 |
 | Medicine | 3–10 | all 8 |
 | Neurology | 4–9 | all 6 |
 | Obstetrics & Gynecology | 4–8, 10 | all 6 |
