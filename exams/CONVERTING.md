@@ -9,22 +9,26 @@ the explanation:
 
 - **The question and its key are the form's, always.** The stem, the choices,
   the lab values and the answer letter are what the exam actually asks, so they
-  come from the capture or they do not go in. There is no filling these.
-- **The explanation is teaching material, and a gap in it is yours to close.**
-  Captures lose the bottom of pages, cut sentences mid-phrase, and occasionally
-  drop an answer screen entirely. Write what is missing in the form's own voice
-  rather than shipping a hole.
+  come from the capture or they do not go in. There is no filling these, and no
+  correcting them.
+- **The explanation is the site's, to finish and to copy-edit.** Captures lose
+  the bottom of pages, cut sentences mid-phrase, and occasionally drop an answer
+  screen entirely; write what is missing in the form's own voice rather than
+  shipping a hole. The form's own slips of grammar and its inconsistencies with
+  itself are corrected rather than preserved. §6's copy-editing rules say which
+  ones, and where that stops.
 
 Filling an explanation gap is ordinary work here, not a decision to escalate.
 Do not stop to ask whether to write one — write it, mark it, and say so in the
-commit message. What does need asking is anything that would change what the
-exam asks: a key you cannot source, a stem or a choice the capture lost, an
-item you could not read at all.
+commit message. Copy-editing is the same: correct it, put the pair in the commit
+message, and do not mark it. What does need asking is anything that would change
+what the exam asks: a key you cannot source, a stem or a choice the capture
+lost, an item you could not read at all.
 
 Marking is one line under the explanation, and §6 covers it. Everything else
-that is not the form's — a repaired typo, a contested key, a value that looks
-wrong but is printed — goes in the commit message and in the report to whoever
-asked for the exam.
+that is not the form's — a copy-edit, a contested key, a value that looks wrong
+but is printed — goes in the commit message and in the report to whoever asked
+for the exam.
 
 ## 1. Intake
 
@@ -47,13 +51,18 @@ those items instead of building around the gap.
 ## 2. Transcribe verbatim
 
 Copy the stem, the choices and the explanation exactly. No paraphrasing, no
-shortening, no tidying of clinical phrasing, no reordering of choices.
+shortening, no tidying of clinical phrasing, no reordering of choices. The
+explanation is copy-edited too, but afterwards and on the record, as a table of
+find-and-replace pairs against the transcribed text (§6) — never by typing the
+corrected version in the first place, which leaves nothing to audit.
 
 **Keep the form's own numbers, even wrong ones.** Psychiatry Form 3 item 44
 prints an erythrocyte count of 3500/mm³, three orders of magnitude below
 anything plausible. It is in `data.js` as 3500/mm³ because that is what the
 candidate sees on the real form; a corrected value would be a different
-question. Flag it in your report instead.
+question. Flag it in your report instead. Copy-editing does not reach this: it
+is about the explanation's prose, and a number stays as the form prints it
+wherever it appears.
 
 Normalize typography only, never meaning:
 
@@ -191,6 +200,64 @@ Two forms in the repo are largely written this way — Neurology Form 7 and
 Obstetrics and Gynecology Form 10 — and Pediatrics Form 8 in five items.
 `CASES.md` says what was written in each and what it was written from. Read it
 before doing the same again.
+
+### Copy-editing
+
+An explanation is the site's to finish, and it is the site's to copy-edit:
+where the form's own sentence is wrong as English, correct it rather than
+preserve it. Family Medicine Form 3 is the edition this was settled on, and
+`CASES.md` records it.
+
+In scope is the error the item's own text already settles:
+
+- subject-verb agreement, tense, and a dropped or doubled word
+- punctuation, down to a full stop typed five times
+- hyphenation and spelling made consistent within the one form — `nonsteroidal`
+  against `non-steroidal`, `second-line` against `second line` — taking what the
+  form itself uses elsewhere, and its stems before its explanations
+- a term the item has already named correctly in its own text. Form 3 item 16
+  says "tinea corporis" once in a discussion otherwise entirely about tinea
+  pedis; item 19 says "lactose deficiency" two sentences after "lactase
+  deficiency" and beside a choice that spells it lactase.
+
+The test is that the item's own surrounding text settles the intent — not that
+you know the medicine. Reaching outside the item to justify a change means it is
+not a copy-edit. Where the intent is genuinely unsettled, leave the sentence and
+report it, the same as an unreadable run.
+
+Three things are never copy-edited. This is the part a later pass will get
+wrong, so it is the part written down:
+
+- **Never where the key depends on it.** Form 3 item 32 teaches zoster
+  vaccination at 60 and pneumococcal at 65. That is what makes A the only
+  answer; under current guidance both would be indicated for a 61-year-old and
+  the item would have no single answer. Correcting the form to current practice
+  breaks the question.
+- **Never a clinical claim.** Form 3 item 19 calls granulomatous inflammation
+  restricted to the mucosa characteristic of ulcerative colitis, which is wrong.
+  Correcting it rewrites what the item teaches — that is authorship, and belongs
+  in `WRITTEN` if it happens at all. Report such an item to whoever asked for
+  the exam and leave it as printed; do not decide it in the build.
+- **Never the question side.** Stems, choices, lab values and answer letters are
+  untouched. §2's "keep the form's own numbers, even wrong ones" stands exactly
+  as written, and so does a misspelling in a stem: the question is what the
+  candidate answers.
+
+Apply the corrections as an explicit table of find-and-replace pairs, and assert
+in the build that every pair matched, so a pair that silently stops matching
+fails loudly instead of dropping a fix. Then put the table in the commit
+message. That table is the repo's audit of record, and the only place a reader
+can see what the form said before.
+
+Do not run a substitution across `exams/`. Every candidate is read against its
+own item, one form at a time: a repo-wide regex is how "Hemoglobulin" gets
+"corrected" to immunoglobulin, which `CASES.md` records happening once.
+
+A copy-edit takes no `WRITTEN` mark. The mark says a passage was composed rather
+than transcribed, and a corrected verb was the form's sentence and still is.
+Copy-edit the text inside marked items as well — prose that was never the form's
+raises no fidelity question at all — but leave the marks as they are, and add
+none for a correction.
 
 ## 7. The answer key
 
@@ -330,6 +397,9 @@ gitignored for that reason.
 - Never invent a clinical value, a stem, or a choice. These are what the
   candidate is asked about, and a written one asks a different question.
 - Never write a key. Explanation prose can be completed; a letter cannot.
+- Never copy-edit a sentence the item's key depends on, or a clinical claim.
+  The first breaks the question; the second is authorship. Report both.
+- Never copy-edit the question side, and never run a copy-edit across `exams/`.
 - Never guess a key letter to make the count come out at 50.
 - Never "correct" a number the form prints. Report it.
 - Never drop an item you could not read. Say which one and why.
