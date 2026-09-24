@@ -25,9 +25,13 @@
     <div class="pause-icon"><svg width="38" height="38" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg></div>
     <h1>Exam paused</h1>
     <div class="pause-where" id="pauseWhere"></div>
-    <div class="pause-line"><b id="pausedElapsed">00:00:00</b> <span id="pausedRest"></span></div>
+    <div class="pause-stats">
+      <div><b id="pausedAnswered">0 / 0</b><span>answered</span></div>
+      <div><b id="pausedElapsed">00:00:00</b><span>time so far</span></div>
+      <div id="pausedPaceWrap"><b id="pausedPace">0:00</b><span>per item</span></div>
+    </div>
     <button class="btn" id="resumeExamBtn">Resume exam</button>
-    <div class="pause-foot"><a href="index.html">Leave. Everything is saved</a></div>
+    <div class="pause-foot"><a href="index.html">Back to the exam list</a> &middot; your progress is saved</div>
   </div>
 </div>
 

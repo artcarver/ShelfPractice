@@ -1175,7 +1175,7 @@ function showResults(){
   document.getElementById('scoreFrac').textContent = `${correct} of ${total} correct`;
   const answeredN = total - unanswered;
   document.getElementById('scoreTime').textContent = 'Time on block: ' + formatDuration(elapsedMs())
-    + (answeredN ? ' · ' + formatItemTime(elapsedMs() / answeredN) + ' an item' : '');
+    + (answeredN ? ' · ' + formatItemTime(elapsedMs() / answeredN) + ' per item' : '');
   /* What most people do next is work through what they missed, so that is
      the first button; going back to wherever the block ended is second, and
      says which item that is. */
@@ -1362,11 +1362,14 @@ function renderPauseFigures(){
                          'item ' + currentQ().n + ' of ' + QUESTIONS.length]
                         .filter(Boolean).join(' · ');
   }
-  const rest = document.getElementById('pausedRest');
-  if(rest){
-    let text = 'on this block · ' + answered + ' of ' + QUESTIONS.length + ' answered';
-    if(answered) text += ' · ' + formatItemTime(elapsedMs() / answered) + ' an item';
-    rest.textContent = text;
+  /* Three figures, each with its own label, rather than one sentence strung
+     together with dots that read as a run-on. */
+  const ans = document.getElementById('pausedAnswered');
+  if(ans) ans.textContent = answered + ' / ' + QUESTIONS.length;
+  const pace = document.getElementById('pausedPace');
+  if(pace){
+    document.getElementById('pausedPaceWrap').style.display = answered ? '' : 'none';
+    if(answered) pace.textContent = formatItemTime(elapsedMs() / answered);
   }
 }
 
