@@ -127,9 +127,9 @@
   }
   .start-import:hover{color:var(--navy);}
 
-  /* no keyboard to press it on */
+  /* no keyboard to press them on */
   @media (hover:none){
-    .start-actions .btn kbd{display:none;}
+    .start-actions .btn kbd, .start-keys{display:none;}
   }
   @media (max-width:560px){
     .start-card{padding:28px 22px;}
@@ -306,6 +306,13 @@
   /* One measure for the whole item: stem, choices and explanation share a
      column rather than the stem running the full width of a wide monitor. */
   main{padding:24px 28px 40px;max-width:1000px;}
+  /* The measure. Banner, exhibit, stem, explanation and the Previous / Next
+     row used to stop at different widths (up to 944px), so the right edge of
+     the item stepped in and out, and a stem ran to 130 characters a line on a
+     wide screen. They now share one column; the choices sit inside it at
+     their own narrower width (see .options). */
+  :root{--measure:760px;}
+  .graded-banner, .qimg-wrap, .stem, .explanation, .botbar-row{max-width:var(--measure);}
 
   .graded-banner{
     display:none;
@@ -335,7 +342,7 @@
      in a box above the item, and repeats the shared instruction directly above
      the choices, which is where it applies. */
   .set-note{
-    max-width:680px;
+    max-width:var(--measure);
     margin:0 0 18px;
     padding:10px 14px;
     border:1px solid var(--border);
@@ -347,7 +354,7 @@
     line-height:1.5;
   }
   .set-lead{
-    max-width:680px;
+    max-width:680px;   /* it heads the choices, so it keeps their width */
     margin:0 0 12px;
     font-size:calc(var(--fs-md) * var(--content-scale));
     font-weight:600;
@@ -402,9 +409,9 @@
   #imgOverlay{z-index:150;cursor:zoom-out;background:rgba(10,20,28,.8);}
   #imgOverlay img{max-width:95vw;max-height:92vh;border-radius:var(--r-xs);box-shadow:0 10px 50px rgba(0,0,0,.5);}
 
-  /* Answer texts are short — a median of ~22 characters — so a narrow column
-     reads better than a full-width box. 680px keeps all but the rare very long
-     choice on one line. */
+  /* Answer texts are short — a median of ~22 characters — so the choices sit
+     in a narrower box than the stem above them. 680px keeps all but the rare
+     very long choice on one line. */
   .options{
     border:1px solid var(--border);
     border-radius:var(--r-md);
@@ -434,8 +441,8 @@
      these as a table — a heading over each column, one row to a choice — so
      the values are set in columns of equal width and the headings sit in a
      head row above them. The columns need more room than a phrase does, so
-     the box is allowed to run wider than the usual 680px. */
-  .options.opt-table{max-width:760px;}
+     the box is allowed to run to the full measure. */
+  .options.opt-table{max-width:var(--measure);}
   .opt-table .opt-body{
     display:grid;
     grid-template-columns:2.1em repeat(var(--opt-cols), minmax(0, 1fr));
@@ -559,8 +566,10 @@
     align-items:center;
     justify-content:space-between;
     gap:12px;
-    max-width:680px;   /* the width of the options box above it */
   }
+  /* Next incorrect sits with Next, the way you are going, not stranded in
+     the middle of the bar. */
+  .botbar-row #nextIncorrectBtn{margin-left:auto;}
 
   /* grid / review overlay */
   .overlay{

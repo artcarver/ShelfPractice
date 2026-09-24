@@ -131,7 +131,8 @@
     padding:28px 24px;
   }
   .end h2{margin:0 0 6px;font-size:var(--fs-lg);color:var(--navy-dark);}
-  .end p{margin:0 0 18px;color:var(--muted);font-size:var(--fs-base);}
+  /* centred text reads badly past a short line, so it keeps to one */
+  .end p{margin:0 auto 18px;max-width:56ch;color:var(--muted);font-size:var(--fs-base);line-height:1.55;}
   .end .btn{display:inline-block;padding:11px 24px;text-decoration:none;}
 
   .foot{margin-top:28px;font-size:var(--fs-xs);color:var(--faint);text-align:center;}

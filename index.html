@@ -85,6 +85,11 @@
     cursor:pointer;
   }
   .row-clear:hover{background:var(--incorrect-bg);color:var(--incorrect);}
+  /* Clear takes a fixed slot, and a row without one holds the same slot empty
+     whenever a row beside it has one, so Start, Resume and Review line up down
+     the panel instead of stepping in and out. */
+  .row-clear, .row-clear-space{width:52px;text-align:center;}
+  .row-clear-space{flex:none;margin-right:12px;}
   .row-clear:focus-visible{outline:2px solid var(--navy);outline-offset:1px;}
   .row-main{flex:1 1 auto;min-width:0;}
   .row-form{font-weight:600;color:var(--navy);font-size:var(--fs-md);}
@@ -175,6 +180,17 @@
   @media (max-width:520px){
     main{padding:24px 14px 40px;}
     .row-go span{display:none;}   /* the chevron carries it on a phone */
+    /* A phone has no room for name, status and action side by side: the
+       subject's counts and a form's status each drop to a second line under
+       the name, rather than squeezing it to "Family Medi..." or "CMS Form / 4". */
+    .subject-head{display:grid;grid-template-columns:1fr auto;column-gap:14px;row-gap:2px;}
+    .subject-name{white-space:normal;}
+    .subject-meta{grid-row:2;grid-column:1;white-space:normal;}
+    .subject-chev{grid-row:1 / span 2;grid-column:2;}
+    a.row{display:grid;grid-template-columns:1fr auto;column-gap:12px;row-gap:4px;}
+    .row-state{grid-row:2;grid-column:1;}
+    .row-go{grid-row:1 / span 2;grid-column:2;}
+    .row-clear, .row-clear-space{margin-right:6px;}
   }
 </style>
 </head>
@@ -247,7 +263,7 @@
   }
   const CHEV = chevron('');
 
-  function row(e){
+  function row(e, reserveClear){
     const p = progressOf(e);
     let state = '', cta = 'Start';
     if(p.kind === 'done'){
@@ -296,6 +312,11 @@
         renderList();
       });
       wrap.append(clear);
+    }else if(reserveClear){
+      const space = document.createElement('span');
+      space.className = 'row-clear-space';
+      space.setAttribute('aria-hidden', 'true');
+      wrap.append(space);
     }
     return wrap;
   }
@@ -374,7 +395,8 @@
       const box = document.createElement('div');
       box.className = 'group';
       box.id = 'subject-' + subject.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-      members.forEach(e => box.append(row(e)));
+      const reserve = members.some(e => progressOf(e).kind !== 'new');
+      members.forEach(e => box.append(row(e, reserve)));
 
       const head = document.createElement('button');
       head.type = 'button';
