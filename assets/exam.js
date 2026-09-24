@@ -1357,9 +1357,10 @@ function renderPauseFigures(){
 
   const where = document.getElementById('pauseWhere');
   if(where){
+    // which exam; how far through it is the "answered" figure below, and
+    // "item 40 of 50" beside "39 / 50" read as two counts of one thing
     where.textContent = [EXAM.title.replace(/\s+Practice Exam$/i, ''),
-                         (EXAM.label || '').replace(/^CMS\s+/i, ''),
-                         'item ' + currentQ().n + ' of ' + QUESTIONS.length]
+                         (EXAM.label || '').replace(/^CMS\s+/i, '')]
                         .filter(Boolean).join(' · ');
   }
   /* Three figures, each with its own label, rather than one sentence strung
