@@ -25,9 +25,13 @@
     <div class="pause-icon"><svg width="38" height="38" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg></div>
     <h1>Exam paused</h1>
     <div class="pause-where" id="pauseWhere"></div>
-    <div class="pause-line"><b id="pausedElapsed">00:00:00</b> <span id="pausedRest"></span></div>
+    <div class="pause-stats">
+      <div><b id="pausedAnswered">0 / 0</b><span>answered</span></div>
+      <div><b id="pausedElapsed">00:00:00</b><span>elapsed</span></div>
+      <div id="pausedPaceWrap"><b id="pausedPace">0:00</b><span>per item</span></div>
+    </div>
     <button class="btn" id="resumeExamBtn">Resume exam</button>
-    <div class="pause-foot"><a href="index.html">Leave. Everything is saved</a></div>
+    <div class="pause-foot"><a href="index.html">Back to the exam list</a> &middot; your progress is saved</div>
   </div>
 </div>
 
@@ -177,8 +181,6 @@
           <button class="btn secondary" id="prevBtn2">Previous</button>
           <button class="btn secondary" id="nextIncorrectBtn" style="display:none"
                   title="Jump to the next item you did not get right">Next incorrect</button>
-          <button class="btn secondary" id="nextMarkedBtn" style="display:none"
-                  title="Jump to the next item you marked for review">Next marked</button>
           <button class="btn" id="nextBtn2">Next</button>
         </div>
       </footer>
@@ -191,7 +193,7 @@
         <div class="score-card">
           <div>
             <div class="score-percent" id="scorePercent">0%</div>
-            <div class="score-frac" id="scoreFrac"></div>
+            <div class="score-frac" id="scoreFrac" hidden></div>
             <div class="score-time" id="scoreTime"></div>
           </div>
           <div class="score-breakdown">
