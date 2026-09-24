@@ -237,16 +237,28 @@ function render(){
   // graded banner
   const banner = document.getElementById('gradedBanner');
   if(state.graded){
-    banner.classList.add('show');
+    let kind, say;
     if(!selected){
-      banner.className = 'graded-banner show unanswered-banner';
-      banner.textContent = `Not answered. Correct answer: ${correctLetter}.`;
+      kind = 'unanswered-banner';
+      say = `Not answered. Correct answer: ${correctLetter}.`;
     }else if(selected === correctLetter){
-      banner.className = 'graded-banner show correct-banner';
-      banner.textContent = `Correct. You selected ${selected}.`;
+      kind = 'correct-banner';
+      say = `Correct. You selected ${selected}.`;
     }else{
-      banner.className = 'graded-banner show incorrect-banner';
-      banner.textContent = `Incorrect. You selected ${selected}, and the correct answer is ${correctLetter}.`;
+      kind = 'incorrect-banner';
+      say = `Incorrect. You selected ${selected}, and the correct answer is ${correctLetter}.`;
+    }
+    banner.className = 'graded-banner show ' + kind;
+    banner.textContent = say;
+    /* How long the item took is the other half of reviewing it: a right
+       answer that took four minutes is not the same as one that took forty
+       seconds. The results table has the number; the item says it too. */
+    const ms = itemMsFor(q.n);
+    if(ms > 0){
+      const t = document.createElement('span');
+      t.className = 'banner-time';
+      t.textContent = formatItemTime(ms) + ' on this item';
+      banner.appendChild(t);
     }
   }else{
     banner.className = 'graded-banner';
@@ -366,6 +378,7 @@ function render(){
     const wrong = state.graded ? incorrectIndexes() : [];
     ni.style.display = wrong.length ? '' : 'none';
   }
+  updateMarkedNav();
 
   renderPause();
   closeLightbox();
@@ -687,7 +700,30 @@ document.getElementById('nextBtn2').addEventListener('click', goNext);
 document.getElementById('markChk').addEventListener('change', (e) => {
   state.marked[currentQ().n] = e.target.checked;
   saveState();
+  updateMarkedNav();
 });
+
+/* The second pass through a block is the marked items, so before the block
+   ends the bar offers to step through them the way it offers the missed ones
+   after: Next marked appears once there is another marked item to go to. */
+function markedIndexes(){
+  const out = [];
+  QUESTIONS.forEach((q, i) => { if(state.marked[q.n]) out.push(i); });
+  return out;
+}
+function updateMarkedNav(){
+  const btn = document.getElementById('nextMarkedBtn');
+  if(!btn) return;
+  const others = state.graded ? [] : markedIndexes().filter(i => i !== state.idx);
+  btn.style.display = others.length ? '' : 'none';
+}
+function goToNextMarked(){
+  const list = markedIndexes();
+  if(!list.length) return;
+  const next = list.find(i => i > state.idx);
+  goToItem(next === undefined ? list[0] : next);   // wrap around
+}
+document.getElementById('nextMarkedBtn').addEventListener('click', goToNextMarked);
 
 /* Back to a blank block: the same erasure whether it is asked for from inside
    the exam (Restart) or from the start screen (Start over). `running` is the
@@ -778,6 +814,8 @@ function openReview(){
   document.getElementById('finishBtn').style.display = state.graded ? 'none' : '';
   document.getElementById('firstUnansweredBtn').style.display =
     (!state.graded && answeredCount < QUESTIONS.length) ? '' : 'none';
+  document.getElementById('firstMarkedBtn').style.display =
+    (!state.graded && markedCount) ? '' : 'none';
   // graded: the overlay is a review tool, so it offers the way back to the
   // score and a jump straight to the first item you got wrong
   document.getElementById('backToResultsBtn').style.display = state.graded ? '' : 'none';
@@ -803,6 +841,12 @@ document.getElementById('firstUnansweredBtn').addEventListener('click', () => {
     goToItem(i);
   }
 });
+document.getElementById('firstMarkedBtn').addEventListener('click', () => {
+  const list = markedIndexes();
+  if(!list.length) return;
+  closeReview();
+  goToItem(list[0]);
+});
 document.getElementById('reviewIncorrectBtn').addEventListener('click', () => {
   const list = incorrectIndexes();
   if(!list.length) return;
@@ -826,10 +870,17 @@ document.getElementById('reviewOverlay').addEventListener('click', (e) => {
 });
 
 document.getElementById('finishBtn').addEventListener('click', () => {
+  /* Ending the block cannot be undone, so it always asks, and says what is
+     still open: blanks, and items you meant to come back to. */
   const unanswered = QUESTIONS.length - Object.keys(state.answers).length;
-  if(unanswered > 0){
-    if(!confirm(`You have ${unanswered} unanswered item(s). End the block and see your score anyway?`)) return;
-  }
+  const marked = markedIndexes().length;
+  const items = n => n + (n === 1 ? ' item is' : ' items are');
+  const open = [];
+  if(unanswered) open.push(items(unanswered) + ' unanswered');
+  if(marked) open.push(items(marked) + ' marked for review');
+  const lead = open.length ? open.join(' and ') + '.\n\n' : '';
+  if(!confirm(lead.charAt(0).toUpperCase() + lead.slice(1)
+            + 'End the block and see your score? Answers cannot be changed after this.')) return;
   state.graded = true;
   state.score = computeScore();
   stopClock();            // the block is over; the clock stops with it
@@ -1122,7 +1173,19 @@ function showResults(){
 
   document.getElementById('scorePercent').textContent = pct + '%';
   document.getElementById('scoreFrac').textContent = `${correct} of ${total} correct`;
-  document.getElementById('scoreTime').textContent = 'Time on block: ' + formatDuration(elapsedMs());
+  const answeredN = total - unanswered;
+  document.getElementById('scoreTime').textContent = 'Time on block: ' + formatDuration(elapsedMs())
+    + (answeredN ? ' · ' + formatItemTime(elapsedMs() / answeredN) + ' an item' : '');
+  /* What most people do next is work through what they missed, so that is
+     the first button; going back to wherever the block ended is second, and
+     says which item that is. */
+  const missed = incorrect + unanswered;
+  const rm = document.getElementById('reviewMissedBtn');
+  rm.style.display = missed ? '' : 'none';
+  rm.textContent = 'Review missed items (' + missed + ')';
+  const back = document.getElementById('backToExamBtn');
+  back.textContent = 'Back to item ' + currentQ().n;
+  back.classList.toggle('secondary', !!missed);
   document.getElementById('bCorrect').textContent = correct;
   document.getElementById('bIncorrect').textContent = incorrect;
   document.getElementById('bUnanswered').textContent = unanswered;
@@ -1131,6 +1194,10 @@ function showResults(){
   buildResultsBody();
 }
 
+document.getElementById('reviewMissedBtn').addEventListener('click', () => {
+  const list = incorrectIndexes();
+  if(list.length) goToItem(list[0]);
+});
 document.getElementById('backToExamBtn').addEventListener('click', () => {
   showQuestionView();
   render();
@@ -1472,6 +1539,7 @@ document.addEventListener('keydown', (e) => {
     state.marked[q.n] = !state.marked[q.n];
     saveState();
     document.getElementById('markChk').checked = !!state.marked[q.n];
+    updateMarkedNav();
   }
   // N opens/closes the notes panel — no exam here has an option N to shadow,
   // but the guard keeps that true if one ever does

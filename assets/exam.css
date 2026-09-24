@@ -212,7 +212,10 @@
     display:flex;align-items:center;justify-content:center;
   }
   .nav-circle svg{display:block;}
-  .counter{font-size:var(--fs-md);font-weight:600;min-width:64px;text-align:center;}
+  /* The item box at the left of the bar already says "Item 12 of 50"; the
+     counter between Previous and Next only earns its place on a narrow
+     screen, where the item box gives way to it. */
+  .counter{display:none;font-size:var(--fs-md);font-weight:600;min-width:64px;text-align:center;}
   .topbar-right{display:flex;align-items:center;justify-content:flex-end;gap:18px;font-size:var(--fs-xs);flex:1 1 0;}
   .topbar-right .tb-item{
     background:none;border:none;font:inherit;color:inherit;padding:2px 4px;border-radius:var(--r-xs);
@@ -259,8 +262,10 @@
   .mark-flag{display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none;color:var(--text);}
   .mark-flag input{accent-color:var(--marked);width:15px;height:15px;}
   .subbar-status{display:flex;align-items:center;gap:16px;}
+  /* the count and the clock sit side by side, so they share a size; the
+     clock is the one you glance at, so it gets the darker ink */
   .answered-note{color:var(--muted);font-size:var(--fs-sm);}
-  .timer{color:var(--muted);font-variant-numeric:tabular-nums;}
+  .timer{color:var(--text);font-size:var(--fs-sm);font-variant-numeric:tabular-nums;}
   .progress-track{
     position:sticky;
     top:calc(var(--topbar-h, 0px) + var(--subbar-h, 0px));
@@ -328,6 +333,10 @@
   .graded-banner.correct-banner{background:var(--correct-bg);color:#1f6b41;border:1px solid var(--correct);}
   .graded-banner.incorrect-banner{background:var(--incorrect-bg);color:#8f2c20;border:1px solid var(--incorrect);}
   .graded-banner.unanswered-banner{background:#f0f1f2;color:var(--muted);border:1px solid var(--border);}
+  .graded-banner .banner-time{
+    margin-left:auto;padding-left:16px;white-space:nowrap;
+    font-weight:400;font-size:var(--fs-sm);font-variant-numeric:tabular-nums;opacity:.85;
+  }
 
   /* Text size applies to what you read, not to the chrome: the stem, its lab
      tables, the choices, the explanation and your notes all take this factor,
@@ -573,9 +582,10 @@
     justify-content:space-between;
     gap:12px;
   }
-  /* Next incorrect sits with Next, the way you are going, not stranded in
-     the middle of the bar. */
-  .botbar-row #nextIncorrectBtn{margin-left:auto;}
+  /* Previous holds the left; Next incorrect and Next marked sit with Next,
+     the way you are going, rather than stranded in the middle of the bar. */
+  .botbar-row{justify-content:flex-start;}
+  .botbar-row > :first-child{margin-right:auto;}
 
   /* grid / review overlay */
   .overlay{
@@ -746,11 +756,11 @@
     opacity:1;border-bottom:none;border-top:5px solid currentColor;
   }
 
-  /* A lighter step than the grid's cell tints: a whole row of --correct-bg
-     swallows the violet stripe that has to sit on top of it. Hover deepens
-     the row to the grid's tint, which doubles as the affordance — the rows
-     are buttons and until now nothing but the cursor said so. */
-  .results-table tbody tr.row-correct td{background:var(--correct-row);}
+  /* Only a miss is tinted. Tinting every row green or red striped the whole
+     table, which the result pill already says row by row; with the correct
+     rows left plain, the misses are what the eye lands on, and they are what
+     a review is for. Hover deepens a row, which doubles as the affordance:
+     the rows are buttons and nothing but the cursor would otherwise say so. */
   .results-table tbody tr.row-incorrect td{background:var(--incorrect-row);}
   .results-table tbody tr.row-unanswered td{color:var(--muted);}
   .results-table tbody tr.item-row:hover td{background:var(--navy-tint);}
@@ -883,6 +893,7 @@
   }
 
   @media (max-width:760px){
+    .counter{display:block;}
     .grid-nav{grid-template-columns:repeat(5,1fr);}
     /* keep the toolbar usable on phones: tighten the padding, and give the
        left of the bar up to the form tag */
@@ -907,7 +918,6 @@
     .subbar{padding:9px 16px;gap:10px;}
     .mark-flag, .answered-note, .timer{white-space:nowrap;}
     .subbar-status{gap:10px;}
-    .timer{font-size:var(--fs-sm);}
     .timer:not(.is-paused) .timer-label{display:none;}
     /* A lab table as wide as its columns cannot fit a phone: it keeps its
        indent small, and scrolls sideways on its own rather than taking the

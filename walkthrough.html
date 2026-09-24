@@ -54,6 +54,11 @@
   }
   .frame main{padding:22px 24px 26px;}
   .frame header.topbar{border-radius:0;}
+  /* The frame is narrower than the window it sits in, so the window-width
+     rule that drops the subject from the exam's bar never fires here, and the
+     subject was squeezed to "M...". The frame always drops it, as the exam
+     page does at this width. */
+  .frame .exam-title{display:none;}
   /* Review and Pause cover the frame, so the frame is what they are measured
      against. */
   .frame{position:relative;}

@@ -99,12 +99,12 @@
       <span class="form-tag" id="examFormTag" style="display:none"></span>
     </div>
     <div class="topbar-center">
-      <button class="nav-btn" id="prevBtn">
+      <button class="nav-btn" id="prevBtn" title="Previous item (&#8592;)">
         <span class="nav-circle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg></span>
         Previous
       </button>
       <div class="counter"><span id="curItem2">1</span> / <span id="totalItems2"></span></div>
-      <button class="nav-btn" id="nextBtn">
+      <button class="nav-btn" id="nextBtn" title="Next item (&#8594;)">
         <span class="nav-circle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></span>
         <span id="nextBtnLabel">Next</span>
       </button>
@@ -131,7 +131,7 @@
           <button type="button" class="size-opt" data-size="xl" role="menuitemradio">Larger</button>
         </div>
       </div>
-      <button type="button" class="tb-item" id="reviewOpenBtn">
+      <button type="button" class="tb-item" id="reviewOpenBtn" title="See every item at once and jump to any of them">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7.5" height="7.5" rx="1"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1"/></svg>
         <div>Review</div>
       </button>
@@ -143,7 +143,7 @@
         <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
         <div>Pause</div>
       </button>
-      <button type="button" class="tb-item" id="restartBtn">
+      <button type="button" class="tb-item" id="restartBtn" title="Clear every answer and start this exam again">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3.2-6.9"/><path d="M3 4v5h5"/></svg>
         <div>Restart</div>
       </button>
@@ -153,7 +153,7 @@
   <div id="examBody">
     <div id="examMain">
       <div class="subbar">
-        <label class="mark-flag"><input type="checkbox" id="markChk"> Mark for review</label>
+        <label class="mark-flag" title="Flag this item to come back to (M)"><input type="checkbox" id="markChk"> Mark for review</label>
         <div class="subbar-status">
           <span class="answered-note" id="answeredNote"></span>
           <div class="timer" id="timer">Elapsed: 00:00:00</div>
@@ -177,6 +177,8 @@
           <button class="btn secondary" id="prevBtn2">Previous</button>
           <button class="btn secondary" id="nextIncorrectBtn" style="display:none"
                   title="Jump to the next item you did not get right">Next incorrect</button>
+          <button class="btn secondary" id="nextMarkedBtn" style="display:none"
+                  title="Jump to the next item you marked for review">Next marked</button>
           <button class="btn" id="nextBtn2">Next</button>
         </div>
       </footer>
@@ -200,7 +202,9 @@
         </div>
 
         <div class="results-actions">
-          <button class="btn" id="backToExamBtn">Back to exam</button>
+          <button class="btn" id="reviewMissedBtn" style="display:none"
+                  title="Open the first item you did not get right; Next incorrect then steps through the rest">Review missed items</button>
+          <button class="btn secondary" id="backToExamBtn">Back to exam</button>
           <button class="btn secondary" id="downloadBtn"
                   title="A readable report, and the progress itself so another browser can take it back">Download results and progress</button>
         </div>
@@ -259,6 +263,7 @@
       <div class="grid-nav" id="gridNav"></div>
       <div class="modal-actions">
         <button class="btn secondary" id="firstUnansweredBtn">Go to first unanswered</button>
+        <button class="btn secondary" id="firstMarkedBtn" style="display:none">Go to first marked</button>
         <button class="btn secondary" id="reviewIncorrectBtn" style="display:none">Go to first incorrect</button>
         <button class="btn" id="backToResultsBtn" style="display:none">Back to results</button>
         <button class="btn" id="finishBtn">End block and see results</button>

@@ -164,6 +164,8 @@ if (chromium) {
     const noise = [];
     page.on('console', (m) => m.type() === 'error' && noise.push(m.text()));
     page.on('pageerror', (e) => noise.push('pageerror: ' + e.message));
+    // Ending the block always asks first; the run means to end it.
+    page.on('dialog', (d) => d.accept());
     await page.goto(`http://localhost:${port}/exam.html?exam=${slug}`);
     await page.click('#beginBtn');
     await page.waitForSelector('#qstem', { state: 'visible' });
