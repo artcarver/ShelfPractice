@@ -315,13 +315,21 @@
 
   /* One measure for the whole item: stem, choices and explanation share a
      column rather than the stem running the full width of a wide monitor. */
-  main{padding:24px 28px 40px;max-width:1000px;}
+  /* wide enough for the measure at the largest text size, plus padding */
+  main{padding:24px 28px 40px;max-width:max(1000px, calc(var(--measure) + 56px));}
   /* The measure. Banner, exhibit, stem, explanation and the Previous / Next
      row used to stop at different widths (up to 944px), so the right edge of
      the item stepped in and out, and a stem ran to 130 characters a line on a
      wide screen. They now share one column; the choices sit inside it at
      their own narrower width (see .options). */
-  :root{--measure:760px;--choices-w:560px;}
+  /* Both widths grow with the text size setting, so every size sets the
+     same number of characters to a line (about 105 at the default, close to
+     the long lines of the real exam). A fixed width would squeeze larger
+     text into shorter, choppier lines. */
+  :root{
+    --measure:calc(760px * var(--content-scale));
+    --choices-w:calc(560px * var(--content-scale));
+  }
   .graded-banner, .qimg-wrap, .stem, .explanation, .botbar-row{max-width:var(--measure);}
 
   .graded-banner{
@@ -472,6 +480,18 @@
   /* Centred under its heading, the way the form sets these: a one-word value
      left-aligned in a wide column reads as a stray word rather than a cell. */
   .opt-table .opt-cell{min-width:0;text-align:center;}
+  /* A heading like "Development" can be wider than its column once large
+     text meets the narrow split beside Lab Values; it hyphenates, or breaks,
+     rather than running into the heading next to it. */
+  .opt-table .opt-head .opt-cell{hyphens:auto;-webkit-hyphens:auto;overflow-wrap:break-word;}
+  /* and before it has to, the headings step down a size whenever the
+     question column is narrow, whatever made it so. (The column is the
+     container, not the table: containing the table would stop it sizing to
+     its own columns.) */
+  #quizMain{container-type:inline-size;container-name:question;}
+  @container question (max-width: 640px){
+    .options.opt-table .opt-head{font-size:calc(var(--fs-xs) * var(--content-scale));}
+  }
   .opt-table .opt-head{
     display:flex;
     align-items:flex-end;
