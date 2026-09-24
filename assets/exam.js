@@ -98,6 +98,7 @@ function loadState(){
       state.itemMs = saved.itemMs || {};
       state.itemSince = saved.itemSince || null;
       state.itemSinceN = saved.itemSinceN || null;
+      state.savedAt = saved.savedAt || null;
       if(typeof saved.elapsedMs === 'number'){
         state.elapsedMs = saved.elapsedMs;
         state.runningSince = saved.runningSince || null;
@@ -109,6 +110,25 @@ function loadState(){
     }
   }catch(e){}
 }
+/* A running clock is saved as "running since", so a tab that closes without
+   stopping it leaves it running: come back a day later and the day is on the
+   block, and on whichever item was showing. Leaving the page stops it (see
+   pagehide below), but a phone that kills the tab never says so. For that
+   case the stretch is closed at the last moment anything was saved, which is
+   the last moment we know someone was working. */
+function bankAbandonedClock(){
+  const upTo = Math.min(Date.now(), state.savedAt || Date.now());
+  if(state.runningSince){
+    state.elapsedMs += Math.max(0, upTo - state.runningSince);
+    state.runningSince = null;
+  }
+  if(state.itemSince){
+    const n = state.itemSinceN;
+    if(n != null) state.itemMs[n] = (state.itemMs[n] || 0) + Math.max(0, upTo - state.itemSince);
+    state.itemSince = null;
+    state.itemSinceN = null;
+  }
+}
 function saveState(){
   try{
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
@@ -118,7 +138,8 @@ function saveState(){
       graded: state.graded, paused: state.paused,
       score: state.score, onResults: state.onResults,
       elapsedMs: state.elapsedMs, runningSince: state.runningSince,
-      itemMs: state.itemMs, itemSince: state.itemSince, itemSinceN: state.itemSinceN
+      itemMs: state.itemMs, itemSince: state.itemSince, itemSinceN: state.itemSinceN,
+      savedAt: Date.now()
     }));
   }catch(e){}
 }
@@ -1206,8 +1227,8 @@ function spentLabel(ms){
 }
 function tickTimer(){
   const label = formatDuration(elapsedMs());
-  document.getElementById('timer').textContent =
-    (state.paused ? 'Paused: ' : 'Elapsed: ') + label;
+  document.getElementById('timer').innerHTML =
+    '<span class="timer-label">' + (state.paused ? 'Paused: ' : 'Elapsed: ') + '</span>' + label;
   document.getElementById('timer').classList.toggle('is-paused', state.paused);
   if(state.paused){
     const el = document.getElementById('pausedElapsed');
@@ -1405,6 +1426,8 @@ document.addEventListener('keydown', (e) => {
   const t = e.target;
   if(t && t.matches &&
      t.matches('input:not([type=checkbox]):not([type=radio]), textarea, select')) return;
+  // the import dialog is modal and handles its own keys
+  if(document.querySelector('.tr-overlay')) return;
 
   if(!enteredExam){
     // on the start screen only Enter does anything: begin, or resume
@@ -1432,11 +1455,13 @@ document.addEventListener('keydown', (e) => {
     closeLightbox();
     return;
   }
-  if(e.key === 'Escape' &&
-     document.getElementById('reviewOverlay').classList.contains('show')){
-    closeReview();
+  /* The review grid and the enlarged exhibit are modal: a letter or an arrow
+     pressed over them must not answer or move the item hidden underneath. */
+  if(document.getElementById('reviewOverlay').classList.contains('show')){
+    if(e.key === 'Escape') closeReview();
     return;
   }
+  if(lightboxOpen()) return;
   if(document.getElementById('resultsScreen').style.display === 'block') return;
   if(e.key === 'Escape'){ pauseExam(); return; }
   if(e.ctrlKey || e.metaKey || e.altKey) return;   // browser shortcuts stay browser shortcuts
@@ -1501,12 +1526,32 @@ function enterExam(){
 }
 
 document.getElementById('beginBtn').addEventListener('click', enterExam);
-document.getElementById('resumeBtn').addEventListener('click', enterExam);
+/* Resume on the start screen is already the decision to carry on, so an exam
+   left paused does not stop at the pause card to be resumed a second time. */
+document.getElementById('resumeBtn').addEventListener('click', () => {
+  state.paused = false;
+  enterExam();
+});
 document.getElementById('startOverBtn').addEventListener('click', () => {
   // this throws away everything, so it asks first — the same guard Restart has
   if(!confirm('Start this exam over? This clears your answers, highlights and score.')) return;
   clearProgress(false);
   enterExam();   // which starts the clock
+});
+
+/* Closing, reloading or navigating away stops the clock, so time away from
+   the page is never time on the block; entering again restarts it. The one
+   exception is a tab that another tab has written over since (the stale
+   notice is up): saving here would overwrite that newer work. */
+window.addEventListener('pagehide', () => {
+  if(!enteredExam || !document.getElementById('staleNote').hidden) return;
+  if(!state.runningSince && !state.itemSince) return;
+  stopClock();
+  saveState();
+});
+window.addEventListener('pageshow', (e) => {
+  // restored from the back-forward cache, where no load runs to restart it
+  if(e.persisted && enteredExam){ startClock(); saveState(); }
 });
 
 /* ---------- per-item notes ---------- */
@@ -1807,6 +1852,8 @@ const labBtn = document.getElementById('labValuesBtn');
 if(labBtn) labBtn.addEventListener('click', toggleLabValues);
 
 loadState();
+// a fresh arrival, not a reload of this tab: whatever was running has stopped
+if(!enteredThisSession()) bankAbandonedClock();
 renderPause();
 
 /* The splash covers the real work — the manifest, this exam's data.js and the
@@ -1830,7 +1877,8 @@ if(enteredThisSession()){
     document.getElementById('resumeRow').style.display = 'flex';
     document.getElementById('resumeMeta').style.display = '';
     document.getElementById('resumeLabel').textContent =
-      (state.graded && state.onResults) ? 'Back to your results' : ('Resume at item ' + (state.idx + 1));
+      (state.graded && state.onResults) ? 'Back to your results'
+        : ((state.graded ? 'Review item ' : 'Resume at item ') + (state.idx + 1));
     document.getElementById('resumeCount').textContent =
       answered + ' of ' + QUESTIONS.length + ' answered';
     document.getElementById('resumeState').textContent = state.graded && state.score

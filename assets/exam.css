@@ -771,6 +771,9 @@
     display:block;
     overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
   }
+  /* With its article dropped, "A previously healthy woman" would start the
+     row in lower case. The text stays the form's; only the display lifts it. */
+  .stem-text::first-letter{text-transform:uppercase;}
   .results-table tbody tr.row-unanswered .stem-text{color:var(--muted);}
 
   .results-table tr.note-row td{
@@ -876,6 +879,26 @@
        toolbar holds, because that is the one you reach for mid-question; the
        clock and Mark for review scroll with the stem and are a flick away. */
     .subbar, .progress-track{position:static;}
+    /* three things on one line at phone width: keep each on one line of its
+       own, and let the clock drop its word, since the digits say it */
+    .subbar{padding:9px 16px;gap:10px;}
+    .mark-flag, .answered-note, .timer{white-space:nowrap;}
+    .subbar-status{gap:10px;}
+    .timer{font-size:var(--fs-sm);}
+    .timer:not(.is-paused) .timer-label{display:none;}
+    /* A lab table as wide as its columns cannot fit a phone: it keeps its
+       indent small, and scrolls sideways on its own rather than taking the
+       whole page with it. */
+    .stem .lab-table{
+      display:block;max-width:100%;overflow-x:auto;
+      margin-left:0;
+    }
+    .stem .lab-table td + td,
+    .stem .lab-table tr.lab-head td + td{padding-left:18px;}
+    .stem .lab-table td.lab-name{padding-left:0;}
+    .stem .lab-table td.lab-name.lab-sub-1{padding-left:14px;}
+    .stem .lab-table td.lab-name.lab-sub-2{padding-left:28px;}
+    .stem .lab-table td.lab-name.lab-sub-3{padding-left:42px;}
   }
 
   @media (prefers-reduced-motion: reduce){

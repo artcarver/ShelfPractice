@@ -285,7 +285,7 @@
 
     <div class="end">
       <h2>That is the whole of it</h2>
-      <p>Forty forms, fifty items each, every one with an explanation. Exhibits where
+      <p>Fifty items to a form, every one with an explanation. Exhibits where
         the form prints them, progress kept in this browser, and a file you can carry
         to another one.</p>
       <a class="btn" href="index.html">Open a practice exam</a>
@@ -500,7 +500,7 @@
   }
   setInterval(() => {
     if(!paused && !graded) elapsed++;
-    timerEl.textContent = (paused ? 'Paused: ' : 'Elapsed: ') + clockText();
+    timerEl.innerHTML = '<span class="timer-label">' + (paused ? 'Paused: ' : 'Elapsed: ') + '</span>' + clockText();
     timerEl.classList.toggle('is-paused', paused);
   }, 1000);
 
