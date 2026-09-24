@@ -1198,6 +1198,12 @@ function formatDuration(ms){
   const h = Math.floor(secs/3600), m = Math.floor((secs%3600)/60), s = secs%60;
   return `${pad(h)}:${pad(m)}:${pad(s)}`;
 }
+// "1 h 12 min on the clock", for the start screen, where seconds are noise
+function spentLabel(ms){
+  const mins = Math.floor(ms / 60000), h = Math.floor(mins / 60);
+  const txt = h ? h + ' h ' + (mins % 60) + ' min' : (mins ? mins + ' min' : 'under a minute');
+  return txt + ' on the clock';
+}
 function tickTimer(){
   const label = formatDuration(elapsedMs());
   document.getElementById('timer').textContent =
@@ -1402,7 +1408,7 @@ document.addEventListener('keydown', (e) => {
 
   if(!enteredExam){
     // on the start screen only Enter does anything: begin, or resume
-    if(e.key === 'Enter' && !(t && t.closest && t.closest('button')) &&
+    if(e.key === 'Enter' && !(t && t.closest && t.closest('button, summary, a')) &&
        document.getElementById('startScreen').style.display !== 'none'){
       const resuming = document.getElementById('resumeRow').style.display !== 'none';
       document.getElementById(resuming ? 'resumeBtn' : 'beginBtn').click();
@@ -1817,11 +1823,22 @@ if(enteredThisSession()){
   const hasProgress = Object.keys(state.answers).length > 0 || state.graded ||
                       state.paused || elapsedMs() > 0;
   if(hasProgress){
+    /* Someone coming back wants to carry on, so the button says exactly where
+       it goes, the bar says how far along they are, and the instructions they
+       have already read fold away under their heading. */
+    const answered = Object.keys(state.answers).length;
     document.getElementById('resumeRow').style.display = 'flex';
-    document.getElementById('startOverRow').style.display = 'block';
-    document.getElementById('resumeItem').textContent =
-      (state.graded && state.onResults) ? 'Results' : ('Item ' + (state.idx + 1));
+    document.getElementById('resumeMeta').style.display = '';
+    document.getElementById('resumeLabel').textContent =
+      (state.graded && state.onResults) ? 'Back to your results' : ('Resume at item ' + (state.idx + 1));
+    document.getElementById('resumeCount').textContent =
+      answered + ' of ' + QUESTIONS.length + ' answered';
+    document.getElementById('resumeState').textContent = state.graded && state.score
+      ? 'Scored ' + state.score.correct + ' / ' + state.score.total
+      : spentLabel(elapsedMs());
+    document.getElementById('resumeFill').style.width = (answered / QUESTIONS.length) * 100 + '%';
   }else{
     document.getElementById('beginRow').style.display = 'flex';
+    document.getElementById('startHelp').open = true;
   }
 }

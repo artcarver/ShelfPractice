@@ -40,25 +40,69 @@
     flex-shrink:0;
   }
   .start-card h1{margin:0 0 4px;font-size:var(--fs-xl);color:var(--navy-dark);}
-  .start-card > p.sub{margin:0 0 20px;color:var(--muted);font-size:var(--fs-base);}
+  .start-card > p.sub{margin:0 0 22px;color:var(--muted);font-size:var(--fs-base);}
   .form-chip{
     display:inline-block;
     font-size:var(--fs-xs);font-weight:700;letter-spacing:.08em;text-transform:uppercase;
     color:var(--navy);background:#e8f0f6;
     border-radius:var(--r-pill);padding:4px 12px;margin-bottom:12px;
   }
+  /* Where you are, for someone coming back: a count, the time or the score,
+     and a thin bar in the colour the toolbar uses for answered items. */
+  .start-progress{margin:0 0 16px;}
+  .start-progress-line{
+    display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    font-size:var(--fs-sm);color:var(--muted);margin-bottom:6px;
+  }
+  .start-progress-line span:first-child{color:var(--text);font-weight:600;}
+  .start-progress-track{height:6px;border-radius:var(--r-pill);background:var(--divider);overflow:hidden;}
+  .start-progress-fill{height:100%;background:var(--answered);border-radius:inherit;}
+
+  /* The primary action sits straight under the title: someone who already
+     knows what this is should not have to read past the instructions to start. */
+  .start-actions{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-bottom:22px;}
+  .start-actions .btn{
+    display:inline-flex;align-items:center;gap:12px;
+    padding:12px 18px 12px 22px;font-size:var(--fs-md);
+  }
+  /* Enter does the same thing as the button, so the hint lives on it. */
+  .start-actions .btn kbd{
+    font-family:inherit;font-size:var(--fs-xs);font-weight:600;
+    padding:1px 6px;border-radius:var(--r-xs);
+    border:1px solid rgba(255,255,255,.4);border-bottom-width:1px;
+    background:rgba(255,255,255,.1);color:rgba(255,255,255,.85);
+  }
+  /* Start Over throws work away (it asks first), so it is a quiet link beside
+     the button rather than a second button competing with it. */
+  .start-actions .start-over{font-size:var(--fs-sm);color:var(--muted);}
+  .start-actions .start-over:hover{color:var(--incorrect);}
+
+  /* The instructions: open for a first visit, folded for a returning one. */
+  .start-help{border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+  .start-help > summary{
+    list-style:none;cursor:pointer;
+    display:flex;align-items:center;gap:8px;
+    padding:14px 0;
+    font-size:var(--fs-sm);font-weight:600;color:var(--navy);
+  }
+  .start-help > summary::-webkit-details-marker{display:none;}
+  .start-help > summary::before{
+    content:"";width:6px;height:6px;margin:0 3px 0 2px;
+    border-right:2px solid currentColor;border-bottom:2px solid currentColor;
+    transform:rotate(-45deg);transition:transform .15s;
+  }
+  .start-help[open] > summary::before{transform:rotate(45deg);}
+  .start-help > summary:hover{color:var(--navy-dark);}
   .start-how{
-    display:grid;grid-template-columns:1fr 1fr;gap:14px 24px;
-    padding:20px 0;
-    border-top:1px solid var(--border);border-bottom:1px solid var(--border);
-    margin-bottom:16px;
+    display:grid;grid-template-columns:1fr 1fr;gap:14px 28px;
+    padding:4px 0 18px;
   }
   .how-item{display:flex;gap:10px;font-size:var(--fs-sm);line-height:1.5;color:var(--text);}
   .how-item svg{flex:0 0 auto;color:var(--navy);margin-top:3px;}
   .start-keys{
-    display:flex;flex-wrap:wrap;gap:8px 18px;
+    display:flex;flex-wrap:wrap;gap:8px 20px;
+    padding:14px 0 16px;border-top:1px solid var(--divider);
     font-size:var(--fs-xs);color:var(--muted);
-    margin-bottom:24px;
   }
   .start-keys span{display:inline-flex;align-items:center;gap:5px;}
   .start-keys kbd{
@@ -67,24 +111,13 @@
     background:var(--navy-tint);color:var(--text);
     font-family:inherit;font-size:var(--fs-xs);font-weight:600;text-align:center;
   }
-  .start-actions{display:flex;gap:12px;flex-wrap:wrap;}
-  .start-actions .btn{padding:11px 22px;}
-  /* Start Over wipes everything, so it is deliberately quiet and set apart
-     from the primary button rather than sitting beside it as a peer. */
-  .start-over-line{
-    margin:16px 0 0;
-    font-size:var(--fs-sm);
-    color:var(--muted);
-    line-height:1.5;
-  }
-  /* Start Over throws work away, so its link is quiet until you reach for it. */
-  /* Quiet, and under Begin rather than over it: someone who already knows what
-     this is should not have to step over an explanation to start. */
   .start-tour{
+    display:flex;justify-content:space-between;align-items:baseline;gap:6px 16px;flex-wrap:wrap;
     margin:14px 0 0;
     font-size:var(--fs-xs);color:var(--faint);
   }
   .start-tour a{color:var(--muted);}
+  .start-tour a:hover{color:var(--navy);}
   .start-sep{margin:0 7px;opacity:.6;}
   /* A button doing a link's job, dressed as the link beside it. */
   .start-import{
@@ -94,10 +127,14 @@
   }
   .start-import:hover{color:var(--navy);}
 
-  .start-over-line .text-link{color:var(--muted);}
-  .start-over-line .text-link:hover{color:var(--incorrect);}
+  /* no keyboard to press it on */
+  @media (hover:none){
+    .start-actions .btn kbd{display:none;}
+  }
   @media (max-width:560px){
+    .start-card{padding:28px 22px;}
     .start-how{grid-template-columns:1fr;}
+    .start-actions .btn{flex:1 1 auto;justify-content:center;}
   }
 
   /* The toolbar and the row under it stay put while the question scrolls, the
