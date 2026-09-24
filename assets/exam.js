@@ -1656,7 +1656,11 @@ function defaultNotesPos(){
   const w = 340, h = 260;
   const track = document.querySelector('.progress-track');
   const top = track ? track.getBoundingClientRect().bottom : topbarBottom();
-  return {x: Math.max(4, window.innerWidth - w - 24), y: top + 18, w, h};
+  /* inside the exam panel, not against the window edge: on a wide screen the
+     panel is centred and the window edge is out in the grey margin */
+  const app = document.getElementById('app');
+  const right = app ? app.getBoundingClientRect().right : window.innerWidth;
+  return {x: Math.max(4, right - w - 24), y: top + 18, w, h};
 }
 
 function placeNotes(){

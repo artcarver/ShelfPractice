@@ -311,7 +311,7 @@
      the item stepped in and out, and a stem ran to 130 characters a line on a
      wide screen. They now share one column; the choices sit inside it at
      their own narrower width (see .options). */
-  :root{--measure:760px;}
+  :root{--measure:760px;--choices-w:560px;}
   .graded-banner, .qimg-wrap, .stem, .explanation, .botbar-row{max-width:var(--measure);}
 
   .graded-banner{
@@ -354,7 +354,7 @@
     line-height:1.5;
   }
   .set-lead{
-    max-width:680px;   /* it heads the choices, so it keeps their width */
+    max-width:var(--choices-w);   /* it heads the choices, so it keeps their width */
     margin:0 0 12px;
     font-size:calc(var(--fs-md) * var(--content-scale));
     font-weight:600;
@@ -410,12 +410,14 @@
   #imgOverlay img{max-width:95vw;max-height:92vh;border-radius:var(--r-xs);box-shadow:0 10px 50px rgba(0,0,0,.5);}
 
   /* Answer texts are short — a median of ~22 characters — so the choices sit
-     in a narrower box than the stem above them. 680px keeps all but the rare
-     very long choice on one line. */
+     in a box clearly narrower than the stem, about three quarters of it, and
+     the same on every item so it does not jump about as you step through.
+     A long choice wraps inside it. */
   .options{
     border:1px solid var(--border);
     border-radius:var(--r-md);
-    max-width:680px;
+    width:var(--choices-w);
+    max-width:100%;
     overflow:hidden;
   }
   .opt{
@@ -441,8 +443,12 @@
      these as a table — a heading over each column, one row to a choice — so
      the values are set in columns of equal width and the headings sit in a
      head row above them. The columns need more room than a phrase does, so
-     the box is allowed to run to the full measure. */
-  .options.opt-table{max-width:var(--measure);}
+     the box grows with them, from the choices' width up to the stem's. */
+  .options.opt-table{
+    width:max-content;
+    min-width:min(var(--choices-w), 100%);
+    max-width:min(var(--measure), 100%);
+  }
   .opt-table .opt-body{
     display:grid;
     grid-template-columns:2.1em repeat(var(--opt-cols), minmax(0, 1fr));
@@ -618,6 +624,14 @@
 
   /* results screen */
   #resultsScreen{display:none;padding:30px 28px 50px;}
+  /* The question column fills the window, so on a short item the Previous /
+     Next bar sits at the foot of the screen, where it is on a long one,
+     instead of floating halfway down with an empty panel under it. */
+  #examMain{
+    display:flex;flex-direction:column;
+    min-height:calc(100vh - var(--topbar-h, 0px));
+  }
+  #quizMain{flex:1 0 auto;width:100%;}
   #resultsScreen h1{color:var(--navy-dark);font-size:var(--fs-xl);margin-bottom:6px;}
   #resultsScreen p{color:var(--muted);font-size:var(--fs-base);line-height:1.6;}
   .score-card{
