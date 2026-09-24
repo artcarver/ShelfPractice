@@ -98,6 +98,7 @@ function loadState(){
       state.itemMs = saved.itemMs || {};
       state.itemSince = saved.itemSince || null;
       state.itemSinceN = saved.itemSinceN || null;
+      state.savedAt = saved.savedAt || null;
       if(typeof saved.elapsedMs === 'number'){
         state.elapsedMs = saved.elapsedMs;
         state.runningSince = saved.runningSince || null;
@@ -109,6 +110,25 @@ function loadState(){
     }
   }catch(e){}
 }
+/* A running clock is saved as "running since", so a tab that closes without
+   stopping it leaves it running: come back a day later and the day is on the
+   block, and on whichever item was showing. Leaving the page stops it (see
+   pagehide below), but a phone that kills the tab never says so. For that
+   case the stretch is closed at the last moment anything was saved, which is
+   the last moment we know someone was working. */
+function bankAbandonedClock(){
+  const upTo = Math.min(Date.now(), state.savedAt || Date.now());
+  if(state.runningSince){
+    state.elapsedMs += Math.max(0, upTo - state.runningSince);
+    state.runningSince = null;
+  }
+  if(state.itemSince){
+    const n = state.itemSinceN;
+    if(n != null) state.itemMs[n] = (state.itemMs[n] || 0) + Math.max(0, upTo - state.itemSince);
+    state.itemSince = null;
+    state.itemSinceN = null;
+  }
+}
 function saveState(){
   try{
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
@@ -118,7 +138,8 @@ function saveState(){
       graded: state.graded, paused: state.paused,
       score: state.score, onResults: state.onResults,
       elapsedMs: state.elapsedMs, runningSince: state.runningSince,
-      itemMs: state.itemMs, itemSince: state.itemSince, itemSinceN: state.itemSinceN
+      itemMs: state.itemMs, itemSince: state.itemSince, itemSinceN: state.itemSinceN,
+      savedAt: Date.now()
     }));
   }catch(e){}
 }
@@ -216,16 +237,28 @@ function render(){
   // graded banner
   const banner = document.getElementById('gradedBanner');
   if(state.graded){
-    banner.classList.add('show');
+    let kind, say;
     if(!selected){
-      banner.className = 'graded-banner show unanswered-banner';
-      banner.textContent = `Not answered. Correct answer: ${correctLetter}.`;
+      kind = 'unanswered-banner';
+      say = `Not answered. Correct answer: ${correctLetter}.`;
     }else if(selected === correctLetter){
-      banner.className = 'graded-banner show correct-banner';
-      banner.textContent = `Correct. You selected ${selected}.`;
+      kind = 'correct-banner';
+      say = `Correct. You selected ${selected}.`;
     }else{
-      banner.className = 'graded-banner show incorrect-banner';
-      banner.textContent = `Incorrect. You selected ${selected}, and the correct answer is ${correctLetter}.`;
+      kind = 'incorrect-banner';
+      say = `Incorrect. You selected ${selected}, and the correct answer is ${correctLetter}.`;
+    }
+    banner.className = 'graded-banner show ' + kind;
+    banner.textContent = say;
+    /* How long the item took is the other half of reviewing it: a right
+       answer that took four minutes is not the same as one that took forty
+       seconds. The results table has the number; the item says it too. */
+    const ms = itemMsFor(q.n);
+    if(ms > 0){
+      const t = document.createElement('span');
+      t.className = 'banner-time';
+      t.textContent = formatItemTime(ms) + ' on this item';
+      banner.appendChild(t);
     }
   }else{
     banner.className = 'graded-banner';
@@ -345,6 +378,7 @@ function render(){
     const wrong = state.graded ? incorrectIndexes() : [];
     ni.style.display = wrong.length ? '' : 'none';
   }
+  updateMarkedNav();
 
   renderPause();
   closeLightbox();
@@ -666,7 +700,30 @@ document.getElementById('nextBtn2').addEventListener('click', goNext);
 document.getElementById('markChk').addEventListener('change', (e) => {
   state.marked[currentQ().n] = e.target.checked;
   saveState();
+  updateMarkedNav();
 });
+
+/* The second pass through a block is the marked items, so before the block
+   ends the bar offers to step through them the way it offers the missed ones
+   after: Next marked appears once there is another marked item to go to. */
+function markedIndexes(){
+  const out = [];
+  QUESTIONS.forEach((q, i) => { if(state.marked[q.n]) out.push(i); });
+  return out;
+}
+function updateMarkedNav(){
+  const btn = document.getElementById('nextMarkedBtn');
+  if(!btn) return;
+  const others = state.graded ? [] : markedIndexes().filter(i => i !== state.idx);
+  btn.style.display = others.length ? '' : 'none';
+}
+function goToNextMarked(){
+  const list = markedIndexes();
+  if(!list.length) return;
+  const next = list.find(i => i > state.idx);
+  goToItem(next === undefined ? list[0] : next);   // wrap around
+}
+document.getElementById('nextMarkedBtn').addEventListener('click', goToNextMarked);
 
 /* Back to a blank block: the same erasure whether it is asked for from inside
    the exam (Restart) or from the start screen (Start over). `running` is the
@@ -757,6 +814,8 @@ function openReview(){
   document.getElementById('finishBtn').style.display = state.graded ? 'none' : '';
   document.getElementById('firstUnansweredBtn').style.display =
     (!state.graded && answeredCount < QUESTIONS.length) ? '' : 'none';
+  document.getElementById('firstMarkedBtn').style.display =
+    (!state.graded && markedCount) ? '' : 'none';
   // graded: the overlay is a review tool, so it offers the way back to the
   // score and a jump straight to the first item you got wrong
   document.getElementById('backToResultsBtn').style.display = state.graded ? '' : 'none';
@@ -782,6 +841,12 @@ document.getElementById('firstUnansweredBtn').addEventListener('click', () => {
     goToItem(i);
   }
 });
+document.getElementById('firstMarkedBtn').addEventListener('click', () => {
+  const list = markedIndexes();
+  if(!list.length) return;
+  closeReview();
+  goToItem(list[0]);
+});
 document.getElementById('reviewIncorrectBtn').addEventListener('click', () => {
   const list = incorrectIndexes();
   if(!list.length) return;
@@ -805,10 +870,17 @@ document.getElementById('reviewOverlay').addEventListener('click', (e) => {
 });
 
 document.getElementById('finishBtn').addEventListener('click', () => {
+  /* Ending the block cannot be undone, so it always asks, and says what is
+     still open: blanks, and items you meant to come back to. */
   const unanswered = QUESTIONS.length - Object.keys(state.answers).length;
-  if(unanswered > 0){
-    if(!confirm(`You have ${unanswered} unanswered item(s). End the block and see your score anyway?`)) return;
-  }
+  const marked = markedIndexes().length;
+  const items = n => n + (n === 1 ? ' item is' : ' items are');
+  const open = [];
+  if(unanswered) open.push(items(unanswered) + ' unanswered');
+  if(marked) open.push(items(marked) + ' marked for review');
+  const lead = open.length ? open.join(' and ') + '.\n\n' : '';
+  if(!confirm(lead.charAt(0).toUpperCase() + lead.slice(1)
+            + 'End the block and see your score? Answers cannot be changed after this.')) return;
   state.graded = true;
   state.score = computeScore();
   stopClock();            // the block is over; the clock stops with it
@@ -1101,7 +1173,19 @@ function showResults(){
 
   document.getElementById('scorePercent').textContent = pct + '%';
   document.getElementById('scoreFrac').textContent = `${correct} of ${total} correct`;
-  document.getElementById('scoreTime').textContent = 'Time on block: ' + formatDuration(elapsedMs());
+  const answeredN = total - unanswered;
+  document.getElementById('scoreTime').textContent = 'Time on block: ' + formatDuration(elapsedMs())
+    + (answeredN ? ' · ' + formatItemTime(elapsedMs() / answeredN) + ' an item' : '');
+  /* What most people do next is work through what they missed, so that is
+     the first button; going back to wherever the block ended is second, and
+     says which item that is. */
+  const missed = incorrect + unanswered;
+  const rm = document.getElementById('reviewMissedBtn');
+  rm.style.display = missed ? '' : 'none';
+  rm.textContent = 'Review missed items (' + missed + ')';
+  const back = document.getElementById('backToExamBtn');
+  back.textContent = 'Back to item ' + currentQ().n;
+  back.classList.toggle('secondary', !!missed);
   document.getElementById('bCorrect').textContent = correct;
   document.getElementById('bIncorrect').textContent = incorrect;
   document.getElementById('bUnanswered').textContent = unanswered;
@@ -1110,6 +1194,10 @@ function showResults(){
   buildResultsBody();
 }
 
+document.getElementById('reviewMissedBtn').addEventListener('click', () => {
+  const list = incorrectIndexes();
+  if(list.length) goToItem(list[0]);
+});
 document.getElementById('backToExamBtn').addEventListener('click', () => {
   showQuestionView();
   render();
@@ -1198,10 +1286,16 @@ function formatDuration(ms){
   const h = Math.floor(secs/3600), m = Math.floor((secs%3600)/60), s = secs%60;
   return `${pad(h)}:${pad(m)}:${pad(s)}`;
 }
+// "1 h 12 min on the clock", for the start screen, where seconds are noise
+function spentLabel(ms){
+  const mins = Math.floor(ms / 60000), h = Math.floor(mins / 60);
+  const txt = h ? h + ' h ' + (mins % 60) + ' min' : (mins ? mins + ' min' : 'under a minute');
+  return txt + ' on the clock';
+}
 function tickTimer(){
   const label = formatDuration(elapsedMs());
-  document.getElementById('timer').textContent =
-    (state.paused ? 'Paused: ' : 'Elapsed: ') + label;
+  document.getElementById('timer').innerHTML =
+    '<span class="timer-label">' + (state.paused ? 'Paused: ' : 'Elapsed: ') + '</span>' + label;
   document.getElementById('timer').classList.toggle('is-paused', state.paused);
   if(state.paused){
     const el = document.getElementById('pausedElapsed');
@@ -1399,10 +1493,12 @@ document.addEventListener('keydown', (e) => {
   const t = e.target;
   if(t && t.matches &&
      t.matches('input:not([type=checkbox]):not([type=radio]), textarea, select')) return;
+  // the import dialog is modal and handles its own keys
+  if(document.querySelector('.tr-overlay')) return;
 
   if(!enteredExam){
     // on the start screen only Enter does anything: begin, or resume
-    if(e.key === 'Enter' && !(t && t.closest && t.closest('button')) &&
+    if(e.key === 'Enter' && !(t && t.closest && t.closest('button, summary, a')) &&
        document.getElementById('startScreen').style.display !== 'none'){
       const resuming = document.getElementById('resumeRow').style.display !== 'none';
       document.getElementById(resuming ? 'resumeBtn' : 'beginBtn').click();
@@ -1426,11 +1522,13 @@ document.addEventListener('keydown', (e) => {
     closeLightbox();
     return;
   }
-  if(e.key === 'Escape' &&
-     document.getElementById('reviewOverlay').classList.contains('show')){
-    closeReview();
+  /* The review grid and the enlarged exhibit are modal: a letter or an arrow
+     pressed over them must not answer or move the item hidden underneath. */
+  if(document.getElementById('reviewOverlay').classList.contains('show')){
+    if(e.key === 'Escape') closeReview();
     return;
   }
+  if(lightboxOpen()) return;
   if(document.getElementById('resultsScreen').style.display === 'block') return;
   if(e.key === 'Escape'){ pauseExam(); return; }
   if(e.ctrlKey || e.metaKey || e.altKey) return;   // browser shortcuts stay browser shortcuts
@@ -1441,6 +1539,7 @@ document.addEventListener('keydown', (e) => {
     state.marked[q.n] = !state.marked[q.n];
     saveState();
     document.getElementById('markChk').checked = !!state.marked[q.n];
+    updateMarkedNav();
   }
   // N opens/closes the notes panel — no exam here has an option N to shadow,
   // but the guard keeps that true if one ever does
@@ -1495,12 +1594,32 @@ function enterExam(){
 }
 
 document.getElementById('beginBtn').addEventListener('click', enterExam);
-document.getElementById('resumeBtn').addEventListener('click', enterExam);
+/* Resume on the start screen is already the decision to carry on, so an exam
+   left paused does not stop at the pause card to be resumed a second time. */
+document.getElementById('resumeBtn').addEventListener('click', () => {
+  state.paused = false;
+  enterExam();
+});
 document.getElementById('startOverBtn').addEventListener('click', () => {
   // this throws away everything, so it asks first — the same guard Restart has
   if(!confirm('Start this exam over? This clears your answers, highlights and score.')) return;
   clearProgress(false);
   enterExam();   // which starts the clock
+});
+
+/* Closing, reloading or navigating away stops the clock, so time away from
+   the page is never time on the block; entering again restarts it. The one
+   exception is a tab that another tab has written over since (the stale
+   notice is up): saving here would overwrite that newer work. */
+window.addEventListener('pagehide', () => {
+  if(!enteredExam || !document.getElementById('staleNote').hidden) return;
+  if(!state.runningSince && !state.itemSince) return;
+  stopClock();
+  saveState();
+});
+window.addEventListener('pageshow', (e) => {
+  // restored from the back-forward cache, where no load runs to restart it
+  if(e.persisted && enteredExam){ startClock(); saveState(); }
 });
 
 /* ---------- per-item notes ---------- */
@@ -1605,7 +1724,11 @@ function defaultNotesPos(){
   const w = 340, h = 260;
   const track = document.querySelector('.progress-track');
   const top = track ? track.getBoundingClientRect().bottom : topbarBottom();
-  return {x: Math.max(4, window.innerWidth - w - 24), y: top + 18, w, h};
+  /* inside the exam panel, not against the window edge: on a wide screen the
+     panel is centred and the window edge is out in the grey margin */
+  const app = document.getElementById('app');
+  const right = app ? app.getBoundingClientRect().right : window.innerWidth;
+  return {x: Math.max(4, right - w - 24), y: top + 18, w, h};
 }
 
 function placeNotes(){
@@ -1801,6 +1924,8 @@ const labBtn = document.getElementById('labValuesBtn');
 if(labBtn) labBtn.addEventListener('click', toggleLabValues);
 
 loadState();
+// a fresh arrival, not a reload of this tab: whatever was running has stopped
+if(!enteredThisSession()) bankAbandonedClock();
 renderPause();
 
 /* The splash covers the real work — the manifest, this exam's data.js and the
@@ -1817,11 +1942,23 @@ if(enteredThisSession()){
   const hasProgress = Object.keys(state.answers).length > 0 || state.graded ||
                       state.paused || elapsedMs() > 0;
   if(hasProgress){
+    /* Someone coming back wants to carry on, so the button says exactly where
+       it goes, the bar says how far along they are, and the instructions they
+       have already read fold away under their heading. */
+    const answered = Object.keys(state.answers).length;
     document.getElementById('resumeRow').style.display = 'flex';
-    document.getElementById('startOverRow').style.display = 'block';
-    document.getElementById('resumeItem').textContent =
-      (state.graded && state.onResults) ? 'Results' : ('Item ' + (state.idx + 1));
+    document.getElementById('resumeMeta').style.display = '';
+    document.getElementById('resumeLabel').textContent =
+      (state.graded && state.onResults) ? 'Back to your results'
+        : ((state.graded ? 'Review item ' : 'Resume at item ') + (state.idx + 1));
+    document.getElementById('resumeCount').textContent =
+      answered + ' of ' + QUESTIONS.length + ' answered';
+    document.getElementById('resumeState').textContent = state.graded && state.score
+      ? 'Scored ' + state.score.correct + ' / ' + state.score.total
+      : spentLabel(elapsedMs());
+    document.getElementById('resumeFill').style.width = (answered / QUESTIONS.length) * 100 + '%';
   }else{
     document.getElementById('beginRow').style.display = 'flex';
+    document.getElementById('startHelp').open = true;
   }
 }

@@ -54,6 +54,11 @@
   }
   .frame main{padding:22px 24px 26px;}
   .frame header.topbar{border-radius:0;}
+  /* The frame is narrower than the window it sits in, so the window-width
+     rule that drops the subject from the exam's bar never fires here, and the
+     subject was squeezed to "M...". The frame always drops it, as the exam
+     page does at this width. */
+  .frame .exam-title{display:none;}
   /* Review and Pause cover the frame, so the frame is what they are measured
      against. */
   .frame{position:relative;}
@@ -131,7 +136,8 @@
     padding:28px 24px;
   }
   .end h2{margin:0 0 6px;font-size:var(--fs-lg);color:var(--navy-dark);}
-  .end p{margin:0 0 18px;color:var(--muted);font-size:var(--fs-base);}
+  /* centred text reads badly past a short line, so it keeps to one */
+  .end p{margin:0 auto 18px;max-width:56ch;color:var(--muted);font-size:var(--fs-base);line-height:1.55;}
   .end .btn{display:inline-block;padding:11px 24px;text-decoration:none;}
 
   .foot{margin-top:28px;font-size:var(--fs-xs);color:var(--faint);text-align:center;}
@@ -285,7 +291,7 @@
 
     <div class="end">
       <h2>That is the whole of it</h2>
-      <p>Forty forms, fifty items each, every one with an explanation. Exhibits where
+      <p>Fifty items to a form, every one with an explanation. Exhibits where
         the form prints them, progress kept in this browser, and a file you can carry
         to another one.</p>
       <a class="btn" href="index.html">Open a practice exam</a>
@@ -500,7 +506,7 @@
   }
   setInterval(() => {
     if(!paused && !graded) elapsed++;
-    timerEl.textContent = (paused ? 'Paused: ' : 'Elapsed: ') + clockText();
+    timerEl.innerHTML = '<span class="timer-label">' + (paused ? 'Paused: ' : 'Elapsed: ') + '</span>' + clockText();
     timerEl.classList.toggle('is-paused', paused);
   }, 1000);
 

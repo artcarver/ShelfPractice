@@ -65,10 +65,27 @@
     text-decoration:none;color:inherit;
     transition:background .12s;
   }
-  .row-wrap{display:flex;align-items:center;}
   .row-wrap + .row-wrap{border-top:1px solid var(--divider);}
-  .row-wrap:hover{background:var(--navy-tint);}
-  a.row{flex:1 1 auto;min-width:0;}
+
+  /* An exam row is one link and, when there is progress, one Clear button,
+     and a button cannot sit inside a link. So the link holds the name and its
+     hit area is stretched over the whole row, and Clear sits above that, beside
+     the status it would erase. Start, Resume and Review then always end the
+     row at its right edge, under the subject chevrons, whether a row has a
+     Clear or not. */
+  .exam-row{
+    position:relative;
+    display:flex;align-items:center;gap:16px;
+    padding:15px 18px;
+    transition:background .12s;
+  }
+  .exam-row:hover{background:var(--navy-tint);}
+  .exam-row .row-link{flex:1 1 auto;min-width:0;text-decoration:none;color:inherit;}
+  .exam-row .row-link::after{content:"";position:absolute;inset:0;}
+  .exam-row .row-link:focus-visible{outline:none;}
+  .exam-row:has(.row-link:focus-visible){outline:2px solid var(--navy);outline-offset:-2px;}
+  .exam-row:hover .row-go svg{color:var(--navy);transform:translateX(2px);}
+  .exam-row .row-clear{position:relative;z-index:1;}
 
   /* Clearing an exam throws away answers, highlights and notes with no undo,
      so the control stays out of the way: it appears only on a row that has
@@ -76,7 +93,7 @@
      asks before it does anything. */
   .row-clear{
     flex:none;
-    margin-right:12px;
+    margin:0 -4px 0 -8px;
     padding:6px 9px;
     border:0;border-radius:var(--r-xs);
     background:none;
@@ -105,6 +122,7 @@
     white-space:nowrap;
   }
   .row-go svg{color:#b3c1cb;transition:color .12s, transform .12s;}
+  a.row:hover{background:var(--navy-tint);}
   a.row:hover .row-go svg{color:var(--navy);transform:translateX(2px);}
 
   /* One line above the list, offering the tour to someone who has not seen it.
@@ -139,6 +157,28 @@
   /* a.tour is a flex box, which outranks the [hidden] attribute on its own */
   a.tour[hidden]{display:none;}
 
+  /* Coming back is the common visit, and the exam you were in the middle of
+     is otherwise one click deep inside its subject. So whatever is under way
+     sits above the list, newest first, as rows of the same family as the
+     exam rows below it: a panel with a small heading, not a banner. */
+  .resume-block{
+    background:#fff;
+    border:1px solid var(--border);
+    border-left:4px solid var(--navy);
+    border-radius:var(--r-md);
+    overflow:hidden;
+    margin-top:16px;
+  }
+  .resume-block[hidden]{display:none;}
+  .resume-h{
+    margin:0;padding:12px 18px 0;
+    font-size:var(--fs-xs);font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--muted);
+  }
+  .resume-block a.row{padding:10px 18px 14px;}
+  .resume-block a.row + a.row{border-top:1px solid var(--divider);padding-top:14px;}
+  .row-when{color:var(--faint);}
+
   .foot{margin-top:30px;font-size:var(--fs-xs);color:var(--faint);text-align:center;}
   /* Once the note above has done its work it goes, but the tour itself stays
      reachable from here for good: someone who half-remembers a control and
@@ -169,12 +209,24 @@
     /* The open chevron keeps its quarter turn: with the transition gone it is
        a state indicator drawn in one position, not a movement. */
     a.row:hover .row-go svg,
+    .exam-row:hover .row-go svg,
     a.tour:hover .tour-go svg{transform:none;}
   }
 
   @media (max-width:520px){
     main{padding:24px 14px 40px;}
     .row-go span{display:none;}   /* the chevron carries it on a phone */
+    /* A phone has no room for name, status and action side by side: the
+       subject's counts and a form's status each drop to a second line under
+       the name, rather than squeezing it to "Family Medi..." or "CMS Form / 4". */
+    .subject-head{display:grid;grid-template-columns:1fr auto;column-gap:14px;row-gap:2px;}
+    .subject-name{white-space:normal;}
+    .subject-meta{grid-row:2;grid-column:1;white-space:normal;}
+    .subject-chev{grid-row:1 / span 2;grid-column:2;}
+    .exam-row{display:grid;grid-template-columns:1fr auto auto;column-gap:12px;row-gap:4px;}
+    .exam-row .row-state{grid-row:2;grid-column:1;}
+    .exam-row .row-clear{grid-row:1 / span 2;grid-column:2;margin:0;}
+    .exam-row .row-go{grid-row:1 / span 2;grid-column:3;}
   }
 </style>
 </head>
@@ -191,6 +243,11 @@
       <span class="tour-text">New here?</span>
       <span class="tour-go"><span>Try a question</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></span>
     </a>
+
+    <section class="resume-block" id="resumeBlock" aria-labelledby="resumeHead" hidden>
+      <h2 class="resume-h" id="resumeHead">Pick up where you left off</h2>
+      <div id="resumeRows"></div>
+    </section>
 
     <!-- Built from exams/manifest.js — add an exam there, not here. -->
     <div id="examList"></div>
@@ -236,7 +293,8 @@
     }
     const answered = Object.keys(s.answers || {}).length;
     if(answered || s.elapsedMs || s.runningSince)
-      return {kind:'going', answered:answered, total:e.items || 0};
+      return {kind:'going', answered:answered, total:e.items || 0,
+              idx: s.idx || 0, savedAt: s.savedAt || 0};
     return {kind:'new'};
   }
 
@@ -260,19 +318,19 @@
       cta = 'Resume';
     }
 
+    const wrap = document.createElement('div');
+    wrap.className = 'row-wrap exam-row';
     const a = document.createElement('a');
-    a.className = 'row';
+    a.className = 'row-link';
     a.href = 'exam.html?exam=' + encodeURIComponent(e.slug);
     a.innerHTML =
-      '<div class="row-main">' +
-        '<div class="row-form">' + (e.label || e.title) + '</div>' +
-        '<div class="row-len">' + (e.items ? e.items + ' questions' : 'Practice block') + '</div>' +
-      '</div>' + state +
-      '<div class="row-go"><span>' + cta + '</span>' + CHEV + '</div>';
-
-    const wrap = document.createElement('div');
-    wrap.className = 'row-wrap';
+      '<div class="row-form">' + (e.label || e.title) + '</div>' +
+      '<div class="row-len">' + (e.items ? e.items + ' questions' : 'Practice block') + '</div>';
+    // the link's own text is only the form, so a reader gets the rest here
+    const stateText = state.replace(/<[^>]+>/g, '');
+    a.setAttribute('aria-label', [cta, e.title, e.label, stateText].filter(Boolean).join(', '));
     wrap.append(a);
+    if(state) wrap.insertAdjacentHTML('beforeend', state);
 
     /* An exam you have never opened has nothing to clear, so it gets no
        button. Restarting from inside the exam wipes the answers but leaves the
@@ -297,6 +355,8 @@
       });
       wrap.append(clear);
     }
+    wrap.insertAdjacentHTML('beforeend',
+      '<div class="row-go" aria-hidden="true"><span>' + cta + '</span>' + CHEV + '</div>');
     return wrap;
   }
 
@@ -368,6 +428,7 @@
     list.innerHTML = '';
     placeTourCard();
     placeTransfer();
+    placeResume();
     const open = readOpen();
 
     groups.forEach((members, subject) => {
@@ -429,6 +490,47 @@
           + items.toLocaleString() + ' items, every one with a full explanation. '
           + 'Progress saves in this browser.'
         : 'Every item has a full explanation. Progress saves in this browser.';
+  }
+
+  /* "Today", "yesterday", or the date: when you last worked on it, which is
+     what tells two half-done forms apart. Records saved before the engine
+     stamped them have no date, and say nothing rather than guess. */
+  function when(ms){
+    if(!ms) return '';
+    const d = new Date(ms), now = new Date();
+    const day = x => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+    const diff = Math.round((day(now) - day(d)) / 86400000);
+    if(diff <= 0) return 'today';
+    if(diff === 1) return 'yesterday';
+    return d.toLocaleDateString(undefined, {month:'short', day:'numeric'});
+  }
+
+  function placeResume(){
+    const going = exams
+      .map(e => ({e, p: progressOf(e)}))
+      .filter(x => x.p.kind === 'going')
+      .sort((a, b) => b.p.savedAt - a.p.savedAt)
+      .slice(0, 3);
+    const block = document.getElementById('resumeBlock');
+    const rows = document.getElementById('resumeRows');
+    rows.innerHTML = '';
+    block.hidden = !going.length;
+    going.forEach(({e, p}) => {
+      const subject = e.title.replace(/\s*practice exams?\s*$/i, '') || e.title;
+      const a = document.createElement('a');
+      a.className = 'row';
+      a.href = 'exam.html?exam=' + encodeURIComponent(e.slug);
+      const last = when(p.savedAt);
+      a.innerHTML =
+        '<div class="row-main">' +
+          '<div class="row-form">' + subject + (e.label ? ' · ' + e.label : '') + '</div>' +
+          '<div class="row-len"><b>' + p.answered + '</b> of ' + p.total + ' answered' +
+            ' · stopped at item ' + (p.idx + 1) +
+            (last ? '<span class="row-when"> · ' + last + '</span>' : '') + '</div>' +
+        '</div>' +
+        '<div class="row-go"><span>Resume</span>' + CHEV + '</div>';
+      rows.append(a);
+    });
   }
 
   /* The card exists to answer "is this just screenshots", and anyone who has

@@ -261,6 +261,12 @@
   /* ---------- the dialog ---------- */
 
   let overlay = null;
+  /* Once something has been written, the page has to catch up with it however
+     the dialog is put away. Done was the only way that told it, so Escape or a
+     click on the backdrop left the exam list showing the old rows, and left an
+     exam page holding the old record in memory, ready to save it back over
+     what had just been imported. */
+  let afterClose = null;
 
   function el(tag, cls, text){
     const n = document.createElement(tag);
@@ -275,6 +281,9 @@
     document.removeEventListener('keydown', onEsc, true);
     if(overlay.parentNode) overlay.parentNode.removeChild(overlay);
     overlay = null;
+    const then = afterClose;
+    afterClose = null;
+    if(then) then();
   }
   function onEsc(e){ if(e.key === 'Escape'){ e.stopPropagation(); closeDialog(); } }
 
@@ -407,6 +416,7 @@
         const chosen = Array.from(body.querySelectorAll('input:checked'))
           .map(b => takeable[Number(b.dataset.i)]);
         const done = apply(chosen);
+        if(done.length && onDone) afterClose = () => onDone(done);
         body.innerHTML = '';
         foot.innerHTML = '';
         body.append(el('p', 'tr-say', done.length
@@ -414,7 +424,7 @@
           : 'Nothing could be saved. This browser may be blocking site storage.'));
         const ok = el('button', 'btn', 'Done');
         ok.type = 'button';
-        ok.addEventListener('click', () => { closeDialog(); if(done.length && onDone) onDone(done); });
+        ok.addEventListener('click', closeDialog);
         foot.append(el('span', 'tr-note tr-done', done.length ? 'Saved in this browser.' : ''), ok);
         ok.focus();
       });

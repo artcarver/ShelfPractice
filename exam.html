@@ -36,56 +36,56 @@
     <div class="form-chip" id="examLabel" style="display:none"></div>
     <h1 id="examName"></h1>
     <p class="sub" id="examSub"></p>
-    <div class="start-how">
-      <div class="how-item">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5.5"/></svg>
-        <span>Click a choice, or press <b>A</b>&ndash;<b>E</b>, to answer</span>
-      </div>
-      <div class="how-item">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M5.8 5.8l12.4 12.4"/></svg>
-        <span>Right-click a choice, or its <b>ab</b> tab, to cross it out</span>
-      </div>
-      <div class="how-item">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
-        <span>Drag across the question to highlight it; click a highlight to remove it</span>
-      </div>
-      <div class="how-item">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21V4"/><path d="M4 4h13l-2.5 4L17 12H4"/></svg>
-        <span>Mark items for review and jump to any item from <b>Review</b></span>
-      </div>
-      <div class="how-item">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h9l5 5v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14 3v5h5"/><path d="M8 12h8M8 16h5"/></svg>
-        <span><b>Notes</b>, or <b>N</b>, opens a note for the item you are on</span>
-      </div>
-      <div class="how-item">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
-        <span><b>Pause</b> stops the clock and hides the question</span>
-      </div>
-      <div class="how-item">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
-        <span>Progress, highlights and cross-outs save automatically in this browser</span>
-      </div>
-    </div>
-    <div class="start-keys">
-      <span><kbd>&#8592;</kbd><kbd>&#8594;</kbd> change item</span>
-      <span><kbd>A</kbd>&ndash;<kbd>E</kbd> answer</span>
-      <span><kbd>M</kbd> mark</span>
-      <span><kbd>N</kbd> notes</span>
-      <span><kbd>Esc</kbd> pause</span>
-      <span><kbd>Enter</kbd> begin</span>
+    <div class="start-progress" id="resumeMeta" style="display:none">
+      <div class="start-progress-line"><span id="resumeCount"></span><span id="resumeState"></span></div>
+      <div class="start-progress-track"><div class="start-progress-fill" id="resumeFill"></div></div>
     </div>
     <div class="start-actions" id="resumeRow" style="display:none">
-      <button class="btn" id="resumeBtn">Resume where you left off (<span id="resumeItem"></span>)</button>
+      <button class="btn" id="resumeBtn"><span id="resumeLabel">Resume</span><kbd>Enter</kbd></button>
+      <button type="button" class="text-link start-over" id="startOverBtn" title="Clears your answers, highlights and score">Start over</button>
     </div>
-    <p class="start-over-line" id="startOverRow" style="display:none">
-      Or <button type="button" class="text-link" id="startOverBtn">start this exam over</button>.
-      That clears your answers, highlights and score.
-    </p>
     <div class="start-actions" id="beginRow" style="display:none">
-      <button class="btn" id="beginBtn">Begin exam</button>
+      <button class="btn" id="beginBtn">Begin exam<kbd>Enter</kbd></button>
     </div>
-    <p class="start-tour">First time? <a href="walkthrough.html">Try a question first</a>.<span
-      class="start-sep">&middot;</span><button type="button" class="start-import" id="startImportBtn">Import progress from a file</button></p>
+    <details class="start-help" id="startHelp">
+      <summary>How the exam works</summary>
+      <div class="start-how">
+        <div class="how-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5.5"/></svg>
+          <span>Click a choice, or press <b>A</b>&ndash;<b>E</b>, to answer</span>
+        </div>
+        <div class="how-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M5.8 5.8l12.4 12.4"/></svg>
+          <span>Right-click a choice, or its <b>ab</b> tab, to cross it out</span>
+        </div>
+        <div class="how-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+          <span>Drag across the question to highlight it; click a highlight to remove it</span>
+        </div>
+        <div class="how-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21V4"/><path d="M4 4h13l-2.5 4L17 12H4"/></svg>
+          <span>Mark items for review and jump to any item from <b>Review</b></span>
+        </div>
+        <div class="how-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h9l5 5v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14 3v5h5"/><path d="M8 12h8M8 16h5"/></svg>
+          <span><b>Notes</b>, or <b>N</b>, opens a note for the item you are on</span>
+        </div>
+        <div class="how-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
+          <span><b>Pause</b> stops the clock and hides the question</span>
+        </div>
+      </div>
+      <div class="start-keys">
+        <span><kbd>&#8592;</kbd><kbd>&#8594;</kbd> change item</span>
+        <span><kbd>A</kbd>&ndash;<kbd>E</kbd> answer</span>
+        <span><kbd>M</kbd> mark</span>
+        <span><kbd>N</kbd> notes</span>
+        <span><kbd>Esc</kbd> pause</span>
+      </div>
+    </details>
+    <p class="start-tour">Progress saves automatically in this browser.
+      <span class="start-tour-links"><a href="walkthrough.html">Try a sample question</a><span
+      class="start-sep">&middot;</span><button type="button" class="start-import" id="startImportBtn">Import progress</button></span></p>
   </div>
 </div>
 
@@ -99,12 +99,12 @@
       <span class="form-tag" id="examFormTag" style="display:none"></span>
     </div>
     <div class="topbar-center">
-      <button class="nav-btn" id="prevBtn">
+      <button class="nav-btn" id="prevBtn" title="Previous item (&#8592;)">
         <span class="nav-circle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg></span>
         Previous
       </button>
       <div class="counter"><span id="curItem2">1</span> / <span id="totalItems2"></span></div>
-      <button class="nav-btn" id="nextBtn">
+      <button class="nav-btn" id="nextBtn" title="Next item (&#8594;)">
         <span class="nav-circle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></span>
         <span id="nextBtnLabel">Next</span>
       </button>
@@ -131,7 +131,7 @@
           <button type="button" class="size-opt" data-size="xl" role="menuitemradio">Larger</button>
         </div>
       </div>
-      <button type="button" class="tb-item" id="reviewOpenBtn">
+      <button type="button" class="tb-item" id="reviewOpenBtn" title="See every item at once and jump to any of them">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7.5" height="7.5" rx="1"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1"/></svg>
         <div>Review</div>
       </button>
@@ -143,7 +143,7 @@
         <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
         <div>Pause</div>
       </button>
-      <button type="button" class="tb-item" id="restartBtn">
+      <button type="button" class="tb-item" id="restartBtn" title="Clear every answer and start this exam again">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3.2-6.9"/><path d="M3 4v5h5"/></svg>
         <div>Restart</div>
       </button>
@@ -153,7 +153,7 @@
   <div id="examBody">
     <div id="examMain">
       <div class="subbar">
-        <label class="mark-flag"><input type="checkbox" id="markChk"> Mark for review</label>
+        <label class="mark-flag" title="Flag this item to come back to (M)"><input type="checkbox" id="markChk"> Mark for review</label>
         <div class="subbar-status">
           <span class="answered-note" id="answeredNote"></span>
           <div class="timer" id="timer">Elapsed: 00:00:00</div>
@@ -177,6 +177,8 @@
           <button class="btn secondary" id="prevBtn2">Previous</button>
           <button class="btn secondary" id="nextIncorrectBtn" style="display:none"
                   title="Jump to the next item you did not get right">Next incorrect</button>
+          <button class="btn secondary" id="nextMarkedBtn" style="display:none"
+                  title="Jump to the next item you marked for review">Next marked</button>
           <button class="btn" id="nextBtn2">Next</button>
         </div>
       </footer>
@@ -200,7 +202,9 @@
         </div>
 
         <div class="results-actions">
-          <button class="btn" id="backToExamBtn">Back to exam</button>
+          <button class="btn" id="reviewMissedBtn" style="display:none"
+                  title="Open the first item you did not get right; Next incorrect then steps through the rest">Review missed items</button>
+          <button class="btn secondary" id="backToExamBtn">Back to exam</button>
           <button class="btn secondary" id="downloadBtn"
                   title="A readable report, and the progress itself so another browser can take it back">Download results and progress</button>
         </div>
@@ -259,6 +263,7 @@
       <div class="grid-nav" id="gridNav"></div>
       <div class="modal-actions">
         <button class="btn secondary" id="firstUnansweredBtn">Go to first unanswered</button>
+        <button class="btn secondary" id="firstMarkedBtn" style="display:none">Go to first marked</button>
         <button class="btn secondary" id="reviewIncorrectBtn" style="display:none">Go to first incorrect</button>
         <button class="btn" id="backToResultsBtn" style="display:none">Back to results</button>
         <button class="btn" id="finishBtn">End block and see results</button>

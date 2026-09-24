@@ -40,25 +40,69 @@
     flex-shrink:0;
   }
   .start-card h1{margin:0 0 4px;font-size:var(--fs-xl);color:var(--navy-dark);}
-  .start-card > p.sub{margin:0 0 20px;color:var(--muted);font-size:var(--fs-base);}
+  .start-card > p.sub{margin:0 0 22px;color:var(--muted);font-size:var(--fs-base);}
   .form-chip{
     display:inline-block;
     font-size:var(--fs-xs);font-weight:700;letter-spacing:.08em;text-transform:uppercase;
     color:var(--navy);background:#e8f0f6;
     border-radius:var(--r-pill);padding:4px 12px;margin-bottom:12px;
   }
+  /* Where you are, for someone coming back: a count, the time or the score,
+     and a thin bar in the colour the toolbar uses for answered items. */
+  .start-progress{margin:0 0 16px;}
+  .start-progress-line{
+    display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    font-size:var(--fs-sm);color:var(--muted);margin-bottom:6px;
+  }
+  .start-progress-line span:first-child{color:var(--text);font-weight:600;}
+  .start-progress-track{height:6px;border-radius:var(--r-pill);background:var(--divider);overflow:hidden;}
+  .start-progress-fill{height:100%;background:var(--answered);border-radius:inherit;}
+
+  /* The primary action sits straight under the title: someone who already
+     knows what this is should not have to read past the instructions to start. */
+  .start-actions{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-bottom:22px;}
+  .start-actions .btn{
+    display:inline-flex;align-items:center;gap:12px;
+    padding:12px 18px 12px 22px;font-size:var(--fs-md);
+  }
+  /* Enter does the same thing as the button, so the hint lives on it. */
+  .start-actions .btn kbd{
+    font-family:inherit;font-size:var(--fs-xs);font-weight:600;
+    padding:1px 6px;border-radius:var(--r-xs);
+    border:1px solid rgba(255,255,255,.4);border-bottom-width:1px;
+    background:rgba(255,255,255,.1);color:rgba(255,255,255,.85);
+  }
+  /* Start Over throws work away (it asks first), so it is a quiet link beside
+     the button rather than a second button competing with it. */
+  .start-actions .start-over{font-size:var(--fs-sm);color:var(--muted);}
+  .start-actions .start-over:hover{color:var(--incorrect);}
+
+  /* The instructions: open for a first visit, folded for a returning one. */
+  .start-help{border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+  .start-help > summary{
+    list-style:none;cursor:pointer;
+    display:flex;align-items:center;gap:8px;
+    padding:14px 0;
+    font-size:var(--fs-sm);font-weight:600;color:var(--navy);
+  }
+  .start-help > summary::-webkit-details-marker{display:none;}
+  .start-help > summary::before{
+    content:"";width:6px;height:6px;margin:0 3px 0 2px;
+    border-right:2px solid currentColor;border-bottom:2px solid currentColor;
+    transform:rotate(-45deg);transition:transform .15s;
+  }
+  .start-help[open] > summary::before{transform:rotate(45deg);}
+  .start-help > summary:hover{color:var(--navy-dark);}
   .start-how{
-    display:grid;grid-template-columns:1fr 1fr;gap:14px 24px;
-    padding:20px 0;
-    border-top:1px solid var(--border);border-bottom:1px solid var(--border);
-    margin-bottom:16px;
+    display:grid;grid-template-columns:1fr 1fr;gap:14px 28px;
+    padding:4px 0 18px;
   }
   .how-item{display:flex;gap:10px;font-size:var(--fs-sm);line-height:1.5;color:var(--text);}
   .how-item svg{flex:0 0 auto;color:var(--navy);margin-top:3px;}
   .start-keys{
-    display:flex;flex-wrap:wrap;gap:8px 18px;
+    display:flex;flex-wrap:wrap;gap:8px 20px;
+    padding:14px 0 16px;border-top:1px solid var(--divider);
     font-size:var(--fs-xs);color:var(--muted);
-    margin-bottom:24px;
   }
   .start-keys span{display:inline-flex;align-items:center;gap:5px;}
   .start-keys kbd{
@@ -67,24 +111,13 @@
     background:var(--navy-tint);color:var(--text);
     font-family:inherit;font-size:var(--fs-xs);font-weight:600;text-align:center;
   }
-  .start-actions{display:flex;gap:12px;flex-wrap:wrap;}
-  .start-actions .btn{padding:11px 22px;}
-  /* Start Over wipes everything, so it is deliberately quiet and set apart
-     from the primary button rather than sitting beside it as a peer. */
-  .start-over-line{
-    margin:16px 0 0;
-    font-size:var(--fs-sm);
-    color:var(--muted);
-    line-height:1.5;
-  }
-  /* Start Over throws work away, so its link is quiet until you reach for it. */
-  /* Quiet, and under Begin rather than over it: someone who already knows what
-     this is should not have to step over an explanation to start. */
   .start-tour{
+    display:flex;justify-content:space-between;align-items:baseline;gap:6px 16px;flex-wrap:wrap;
     margin:14px 0 0;
     font-size:var(--fs-xs);color:var(--faint);
   }
   .start-tour a{color:var(--muted);}
+  .start-tour a:hover{color:var(--navy);}
   .start-sep{margin:0 7px;opacity:.6;}
   /* A button doing a link's job, dressed as the link beside it. */
   .start-import{
@@ -94,10 +127,14 @@
   }
   .start-import:hover{color:var(--navy);}
 
-  .start-over-line .text-link{color:var(--muted);}
-  .start-over-line .text-link:hover{color:var(--incorrect);}
+  /* no keyboard to press them on */
+  @media (hover:none){
+    .start-actions .btn kbd, .start-keys{display:none;}
+  }
   @media (max-width:560px){
+    .start-card{padding:28px 22px;}
     .start-how{grid-template-columns:1fr;}
+    .start-actions .btn{flex:1 1 auto;justify-content:center;}
   }
 
   /* The toolbar and the row under it stay put while the question scrolls, the
@@ -175,7 +212,10 @@
     display:flex;align-items:center;justify-content:center;
   }
   .nav-circle svg{display:block;}
-  .counter{font-size:var(--fs-md);font-weight:600;min-width:64px;text-align:center;}
+  /* The item box at the left of the bar already says "Item 12 of 50"; the
+     counter between Previous and Next only earns its place on a narrow
+     screen, where the item box gives way to it. */
+  .counter{display:none;font-size:var(--fs-md);font-weight:600;min-width:64px;text-align:center;}
   .topbar-right{display:flex;align-items:center;justify-content:flex-end;gap:18px;font-size:var(--fs-xs);flex:1 1 0;}
   .topbar-right .tb-item{
     background:none;border:none;font:inherit;color:inherit;padding:2px 4px;border-radius:var(--r-xs);
@@ -222,8 +262,10 @@
   .mark-flag{display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none;color:var(--text);}
   .mark-flag input{accent-color:var(--marked);width:15px;height:15px;}
   .subbar-status{display:flex;align-items:center;gap:16px;}
+  /* the count and the clock sit side by side, so they share a size; the
+     clock is the one you glance at, so it gets the darker ink */
   .answered-note{color:var(--muted);font-size:var(--fs-sm);}
-  .timer{color:var(--muted);font-variant-numeric:tabular-nums;}
+  .timer{color:var(--text);font-size:var(--fs-sm);font-variant-numeric:tabular-nums;}
   .progress-track{
     position:sticky;
     top:calc(var(--topbar-h, 0px) + var(--subbar-h, 0px));
@@ -269,6 +311,13 @@
   /* One measure for the whole item: stem, choices and explanation share a
      column rather than the stem running the full width of a wide monitor. */
   main{padding:24px 28px 40px;max-width:1000px;}
+  /* The measure. Banner, exhibit, stem, explanation and the Previous / Next
+     row used to stop at different widths (up to 944px), so the right edge of
+     the item stepped in and out, and a stem ran to 130 characters a line on a
+     wide screen. They now share one column; the choices sit inside it at
+     their own narrower width (see .options). */
+  :root{--measure:760px;--choices-w:560px;}
+  .graded-banner, .qimg-wrap, .stem, .explanation, .botbar-row{max-width:var(--measure);}
 
   .graded-banner{
     display:none;
@@ -284,6 +333,10 @@
   .graded-banner.correct-banner{background:var(--correct-bg);color:#1f6b41;border:1px solid var(--correct);}
   .graded-banner.incorrect-banner{background:var(--incorrect-bg);color:#8f2c20;border:1px solid var(--incorrect);}
   .graded-banner.unanswered-banner{background:#f0f1f2;color:var(--muted);border:1px solid var(--border);}
+  .graded-banner .banner-time{
+    margin-left:auto;padding-left:16px;white-space:nowrap;
+    font-weight:400;font-size:var(--fs-sm);font-variant-numeric:tabular-nums;opacity:.85;
+  }
 
   /* Text size applies to what you read, not to the chrome: the stem, its lab
      tables, the choices, the explanation and your notes all take this factor,
@@ -298,7 +351,7 @@
      in a box above the item, and repeats the shared instruction directly above
      the choices, which is where it applies. */
   .set-note{
-    max-width:680px;
+    max-width:var(--measure);
     margin:0 0 18px;
     padding:10px 14px;
     border:1px solid var(--border);
@@ -310,7 +363,7 @@
     line-height:1.5;
   }
   .set-lead{
-    max-width:680px;
+    max-width:var(--choices-w);   /* it heads the choices, so it keeps their width */
     margin:0 0 12px;
     font-size:calc(var(--fs-md) * var(--content-scale));
     font-weight:600;
@@ -365,13 +418,15 @@
   #imgOverlay{z-index:150;cursor:zoom-out;background:rgba(10,20,28,.8);}
   #imgOverlay img{max-width:95vw;max-height:92vh;border-radius:var(--r-xs);box-shadow:0 10px 50px rgba(0,0,0,.5);}
 
-  /* Answer texts are short — a median of ~22 characters — so a narrow column
-     reads better than a full-width box. 680px keeps all but the rare very long
-     choice on one line. */
+  /* Answer texts are short — a median of ~22 characters — so the choices sit
+     in a box clearly narrower than the stem, about three quarters of it, and
+     the same on every item so it does not jump about as you step through.
+     A long choice wraps inside it. */
   .options{
     border:1px solid var(--border);
     border-radius:var(--r-md);
-    max-width:680px;
+    width:var(--choices-w);
+    max-width:100%;
     overflow:hidden;
   }
   .opt{
@@ -397,8 +452,12 @@
      these as a table — a heading over each column, one row to a choice — so
      the values are set in columns of equal width and the headings sit in a
      head row above them. The columns need more room than a phrase does, so
-     the box is allowed to run wider than the usual 680px. */
-  .options.opt-table{max-width:760px;}
+     the box grows with them, from the choices' width up to the stem's. */
+  .options.opt-table{
+    width:max-content;
+    min-width:min(var(--choices-w), 100%);
+    max-width:min(var(--measure), 100%);
+  }
   .opt-table .opt-body{
     display:grid;
     grid-template-columns:2.1em repeat(var(--opt-cols), minmax(0, 1fr));
@@ -522,8 +581,11 @@
     align-items:center;
     justify-content:space-between;
     gap:12px;
-    max-width:680px;   /* the width of the options box above it */
   }
+  /* Previous holds the left; Next incorrect and Next marked sit with Next,
+     the way you are going, rather than stranded in the middle of the bar. */
+  .botbar-row{justify-content:flex-start;}
+  .botbar-row > :first-child{margin-right:auto;}
 
   /* grid / review overlay */
   .overlay{
@@ -572,6 +634,14 @@
 
   /* results screen */
   #resultsScreen{display:none;padding:30px 28px 50px;}
+  /* The question column fills the window, so on a short item the Previous /
+     Next bar sits at the foot of the screen, where it is on a long one,
+     instead of floating halfway down with an empty panel under it. */
+  #examMain{
+    display:flex;flex-direction:column;
+    min-height:calc(100vh - var(--topbar-h, 0px));
+  }
+  #quizMain{flex:1 0 auto;width:100%;}
   #resultsScreen h1{color:var(--navy-dark);font-size:var(--fs-xl);margin-bottom:6px;}
   #resultsScreen p{color:var(--muted);font-size:var(--fs-base);line-height:1.6;}
   .score-card{
@@ -686,11 +756,11 @@
     opacity:1;border-bottom:none;border-top:5px solid currentColor;
   }
 
-  /* A lighter step than the grid's cell tints: a whole row of --correct-bg
-     swallows the violet stripe that has to sit on top of it. Hover deepens
-     the row to the grid's tint, which doubles as the affordance — the rows
-     are buttons and until now nothing but the cursor said so. */
-  .results-table tbody tr.row-correct td{background:var(--correct-row);}
+  /* Only a miss is tinted. Tinting every row green or red striped the whole
+     table, which the result pill already says row by row; with the correct
+     rows left plain, the misses are what the eye lands on, and they are what
+     a review is for. Hover deepens a row, which doubles as the affordance:
+     the rows are buttons and nothing but the cursor would otherwise say so. */
   .results-table tbody tr.row-incorrect td{background:var(--incorrect-row);}
   .results-table tbody tr.row-unanswered td{color:var(--muted);}
   .results-table tbody tr.item-row:hover td{background:var(--navy-tint);}
@@ -734,6 +804,9 @@
     display:block;
     overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
   }
+  /* With its article dropped, "A previously healthy woman" would start the
+     row in lower case. The text stays the form's; only the display lifts it. */
+  .stem-text::first-letter{text-transform:uppercase;}
   .results-table tbody tr.row-unanswered .stem-text{color:var(--muted);}
 
   .results-table tr.note-row td{
@@ -820,6 +893,7 @@
   }
 
   @media (max-width:760px){
+    .counter{display:block;}
     .grid-nav{grid-template-columns:repeat(5,1fr);}
     /* keep the toolbar usable on phones: tighten the padding, and give the
        left of the bar up to the form tag */
@@ -839,6 +913,25 @@
        toolbar holds, because that is the one you reach for mid-question; the
        clock and Mark for review scroll with the stem and are a flick away. */
     .subbar, .progress-track{position:static;}
+    /* three things on one line at phone width: keep each on one line of its
+       own, and let the clock drop its word, since the digits say it */
+    .subbar{padding:9px 16px;gap:10px;}
+    .mark-flag, .answered-note, .timer{white-space:nowrap;}
+    .subbar-status{gap:10px;}
+    .timer:not(.is-paused) .timer-label{display:none;}
+    /* A lab table as wide as its columns cannot fit a phone: it keeps its
+       indent small, and scrolls sideways on its own rather than taking the
+       whole page with it. */
+    .stem .lab-table{
+      display:block;max-width:100%;overflow-x:auto;
+      margin-left:0;
+    }
+    .stem .lab-table td + td,
+    .stem .lab-table tr.lab-head td + td{padding-left:18px;}
+    .stem .lab-table td.lab-name{padding-left:0;}
+    .stem .lab-table td.lab-name.lab-sub-1{padding-left:14px;}
+    .stem .lab-table td.lab-name.lab-sub-2{padding-left:28px;}
+    .stem .lab-table td.lab-name.lab-sub-3{padding-left:42px;}
   }
 
   @media (prefers-reduced-motion: reduce){
