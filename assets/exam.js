@@ -360,7 +360,9 @@ function render(){
       const s = state.score || computeScore();
       note.textContent = `Score: ${s.correct} of ${s.total} correct`;
     }else{
-      note.textContent = `${Object.keys(state.answers).length} of ${QUESTIONS.length} answered`;
+      // "of 50" is already in the Item box beside it; two "of 50"s read as
+      // two counts of one thing
+      note.textContent = `${Object.keys(state.answers).length} answered`;
     }
   }
   updateProgress();
@@ -378,7 +380,6 @@ function render(){
     const wrong = state.graded ? incorrectIndexes() : [];
     ni.style.display = wrong.length ? '' : 'none';
   }
-  updateMarkedNav();
 
   renderPause();
   closeLightbox();
@@ -700,30 +701,14 @@ document.getElementById('nextBtn2').addEventListener('click', goNext);
 document.getElementById('markChk').addEventListener('change', (e) => {
   state.marked[currentQ().n] = e.target.checked;
   saveState();
-  updateMarkedNav();
 });
 
-/* The second pass through a block is the marked items, so before the block
-   ends the bar offers to step through them the way it offers the missed ones
-   after: Next marked appears once there is another marked item to go to. */
 function markedIndexes(){
   const out = [];
   QUESTIONS.forEach((q, i) => { if(state.marked[q.n]) out.push(i); });
   return out;
 }
-function updateMarkedNav(){
-  const btn = document.getElementById('nextMarkedBtn');
-  if(!btn) return;
-  const others = state.graded ? [] : markedIndexes().filter(i => i !== state.idx);
-  btn.style.display = others.length ? '' : 'none';
-}
-function goToNextMarked(){
-  const list = markedIndexes();
-  if(!list.length) return;
-  const next = list.find(i => i > state.idx);
-  goToItem(next === undefined ? list[0] : next);   // wrap around
-}
-document.getElementById('nextMarkedBtn').addEventListener('click', goToNextMarked);
+
 
 /* Back to a blank block: the same erasure whether it is asked for from inside
    the exam (Restart) or from the start screen (Start over). `running` is the
@@ -790,27 +775,21 @@ function openReview(){
     grid.appendChild(cell);
   });
 
+  /* The key and the counts are one line: each colour says what it means and
+     how many there are. Listing the key and then the same four words again
+     as counts said everything twice. */
+  const blank = QUESTIONS.length - answeredCount;
+  const notedCount = QUESTIONS.filter(q => hasNote(q.n)).length;
+  const key = (dot, n, word) =>
+    `<span><span class="dot ${dot}"></span> <b>${n}</b> ${word}</span>`;
   const legend = document.getElementById('reviewLegend');
-  if(state.graded){
-    legend.innerHTML = `<span><span class="dot c"></span> Correct</span>
-      <span><span class="dot x"></span> Incorrect</span>
-      <span><span class="dot u"></span> Unanswered</span>
-      <span><span class="dot m" style="border-radius:50%"></span> Marked for review</span>
-      <span><span class="dot n"></span> Has a note</span>`;
-  }else{
-    legend.innerHTML = `<span><span class="dot a"></span> Answered</span>
-      <span><span class="dot u"></span> Unanswered</span>
-      <span><span class="dot m" style="border-radius:50%"></span> Marked for review</span>
-      <span><span class="dot n"></span> Has a note</span>`;
-  }
-
-  let summary = `<span><b>${answeredCount}</b> of ${QUESTIONS.length} answered</span>
-     <span><b>${QUESTIONS.length - answeredCount}</b> unanswered</span>
-     <span><b>${markedCount}</b> marked for review</span>`;
-  if(state.graded){
-    summary += `<span><b>${correctCount}</b> correct</span><span><b>${incorrectCount}</b> incorrect</span>`;
-  }
-  document.getElementById('summaryRow').innerHTML = summary;
+  legend.innerHTML = (state.graded
+      ? key('c', correctCount, 'correct') + key('x', incorrectCount, 'incorrect')
+      : key('a', answeredCount, 'answered'))
+    + key('u', blank, 'unanswered')
+    + key('m', markedCount, 'marked for review')
+    + key('n', notedCount, notedCount === 1 ? 'note' : 'notes');
+  document.getElementById('summaryRow').innerHTML = '';
   document.getElementById('finishBtn').style.display = state.graded ? 'none' : '';
   document.getElementById('firstUnansweredBtn').style.display =
     (!state.graded && answeredCount < QUESTIONS.length) ? '' : 'none';
@@ -1172,9 +1151,10 @@ function showResults(){
   const pct = Math.round((correct/total)*100);
 
   document.getElementById('scorePercent').textContent = pct + '%';
-  document.getElementById('scoreFrac').textContent = `${correct} of ${total} correct`;
+  // the breakdown beside it already says "30 Correct"
+  document.getElementById('scoreFrac').textContent = '';
   const answeredN = total - unanswered;
-  document.getElementById('scoreTime').textContent = 'Time on block: ' + formatDuration(elapsedMs())
+  document.getElementById('scoreTime').textContent = formatDuration(elapsedMs()) + ' elapsed'
     + (answeredN ? ' · ' + formatItemTime(elapsedMs() / answeredN) + ' per item' : '');
   /* What most people do next is work through what they missed, so that is
      the first button; going back to wherever the block ended is second, and
@@ -1211,7 +1191,7 @@ document.getElementById('downloadBtn').addEventListener('click', () => {
     EXAM.label ? EXAM.label : null,
     `Score: ${correct} of ${total} correct (${pct}%)`,
     `Incorrect: ${incorrect}    Unanswered: ${unanswered}`,
-    `Time on block: ${formatDuration(elapsedMs())}`,
+    `Time elapsed: ${formatDuration(elapsedMs())}`,
     '',
     // the file is restorable, and the only place that said so was buried at the
     // foot of it, inside the block a reader is least likely to reach
@@ -1286,11 +1266,11 @@ function formatDuration(ms){
   const h = Math.floor(secs/3600), m = Math.floor((secs%3600)/60), s = secs%60;
   return `${pad(h)}:${pad(m)}:${pad(s)}`;
 }
-// "1 h 12 min on the clock", for the start screen, where seconds are noise
+// "1 h 12 min elapsed", for the start screen, where seconds are noise
 function spentLabel(ms){
   const mins = Math.floor(ms / 60000), h = Math.floor(mins / 60);
   const txt = h ? h + ' h ' + (mins % 60) + ' min' : (mins ? mins + ' min' : 'under a minute');
-  return txt + ' on the clock';
+  return txt + ' elapsed';
 }
 function tickTimer(){
   const label = formatDuration(elapsedMs());
@@ -1543,7 +1523,6 @@ document.addEventListener('keydown', (e) => {
     state.marked[q.n] = !state.marked[q.n];
     saveState();
     document.getElementById('markChk').checked = !!state.marked[q.n];
-    updateMarkedNav();
   }
   // N opens/closes the notes panel — no exam here has an option N to shadow,
   // but the guard keeps that true if one ever does
@@ -1954,7 +1933,7 @@ if(enteredThisSession()){
     document.getElementById('resumeMeta').style.display = '';
     document.getElementById('resumeLabel').textContent =
       (state.graded && state.onResults) ? 'Back to your results'
-        : ((state.graded ? 'Review item ' : 'Resume at item ') + (state.idx + 1));
+        : (state.graded ? 'Continue reviewing' : 'Resume exam');
     document.getElementById('resumeCount').textContent =
       answered + ' of ' + QUESTIONS.length + ' answered';
     document.getElementById('resumeState').textContent = state.graded && state.score

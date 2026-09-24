@@ -211,7 +211,7 @@
         <div class="subbar">
           <label class="mark-flag"><input type="checkbox" id="dMark"> Mark for review</label>
           <div class="subbar-status">
-            <span class="answered-note" id="dAnsweredNote">11 of 50 answered</span>
+            <span class="answered-note" id="dAnsweredNote">11 answered</span>
             <div class="timer" id="dTimer">Elapsed: 00:18:42</div>
           </div>
         </div>
@@ -257,7 +257,7 @@
             <div class="pause-where">Medicine · Form 6</div>
             <div class="pause-stats">
               <div><b>11 / 50</b><span>answered</span></div>
-              <div><b id="dPausedAt">00:00:00</b><span>time so far</span></div>
+              <div><b id="dPausedAt">00:00:00</b><span>elapsed</span></div>
             </div>
             <button class="btn" id="dResume">Resume exam</button>
           </div>
@@ -403,11 +403,11 @@
     });
   }
 
-  /* The subbar counts you in: an unanswered item reads 11 of 50, and answering
+  /* The subbar counts you in: an unanswered item reads 11 answered, and answering
      it reads 12, the way the real one does. */
   function renderStatus(){
     const n = selected ? 12 : 11;
-    noteEl.textContent = n + ' of 50 answered';
+    noteEl.textContent = n + ' answered';
     progEl.style.width = (n / 50 * 100).toFixed(0) + '%';
   }
 

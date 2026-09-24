@@ -294,7 +294,7 @@
     const answered = Object.keys(s.answers || {}).length;
     if(answered || s.elapsedMs || s.runningSince)
       return {kind:'going', answered:answered, total:e.items || 0,
-              idx: s.idx || 0, savedAt: s.savedAt || 0};
+              savedAt: s.savedAt || 0};
     return {kind:'new'};
   }
 
@@ -525,7 +525,6 @@
         '<div class="row-main">' +
           '<div class="row-form">' + subject + (e.label ? ' · ' + e.label : '') + '</div>' +
           '<div class="row-len"><b>' + p.answered + '</b> of ' + p.total + ' answered' +
-            ' · stopped at item ' + (p.idx + 1) +
             (last ? '<span class="row-when"> · ' + last + '</span>' : '') + '</div>' +
         '</div>' +
         '<div class="row-go"><span>Resume</span>' + CHEV + '</div>';
