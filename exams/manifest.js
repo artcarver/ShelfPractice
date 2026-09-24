@@ -144,6 +144,13 @@ window.EXAMS = [
     items: 50
   },
   {
+    slug: "obgyn-form9",
+    id: "obgyn_practice_exam_form9",
+    title: "Obstetrics and Gynecology Practice Exam",
+    label: "CMS Form 9",
+    items: 50
+  },
+  {
     slug: "obgyn-form8",
     id: "obgyn_practice_exam_form8",
     title: "Obstetrics and Gynecology Practice Exam",

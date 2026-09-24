@@ -52,6 +52,22 @@ item 8's from the discussion above it, which has already explained that
 pulmonary vascular resistance falls rather than rises after birth. Two
 paragraphs out of roughly 500 in the form.
 
+Obstetrics and Gynecology Form 9 lost its objectives the way Neurology Form 7
+did, through a text transcription. Each answer ran to one page or two, and
+where an item fit on one page the capture stopped at its foot, which is where
+the objective is printed. Eleven items end cleanly after their last
+incorrect-answer paragraph with no objective at all (2, 3, 13, 24, 26, 29, 30,
+31, 36, 37 and 39). Six stop partway through their last paragraph, and the
+transcription says so in place of the text (21, 25, 27, 32, 34 and 35). Four
+objectives run off the page partway through (8, 40, 42 and 45). Every item that
+ran to a second page kept its objective, and that is the evidence the missing
+ones were lost rather than never printed. Seventeen objectives were written
+from the discussion each item already carries, and the six cut paragraphs were
+finished from the stem and the paragraphs above them. Three of the four cut
+objectives end with a sentence their own discussion prints word for word. That
+is the form's wording, but it was supplied rather than transcribed, so those
+items are marked, as Neurology Form 7 item 33 was.
+
 Four more single items turned up in a sweep for forms that mix the two
 explanation styles — a form whose other 49 items open with an Educational
 Objective and one item that does not is a gap, not a style. Each was filled
