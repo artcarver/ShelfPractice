@@ -170,6 +170,8 @@
     BOOLS.forEach(k => { if(typeof raw[k] === 'boolean') out[k] = raw[k]; });
     Object.keys(ENUMS).forEach(k => { if(ENUMS[k].indexOf(raw[k]) !== -1) out[k] = raw[k]; });
     if(raw.score && typeof raw.score === 'object') out.score = raw.score;
+    // a timed block that ran out and kept going: its score at the limit
+    if(raw.scoreAtTimeUp && typeof raw.scoreAtTimeUp === 'object') out.scoreAtTimeUp = raw.scoreAtTimeUp;
     if(raw.notesPos && typeof raw.notesPos === 'object') out.notesPos = raw.notesPos;
     return out;
   }

@@ -553,6 +553,19 @@
 
   /* paused overlay */
   #pauseScreen{z-index:300;}
+  /* Time is up: the pause card's shape, with the caution amber the clock wore
+     for its last five minutes, and two buttons of equal width side by side. */
+  #timeUpScreen{z-index:310;}
+  .pause-card.time-card .time-icon{background:#fbf4e6;color:var(--slow);}
+  .time-card h1:focus{outline:none;}
+  .time-say{margin:18px 0 0;font-size:var(--fs-base);color:var(--text);line-height:1.55;}
+  .time-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px;}
+  .time-card .time-actions .btn{
+    justify-content:center;margin-top:0;padding:0 16px;
+  }
+  @media (max-width:560px){
+    .time-actions{grid-template-columns:1fr;}
+  }
   .pause-card{
     background:#fff;color:var(--text);
     border-radius:var(--r-lg);

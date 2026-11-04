@@ -94,10 +94,14 @@ const state = {
      the start screen. Records from before either existed are untimed.
      A timed block can drop its countdown partway (and only that way round);
      `timerOffAt` keeps the block time at which it did, for the results line,
-     and is null for a block that was never timed or still is. */
+     and is null for a block that was never timed or still is. At zero the
+     block asks whether to end there or keep going untimed; keeping going
+     saves the score as it stood in `scoreAtTimeUp`, so the results can give
+     both. `timeUp` is set only when the block ended at zero. */
   timed: false,
   timeUp: false,
   timerOffAt: null,
+  scoreAtTimeUp: null,
   gradedAt: null
 };
 
@@ -125,6 +129,8 @@ function loadState(){
       state.timed = saved.timed === true;
       state.timeUp = saved.timeUp === true;
       state.timerOffAt = typeof saved.timerOffAt === 'number' ? saved.timerOffAt : null;
+      state.scoreAtTimeUp = saved.scoreAtTimeUp && saved.scoreAtTimeUp.total
+        ? saved.scoreAtTimeUp : null;
       state.gradedAt = saved.gradedAt || null;
       state.itemMs = saved.itemMs || {};
       state.itemSince = saved.itemSince || null;
@@ -170,6 +176,7 @@ function saveState(){
       score: state.score, onResults: state.onResults,
       mode: state.mode, checked: state.checked,
       timed: state.timed, timeUp: state.timeUp, timerOffAt: state.timerOffAt,
+      scoreAtTimeUp: state.scoreAtTimeUp,
       gradedAt: state.gradedAt,
       elapsedMs: state.elapsedMs, runningSince: state.runningSince,
       itemMs: state.itemMs, itemSince: state.itemSince, itemSinceN: state.itemSinceN,
@@ -184,6 +191,7 @@ function elapsedMs(){
   return state.elapsedMs + (state.runningSince ? Date.now() - state.runningSince : 0);
 }
 function startClock(){
+  if(timeUpOpen) return;   // stopped at the limit until a choice is made
   if(!state.runningSince && !state.paused && !state.graded) state.runningSince = Date.now();
   startItemClock();   // guards itself; a no-op unless a question is on screen
 }
@@ -198,7 +206,7 @@ function stopClock(){
 /* The item clock. startItemClock is a no-op unless a question is actually on
    screen, so every caller can fire it without first checking the view. */
 function startItemClock(){
-  if(state.itemSince || state.paused || state.graded || state.onResults) return;
+  if(state.itemSince || state.paused || state.graded || state.onResults || timeUpOpen) return;
   const q = QUESTIONS[state.idx];
   if(!q) return;
   /* A checked item's time is the time it took to answer. What follows is
@@ -320,18 +328,80 @@ function gradeBlock(){
   showResults();
 }
 
-/* Time is up. Whatever is open over the question closes first, so the
-   results screen is not left under a dialog, and the banked time is held at
-   the limit: the tick that noticed can land a second past it. */
-function timeUp(){
-  if(state.graded || !state.timed) return;
-  state.timeUp = true;
+/* Time is up. On test day the block would end here, and for some people
+   that is the point of a timed block; for others it is the moment to finish
+   the last few items without a clock. So the clock stops and the block asks.
+   Whatever is open over the question closes first, the question is hidden
+   while the card is up (the clock is stopped, so reading on would be free
+   time), and the banked time is held at the limit: the tick that noticed can
+   land a second past it. A reload with the card up comes back to it, since
+   the block is still timed with nothing left. */
+let timeUpOpen = false;
+function holdAtLimit(){
+  // the overshoot was spent on whichever item was on screen, so it comes
+  // off that item's time too, or the item times would sum past the limit
+  const n = state.itemSinceN;
   stopClock();
-  state.elapsedMs = Math.min(state.elapsedMs, timeLimitMs());
+  const over = state.elapsedMs - timeLimitMs();
+  if(over <= 0) return;
+  state.elapsedMs = timeLimitMs();
+  if(n != null && state.itemMs[n]) state.itemMs[n] = Math.max(0, state.itemMs[n] - over);
+}
+function timeUp(){
+  if(state.graded || !state.timed || timeUpOpen) return;
+  holdAtLimit();
+  saveState();
   closeLightbox();
   showSizePop(false);
-  gradeBlock();
+  closeReview();
+  timeUpOpen = true;
+  renderTimeUp();
 }
+/* The card: which block, how it stands, and the two ways on. Focus goes to
+   its heading rather than a button, so an Enter already on its way (tutor
+   mode's Check) cannot pick one by accident. */
+function renderTimeUp(){
+  const screen = document.getElementById('timeUpScreen');
+  screen.style.display = timeUpOpen ? 'flex' : 'none';
+  document.getElementById('app').inert = timeUpOpen;
+  renderPause();   // hides the question and the notes while the card is up
+  if(!timeUpOpen) return;
+  const answered = Object.keys(state.answers).length;
+  const marked = markedIndexes().length;
+  document.getElementById('timeUpLimit').textContent = humanDuration(timeLimitMs());
+  document.getElementById('timeUpAnswered').textContent = answered + ' / ' + QUESTIONS.length;
+  document.getElementById('timeUpMarked').textContent = marked;
+  document.getElementById('timeUpHead').focus();
+}
+/* End there: graded as it stands, exactly as End block grades it. The card
+   comes down only once the block can no longer count, or the tick that
+   draws it would see a timed block at zero and put it straight back up. */
+function endAtTimeUp(){
+  if(state.graded) return;
+  holdAtLimit();
+  state.timeUp = true;
+  timeUpOpen = false;
+  gradeBlock();
+  renderTimeUp();
+}
+/* Keep going: the score as it stood is kept, and the block carries on
+   untimed from the limit, the same as turning the timer off. */
+function keepGoingUntimed(){
+  if(state.graded) return;
+  holdAtLimit();
+  state.scoreAtTimeUp = computeScore();
+  state.timerOffAt = timeLimitMs();
+  state.timed = false;
+  timeUpOpen = false;
+  renderTimeUp();
+  startClock();
+  saveState();
+  renderPause();
+  render();
+}
+/* A block that ran out of time and carried on: how it stood at the limit. */
+function ranOver(){ return !!state.scoreAtTimeUp; }
+function pctOf(s){ return Math.round((s.correct / s.total) * 100); }
 
 /* Turning the timer off. A countdown that is doing more harm than good can
    go for the rest of the block: the clock carries on counting up from the
@@ -344,8 +414,10 @@ function turnOffTimer(){
   if(!confirm('Turn off the timer for the rest of this block?\n\nThe clock will count up '
             + 'from the time already spent, with no limit. The timer cannot be turned '
             + 'back on for this attempt.')) return;
-  // the confirmation stops the page but not the wall clock, as at End block
-  if(enteredExam && remainingMs() <= 0){ timeUp(); return; }
+  /* the confirmation stops the page but not the wall clock, as at End block;
+     a timer that ran out while it was open has run out, and asked to go,
+     it carries on untimed with the score at the limit kept */
+  if(enteredExam && remainingMs() <= 0){ keepGoingUntimed(); return; }
   state.timerOffAt = Math.min(elapsedMs(), timeLimitMs());
   state.timed = false;
   saveState();
@@ -946,7 +1018,8 @@ function clearProgress(running){
   state.answers = {}; state.marked = {}; state.struck = {}; state.highlights = {};
   state.notes = {}; state.checked = {};
   state.graded = false; state.score = null; state.onResults = false;
-  state.timeUp = false; state.timerOffAt = null; state.gradedAt = null;
+  state.timeUp = false; state.timerOffAt = null; state.scoreAtTimeUp = null;
+  state.gradedAt = null;
   resultsFilter = 'all'; resultsAttrs.clear(); resultsSort = {key:'item', dir:'asc'};
   expandedNotes.clear();
   state.paused = false;
@@ -1114,7 +1187,7 @@ document.getElementById('finishBtn').addEventListener('click', () => {
   /* The confirmation stops the page, the clock's tick included, while the
      block clock still reads the wall clock. A timed block whose time ran out
      while it was open has run out, and ends that way, held at the limit. */
-  if(state.timed && remainingMs() <= 0){ timeUp(); return; }
+  if(state.timed && remainingMs() <= 0){ endAtTimeUp(); return; }
   gradeBlock();
 });
 
@@ -1415,12 +1488,24 @@ function showResults(){
   /* A timed block says so, and says its time against the limit it had. */
   document.getElementById('scoreTime').textContent = (tutor() ? 'Tutor mode · ' : '')
     + (state.timed ? (state.timeUp ? 'Time ran out · ' : 'Timed · ')
-       : (timerWentOff() ? 'Timer off at ' + formatDuration(state.timerOffAt) + ' · ' : ''))
+       : (ranOver() ? 'Untimed after time ran out · '
+          : (timerWentOff() ? 'Timer off at ' + formatDuration(state.timerOffAt) + ' · ' : '')))
     + formatDuration(elapsedMs())
     + (state.timed ? ' of ' + formatDuration(timeLimitMs()) : ' elapsed')
     + (answeredN ? ' · ' + formatItemTime(paceMs(answeredN))
                  + (tutor() ? ' per item to answer' : ' per item') : '');
-  document.getElementById('timeUpNote').hidden = !state.timeUp;
+  /* A block that ended at zero says so. One that ran out and kept going says
+     how it stood at the limit, which is its timed score. */
+  const upNote = document.getElementById('timeUpNote');
+  upNote.hidden = !(state.timeUp || ranOver());
+  if(state.timeUp){
+    upNote.textContent = 'Time ran out, and the block ended there. Anything left blank counts as unanswered.';
+  }else if(ranOver()){
+    const a = state.scoreAtTimeUp;
+    upNote.textContent = 'Time ran out at ' + humanDuration(state.timerOffAt)
+      + ' and you kept going untimed. When it ran out you had ' + a.correct + ' of ' + a.total
+      + ' correct (' + pctOf(a) + '%), with ' + a.unanswered + ' unanswered.';
+  }
   /* What most people do next is work through what they missed, so that is
      the first button; going back to wherever the block ended is second, and
      says which item that is. */
@@ -1458,8 +1543,12 @@ function downloadResults(){
     tutor() ? 'Tutor mode: each answer was checked as it was given' : null,
     state.timed ? 'Timed: ' + formatDuration(timeLimitMs()) + ' limit'
                   + (state.timeUp ? ', and time ran out' : '')
-      : (timerWentOff() ? 'Timed until ' + formatDuration(state.timerOffAt)
-                          + ', then the timer was turned off' : null),
+      : (ranOver() ? 'Timed: ' + formatDuration(timeLimitMs()) + ' limit. Time ran out and the '
+                     + 'block carried on untimed. Score when time ran out: '
+                     + state.scoreAtTimeUp.correct + ' of ' + state.scoreAtTimeUp.total
+                     + ' correct (' + pctOf(state.scoreAtTimeUp) + '%)'
+        : (timerWentOff() ? 'Timed until ' + formatDuration(state.timerOffAt)
+                            + ', then the timer was turned off' : null)),
     `Score: ${correct} of ${total} correct (${pct}%)`,
     `Incorrect: ${incorrect}    Unanswered: ${unanswered}`,
     `Time elapsed: ${formatDuration(elapsedMs())}`,
@@ -1569,7 +1658,7 @@ function tickTimer(){
     if(el) el.textContent = label;
   }
   // only a block someone is in can run out; the start screen just reports it
-  if(counting() && enteredExam && !state.paused && remainingMs() <= 0) timeUp();
+  if(counting() && enteredExam && !state.paused && !timeUpOpen && remainingMs() <= 0) timeUp();
 }
 setInterval(tickTimer, 1000);
 
@@ -1665,14 +1754,15 @@ function renderPause(){
   if(!screen) return;
   screen.style.display = (state.paused && enteredExam) ? 'flex' : 'none';
   // the question must not be readable while the clock is stopped
-  document.getElementById('examBody').style.visibility = state.paused ? 'hidden' : '';
+  document.getElementById('examBody').style.visibility =
+    (state.paused || timeUpOpen) ? 'hidden' : '';
   renderNotes();   // it floats outside examBody, so it is not hidden for free
   if(state.paused) renderPauseFigures();
   tickTimer();
 }
 
 function pauseExam(){
-  if(state.paused || state.graded) return;
+  if(state.paused || state.graded || timeUpOpen) return;
   stopClock();
   state.paused = true;
   closeReview();
@@ -1785,6 +1875,8 @@ document.addEventListener('keydown', (e) => {
      t.matches('input:not([type=checkbox]):not([type=radio]), textarea, select')) return;
   // the import dialog is modal and handles its own keys
   if(document.querySelector('.tr-overlay')) return;
+  // so is the time-up card: a choice there is a click, or Enter on its button
+  if(timeUpOpen) return;
 
   if(!enteredExam){
     // on the start screen only Enter does anything: begin, or resume
@@ -1924,9 +2016,9 @@ function showClockPick(clock){
 function renderClockNote(){
   const timed = pickedClock() === 'timed';
   document.getElementById('clockNote').textContent = timed
-    ? 'The clock starts at ' + formatDuration(timeLimitMs()) + ' and ends the block at zero, '
-      + 'as the real form does. Pause stops it, and you can turn the timer off partway '
-      + 'through if you need to.'
+    ? 'The clock counts down from ' + formatDuration(timeLimitMs()) + '. At zero you can end '
+      + 'the block, as the real form does, or keep going untimed. Pause stops it, and you can '
+      + 'turn the timer off at any point.'
     : 'No limit. The clock counts up, and Pause stops it whenever you step away.';
   document.getElementById('beginLabel').textContent = timed ? 'Begin timed exam' : 'Begin exam';
 }
@@ -2100,7 +2192,8 @@ function renderStart(){
     document.getElementById('scoreMeta').textContent = [
       tutor() ? 'Tutor mode' : 'Exam mode',
       state.timed ? (state.timeUp ? 'time ran out' : 'timed')
-                  : (timerWentOff() ? 'timer turned off' : ''),
+                  : (ranOver() ? pctOf(state.scoreAtTimeUp) + '% when time ran out'
+                    : (timerWentOff() ? 'timer turned off' : '')),
       humanDuration(elapsedMs()),
       answeredN ? formatItemTime(paceMs(answeredN)) + ' per item' : ''
     ].filter(Boolean).join(' · ');
@@ -2132,7 +2225,8 @@ function renderStart(){
   document.getElementById('resumeCount').textContent = answered + ' of ' + total + ' answered';
   document.getElementById('resumeMode').textContent =
     (tutor() ? 'Tutor mode' : 'Exam mode') + ', '
-    + (state.timed ? 'timed' : (timerWentOff() ? 'timer turned off' : 'untimed'))
+    + (state.timed ? 'timed'
+       : (ranOver() ? 'untimed after time ran out' : (timerWentOff() ? 'timer turned off' : 'untimed')))
     + (state.paused ? ', paused' : '');
   document.getElementById('startTimerOffBtn').hidden = !state.timed;
   document.getElementById('resumeFill').style.width = (answered / total) * 100 + '%';
@@ -2226,6 +2320,8 @@ document.getElementById('startOverBtn').addEventListener('click', () => {
 document.getElementById('checkBtn').addEventListener('click', checkAnswer);
 ['timerOffBtn', 'pauseTimerOffBtn', 'startTimerOffBtn'].forEach(id =>
   document.getElementById(id).addEventListener('click', turnOffTimer));
+document.getElementById('timeEndBtn').addEventListener('click', endAtTimeUp);
+document.getElementById('timeKeepBtn').addEventListener('click', keepGoingUntimed);
 
 /* Closing, reloading or navigating away stops the clock, so time away from
    the page is never time on the block; entering again restarts it. The one
@@ -2260,7 +2356,7 @@ function hasNote(n){ return !!noteFor(n).trim(); }
    it is not hidden for free: it has to stand down for the pause screen and for
    the results screen, neither of which has an item it could belong to. */
 function notesShouldShow(){
-  return state.notesOpen && !state.paused &&
+  return state.notesOpen && !state.paused && !timeUpOpen &&
          document.getElementById('resultsScreen').style.display !== 'block';
 }
 

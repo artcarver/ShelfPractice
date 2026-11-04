@@ -85,6 +85,30 @@
   </div>
 </div>
 
+<!-- A timed block at zero. The clock is stopped and the question hidden until
+     one of the two is chosen: end there, as the real form does, or carry on
+     without the timer. -->
+<div class="splash" id="timeUpScreen" style="display:none" role="dialog" aria-modal="true"
+     aria-labelledby="timeUpHead" aria-describedby="timeUpSay">
+  <div class="pause-card time-card">
+    <div class="pause-icon time-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="14" r="7"/><path d="M12 14V10.5"/><path d="M10 3h4"/><path d="M12 3v4"/></svg></div>
+    <h1 id="timeUpHead" tabindex="-1">Time is up</h1>
+    <div class="pause-where">The <span id="timeUpLimit"></span> limit has run out.</div>
+    <div class="pause-stats">
+      <div><b id="timeUpAnswered">0 / 0</b><span>answered</span></div>
+      <div><b id="timeUpMarked">0</b><span>marked</span></div>
+    </div>
+    <p class="time-say" id="timeUpSay">On test day the block would end here. You can end it now and see
+      your score, or keep going without the timer.</p>
+    <div class="time-actions">
+      <button type="button" class="btn" id="timeEndBtn">End and see my score</button>
+      <button type="button" class="btn secondary" id="timeKeepBtn">Keep going, untimed</button>
+    </div>
+    <p class="pause-say">If you keep going, your results will show where you stood when time
+      ran out as well as your final score.</p>
+  </div>
+</div>
+
 <!-- The start screen, in one of three states: a fresh block (what it is, and
      the two choices fixed for the attempt), a block under way (where it stands
      and how the pace is going), or a scored one (the score, and the way into
@@ -348,7 +372,7 @@
       <!-- Results screen -->
       <div id="resultsScreen">
         <h1>Exam complete</h1>
-        <p class="time-up-note" id="timeUpNote" hidden>Time ran out, so the block ended itself. Anything left blank counts as unanswered.</p>
+        <p class="time-up-note" id="timeUpNote" hidden></p>
         <p>Select any item below to reopen it with the answer explanation. Narrow the list to the ones you missed, the ones you marked for review, or the ones you left a note on.</p>
 
         <div class="score-card">

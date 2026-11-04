@@ -142,9 +142,19 @@ form of another length keeps the pace rather than the total. The toolbar clock
 reads *Remaining* and turns amber in the last five minutes. Pause still stops
 it, and so does leaving the page, the same as an untimed block.
 
-At zero the block is graded as it stands, exactly as End block would grade it,
-and the results screen says that time ran out and that blanks count as
-unanswered. The time on the block is held at the limit, since the tick that
+At zero the clock stops at the limit and a **Time is up** card asks what to
+do, with the question hidden behind it (the clock is stopped, so reading on
+would be free time). **End and see my score** grades the block as it stands,
+exactly as End block would grade it, and the results screen says that time ran
+out and that blanks count as unanswered. **Keep going, untimed** carries on
+with no limit, the same as turning the timer off at that moment, and saves the
+score as it stood (`scoreAtTimeUp`, carried by export and import), so the
+results give both: the score at the limit in the note above them ("When it ran
+out you had 28 of 50 correct (56%), with 9 unanswered"), and the final one.
+The downloaded report and the scored start screen ("56% when time ran out")
+carry it too. Focus goes to the card's heading, not a button, so an Enter
+already on its way cannot choose for you. A reload with the card up comes
+back to it. The time on the block is held at the limit, since the tick that
 notices can land a second past it. Like the mode, the clock is chosen for the
 attempt, offered again by Start over, remembered per browser under its own key,
 and named wherever a score is (" · timed" on the exam list, "Time ran out" on
@@ -161,7 +171,9 @@ on would let a block stop its limit for a while and still be called timed, so
 a timed attempt after that is a Start over. The block keeps when the timer
 went off (`timerOffAt`, carried by export and import), and the results line,
 the downloaded report and the scored start screen say so ("Timer off at
-00:41:12"); the exam list names it as the untimed block it became.
+00:41:12"); the exam list names it as the untimed block it became. Keeping
+going from the Time is up card is the same switch made at the limit, and reads
+"Untimed after time ran out" instead.
 
 ### The start screen
 
