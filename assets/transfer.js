@@ -148,7 +148,11 @@
   /* Only these, and only at these types. A field of the wrong type is dropped
      rather than carried into storage, where the engine would read it back and
      behave strangely a long way from here. */
-  const MAPS = ['answers','marked','struck','highlights','notes','itemMs'];
+  const MAPS = ['answers','marked','struck','highlights','notes','itemMs','checked'];
+  /* Strings, each limited to the values the engine knows. A tutor-mode block
+     that lost its mode on the way across would come back as an exam-mode one,
+     with every item it had already checked hidden again. */
+  const ENUMS = {mode: ['exam', 'tutor']};
   const NUMS = ['idx','elapsedMs','runningSince','itemSince','itemSinceN'];
   const BOOLS = ['notesOpen','graded','paused','onResults'];
 
@@ -161,6 +165,7 @@
     });
     NUMS.forEach(k => { if(typeof raw[k] === 'number' && isFinite(raw[k])) out[k] = raw[k]; });
     BOOLS.forEach(k => { if(typeof raw[k] === 'boolean') out[k] = raw[k]; });
+    Object.keys(ENUMS).forEach(k => { if(ENUMS[k].indexOf(raw[k]) !== -1) out[k] = raw[k]; });
     if(raw.score && typeof raw.score === 'object') out.score = raw.score;
     if(raw.notesPos && typeof raw.notesPos === 'object') out.notesPos = raw.notesPos;
     return out;
@@ -215,11 +220,13 @@
      a row in the dialog reads the way the row on the list reads. */
   function describe(st, items){
     if(!st) return 'nothing saved';
+    // the list names a tutor-mode block as one, and so does this
+    const mode = st.mode === 'tutor' ? ', tutor mode' : '';
     if(st.graded && st.score && st.score.total)
       return 'scored ' + Math.round((st.score.correct / st.score.total) * 100) + '%'
-           + ', ' + st.score.correct + ' of ' + st.score.total + ' correct';
+           + ', ' + st.score.correct + ' of ' + st.score.total + ' correct' + mode;
     const answered = Object.keys(st.answers || {}).length;
-    if(answered) return answered + ' of ' + (items || '?') + ' answered';
+    if(answered) return answered + ' of ' + (items || '?') + ' answered' + mode;
     if(st.elapsedMs) return 'started, nothing answered yet';
     return 'nothing answered';
   }

@@ -73,7 +73,14 @@ const state = {
   graded: false,
   score: null,   // {correct, incorrect, unanswered, total}; saved at grading so
                  // the landing page can show the result without the answer key
-  onResults: false  // which view was showing, so a reload comes back to it
+  onResults: false, // which view was showing, so a reload comes back to it
+  /* How the block shows its answers, chosen on the start screen and fixed for
+     the attempt. "exam" reveals nothing until the block ends; "tutor" reveals
+     each item as it is checked, and `checked` records which have been. A
+     record saved before tutor mode existed has no mode, and reads as "exam",
+     which is what it was. */
+  mode: 'exam',
+  checked: {}       // n -> true once that item's answer has been checked
 };
 
 const STORAGE_KEY = EXAM.storageKey || ('exam_state_' + EXAM.id);
@@ -95,6 +102,8 @@ function loadState(){
       state.paused = !!saved.paused;
       state.score = saved.score || null;
       state.onResults = !!saved.onResults;
+      state.mode = saved.mode === 'tutor' ? 'tutor' : 'exam';
+      state.checked = saved.checked || {};
       state.itemMs = saved.itemMs || {};
       state.itemSince = saved.itemSince || null;
       state.itemSinceN = saved.itemSinceN || null;
@@ -137,6 +146,7 @@ function saveState(){
       notesOpen: state.notesOpen, notesPos: state.notesPos,
       graded: state.graded, paused: state.paused,
       score: state.score, onResults: state.onResults,
+      mode: state.mode, checked: state.checked,
       elapsedMs: state.elapsedMs, runningSince: state.runningSince,
       itemMs: state.itemMs, itemSince: state.itemSince, itemSinceN: state.itemSinceN,
       savedAt: Date.now()
@@ -167,6 +177,10 @@ function startItemClock(){
   if(state.itemSince || state.paused || state.graded || state.onResults) return;
   const q = QUESTIONS[state.idx];
   if(!q) return;
+  /* A checked item's time is the time it took to answer. What follows is
+     reading the explanation, which the block clock keeps and the item's own
+     clock does not, so going back to it later adds nothing. */
+  if(state.checked[q.n]) return;
   state.itemSince = Date.now();
   state.itemSinceN = q.n;
 }
@@ -204,6 +218,125 @@ function isCorrect(n){
   return state.answers[n] && ANSWER_KEY[n] && state.answers[n] === ANSWER_KEY[n];
 }
 
+/* ---------- tutor mode ---------- */
+
+function tutor(){ return state.mode === 'tutor'; }
+
+/* Whether an item shows its answer: every item once the block is graded, and
+   in tutor mode each item as soon as it is checked. Everything that draws a
+   single item asks this; what belongs to the block as a whole (the clock, the
+   Results button, Next incorrect) still asks state.graded. */
+function revealed(n){ return state.graded || !!state.checked[n]; }
+
+/* Items in a set are checked together. The explanation of the first item in a
+   set argues through every shared choice, the second item's answer included,
+   and on most of the sets on the shelf it names it outright: checking one
+   alone would hand over the other. A set is the run of neighbouring items that
+   print the same notice, which is how data.js marks one. */
+const UNIT = (() => {
+  const out = {};
+  let run = [];
+  QUESTIONS.forEach((q, i) => {
+    run.push(q.n);
+    const next = QUESTIONS[i + 1];
+    if(!(q.setNote && next && next.setNote === q.setNote)){
+      run.forEach(n => { out[n] = run; });
+      run = [];
+    }
+  });
+  return out;
+})();
+function unitOf(n){ return UNIT[n] || [n]; }
+
+function listItems(ns){
+  return ns.length < 2 ? String(ns[0] || '')
+       : ns.slice(0, -1).join(', ') + ' and ' + ns[ns.length - 1];
+}
+
+function checkedTally(){
+  let checked = 0, correct = 0;
+  QUESTIONS.forEach(q => {
+    if(!state.checked[q.n]) return;
+    checked++;
+    if(isCorrect(q.n)) correct++;
+  });
+  return {checked, correct};
+}
+
+/* Time to answer, summed over the items that have one. In tutor mode this,
+   not the block clock, is what a per-item pace is made of: the block clock
+   also holds the time spent reading explanations. */
+function answerMs(){
+  return QUESTIONS.reduce((t, q) => t + itemMsFor(q.n), 0);
+}
+function paceMs(answered){
+  if(!answered) return 0;
+  return (tutor() ? answerMs() : elapsedMs()) / answered;
+}
+
+/* The check button, and what it says when it cannot act yet. */
+function renderCheck(q){
+  const row = document.getElementById('checkRow');
+  const open = tutor() && !revealed(q.n);
+  row.hidden = !open;
+  if(!open) return;
+  const unit = unitOf(q.n);
+  const waiting = unit.filter(n => !state.answers[n]);
+  const btn = document.getElementById('checkBtn');
+  btn.disabled = waiting.length > 0;
+  btn.title = waiting.length
+    ? (state.answers[q.n] ? 'Answer the rest of the set first' : 'Pick an answer first')
+    : 'Show the answer and its explanation (Enter)';
+  document.getElementById('checkLabel').textContent =
+    unit.length === 1 ? 'Check answer'
+      : (unit.length === 2 ? 'Check both answers' : 'Check all ' + unit.length + ' answers');
+  const hint = document.getElementById('checkHint');
+  if(unit.length === 1){
+    hint.textContent = '';
+  }else{
+    const others = waiting.filter(n => n !== q.n);
+    hint.textContent = (state.answers[q.n] && others.length)
+      ? 'Answer item ' + listItems(others) + ' too: items ' + listItems(unit) + ' are checked together.'
+      : 'Items ' + listItems(unit) + ' are checked together.';
+  }
+}
+
+function checkAnswer(){
+  if(!tutor() || state.graded || state.paused) return;
+  const q = currentQ();
+  if(revealed(q.n)) return;
+  const unit = unitOf(q.n);
+  if(unit.some(n => !state.answers[n])) return;
+  stopItemClock();          // the item's time ends with its answer
+  unit.forEach(n => { state.checked[n] = true; });
+  saveState();
+  render();
+  nudgeToExplanation();
+}
+
+/* The explanation opens where the check button was, so after a click it is
+   already in view. Pressed from the keyboard with the button below the fold,
+   its opening lines can land out of sight; scroll just far enough to show
+   them, and never so far that the choices go up under the pinned bars. */
+function nudgeToExplanation(){
+  const exp = document.getElementById('explanation');
+  if(exp.style.display === 'none') return;
+  const main = document.getElementById('examMain');
+  const split = document.getElementById('app').classList.contains('lab-open') &&
+                getComputedStyle(main).overflowY === 'auto';
+  const foot = document.querySelector('footer.botbar');
+  const floor = foot ? foot.getBoundingClientRect().top : window.innerHeight;
+  const want = exp.getBoundingClientRect().top + 96 - floor;
+  if(want <= 0) return;
+  const track = document.querySelector('.progress-track');
+  const ceiling = track ? track.getBoundingClientRect().bottom : 0;
+  const room = document.getElementById('qoptions').getBoundingClientRect().top - ceiling - 12;
+  const by = Math.min(want, Math.max(0, room));
+  if(by <= 0) return;
+  const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  (split ? main : window).scrollBy({top: by, behavior: smooth ? 'smooth' : 'auto'});
+}
+
 function render(){
   const q = currentQ();
   document.getElementById('curItem').textContent = q.n;
@@ -233,10 +366,12 @@ function render(){
 
   const selected = state.answers[q.n];
   const correctLetter = ANSWER_KEY[q.n];
+  // the block is graded, or in tutor mode this item has been checked
+  const shown = revealed(q.n);
 
   // graded banner
   const banner = document.getElementById('gradedBanner');
-  if(state.graded){
+  if(shown){
     let kind, say;
     if(!selected){
       kind = 'unanswered-banner';
@@ -272,7 +407,7 @@ function render(){
   const table = choiceTable(q);
   optsDiv.className = 'options' + (table ? ' opt-table' : '')
                     + (table && table.head ? ' has-head' : '')
-                    + (table && state.graded ? ' graded' : '');
+                    + (table && shown ? ' graded' : '');
   optsDiv.style.setProperty('--opt-cols', table ? table.width : 1);
   if(table && table.head){
     // Not a choice, and it must not answer to a choice's selector: the head
@@ -291,7 +426,7 @@ function render(){
     const isStruck = !!state.struck[strikeKey];
     let cls = 'opt' + (selected === letter ? ' selected' : '') + (isStruck ? ' struck' : '');
     let tag = '';
-    if(state.graded){
+    if(shown){
       cls += ' graded';
       if(letter === correctLetter){
         cls += ' correct-answer';
@@ -302,16 +437,16 @@ function render(){
       }
     }
     row.className = cls;
-    const strikeBtn = state.graded ? '' : `<span class="strike-toggle${isStruck ? ' active' : ''}" title="Cross out this choice">ab</span>`;
+    const strikeBtn = shown ? '' : `<span class="strike-toggle${isStruck ? ' active' : ''}" title="Cross out this choice">ab</span>`;
     const body = table
       ? '<span class="opt-body">' + `<span class="letter">${letter}.</span>`
         + table.cells[idx].map((c, j) =>
             `<span class="opt-cell"${table.head ? ` data-head="${escapeHtml(table.head[j])}"` : ''}>${escapeHtml(c)}</span>`
           ).join('') + '</span>'
       : `<span class="letter">${letter}.</span> ${escapeHtml(text)}`;
-    row.innerHTML = `<input type="radio" name="opt" id="opt_${letter}" ${selected===letter?'checked':''} ${state.graded?'disabled':''}>
+    row.innerHTML = `<input type="radio" name="opt" id="opt_${letter}" ${selected===letter?'checked':''} ${shown?'disabled':''}>
       <label for="opt_${letter}">${body}</label>${tag}${strikeBtn}`;
-    if(!state.graded){
+    if(!shown){
       row.addEventListener('click', (e) => {
         if(e.target.closest('.strike-toggle')) return;
         state.answers[q.n] = letter;
@@ -338,9 +473,11 @@ function render(){
     optsDiv.appendChild(row);
   });
 
-  // explanation (shown only after the exam is graded / during review)
+  renderCheck(q);
+
+  // explanation: once the block is graded, or once a tutor-mode item is checked
   const expEl = document.getElementById('explanation');
-  const expHtml = state.graded && EXAM.explanations ? EXAM.explanations[q.n] : null;
+  const expHtml = shown && EXAM.explanations ? EXAM.explanations[q.n] : null;
   if(expHtml){
     expEl.innerHTML = '<div class="exp-h">Explanation</div>' + expHtml
                     + writtenNote(EXAM.written && EXAM.written[q.n]);
@@ -356,9 +493,13 @@ function render(){
 
   const note = document.getElementById('answeredNote');
   if(note){
+    const tally = tutor() ? checkedTally() : null;
     if(state.graded){
       const s = state.score || computeScore();
       note.textContent = `Score: ${s.correct} of ${s.total} correct`;
+    }else if(tally && tally.checked){
+      // tutor mode keeps score as it goes, which is the point of it
+      note.textContent = `${tally.correct} of ${tally.checked} correct`;
     }else{
       // "of 50" is already in the Item box beside it; two "of 50"s read as
       // two counts of one thing
@@ -713,11 +854,13 @@ function markedIndexes(){
 /* Back to a blank block: the same erasure whether it is asked for from inside
    the exam (Restart) or from the start screen (Start over). `running` is the
    only difference between them — Restart hands you the first item with the
-   clock already going, where Start over leaves it stopped until you begin. */
+   clock already going, where Start over leaves it stopped until you begin.
+   The mode is left as it was: Restart carries on in it, and Start over hands
+   the choice back to the start screen, which offers it again. */
 function clearProgress(running){
   state.idx = 0;
   state.answers = {}; state.marked = {}; state.struck = {}; state.highlights = {};
-  state.notes = {};
+  state.notes = {}; state.checked = {};
   state.graded = false; state.score = null; state.onResults = false;
   resultsFilter = 'all'; resultsAttrs.clear(); resultsSort = {key:'item', dir:'asc'};
   expandedNotes.clear();
@@ -745,25 +888,34 @@ function openReview(){
   const grid = document.getElementById('gridNav');
   grid.innerHTML = '';
   let answeredCount = 0, markedCount = 0, correctCount = 0, incorrectCount = 0;
+  let pendingCount = 0;
+  /* Tutor mode mid-block shows both kinds of item at once: checked ones in
+     their result colours, and ones answered but not yet checked. The usual
+     "answered" cell is the correct green, so beside real results it would
+     read as right; those cells take a neutral state of their own instead. */
+  const mixed = tutor() && !state.graded;
   QUESTIONS.forEach((q, i) => {
     const cell = document.createElement('button');
     cell.type = 'button';
     let cls = 'grid-cell';
     const answered = !!state.answers[q.n];
+    const shown = revealed(q.n);
     if(answered) answeredCount++;
     if(state.marked[q.n]){ cls += ' marked'; markedCount++; }
     if(i === state.idx){ cls += ' current'; }
-    if(state.graded){
-      if(answered && isCorrect(q.n)){ cls += ' correct'; correctCount++; }
-      else if(answered && !isCorrect(q.n)){ cls += ' incorrect'; incorrectCount++; }
+    if(shown && answered){
+      if(isCorrect(q.n)){ cls += ' correct'; correctCount++; }
+      else{ cls += ' incorrect'; incorrectCount++; }
     }else if(answered){
-      cls += ' answered';
+      cls += mixed ? ' pending' : ' answered';
+      if(mixed) pendingCount++;
     }
     if(hasNote(q.n)) cls += ' has-note';
     cell.className = cls;
     cell.textContent = q.n;
     const bits = [answered ? 'answered' : 'unanswered'];
-    if(state.graded && answered) bits.push(isCorrect(q.n) ? 'correct' : 'incorrect');
+    if(shown && answered) bits.push(isCorrect(q.n) ? 'correct' : 'incorrect');
+    else if(mixed && answered) bits.push('not checked');
     if(state.marked[q.n]) bits.push('marked for review');
     if(hasNote(q.n)) bits.push('has a note');
     cell.setAttribute('aria-label', 'Item ' + q.n + ' — ' + bits.join(', '));
@@ -785,14 +937,19 @@ function openReview(){
   const legend = document.getElementById('reviewLegend');
   legend.innerHTML = (state.graded
       ? key('c', correctCount, 'correct') + key('x', incorrectCount, 'incorrect')
-      : key('a', answeredCount, 'answered'))
+      : mixed
+        ? key('c', correctCount, 'correct') + key('x', incorrectCount, 'incorrect')
+          + key('p', pendingCount, 'not checked')
+        : key('a', answeredCount, 'answered'))
     + key('u', blank, 'unanswered')
     + key('m', markedCount, 'marked for review')
     + key('n', notedCount, notedCount === 1 ? 'note' : 'notes');
   document.getElementById('summaryRow').innerHTML = '';
   document.getElementById('finishBtn').style.display = state.graded ? 'none' : '';
-  document.getElementById('firstUnansweredBtn').style.display =
-    (!state.graded && answeredCount < QUESTIONS.length) ? '' : 'none';
+  // in tutor mode the item still open is the one not yet checked, answered or not
+  const first = document.getElementById('firstUnansweredBtn');
+  first.textContent = mixed ? 'Go to first unchecked' : 'Go to first unanswered';
+  first.style.display = (!state.graded && firstOpenIndex() >= 0) ? '' : 'none';
   document.getElementById('firstMarkedBtn').style.display =
     (!state.graded && markedCount) ? '' : 'none';
   // graded: the overlay is a review tool, so it offers the way back to the
@@ -813,8 +970,11 @@ function closeReview(){
   }
   reviewReturnFocus = null;
 }
+function firstOpenIndex(){
+  return QUESTIONS.findIndex(q => tutor() ? !state.checked[q.n] : !state.answers[q.n]);
+}
 document.getElementById('firstUnansweredBtn').addEventListener('click', () => {
-  const i = QUESTIONS.findIndex(q => !state.answers[q.n]);
+  const i = firstOpenIndex();
   if(i >= 0){
     closeReview();
     goToItem(i);
@@ -853,11 +1013,17 @@ document.getElementById('finishBtn').addEventListener('click', () => {
      still open: blanks, and items you meant to come back to. */
   const unanswered = QUESTIONS.length - Object.keys(state.answers).length;
   const marked = markedIndexes().length;
+  // tutor mode: picked but never checked, which grading takes as they stand
+  const unchecked = tutor()
+    ? QUESTIONS.filter(q => state.answers[q.n] && !state.checked[q.n]).length : 0;
   const items = n => n + (n === 1 ? ' item is' : ' items are');
   const open = [];
   if(unanswered) open.push(items(unanswered) + ' unanswered');
+  if(unchecked) open.push(items(unchecked) + ' answered but not checked');
   if(marked) open.push(items(marked) + ' marked for review');
-  const lead = open.length ? open.join(' and ') + '.\n\n' : '';
+  const said = open.length < 3 ? open.join(' and ')
+             : open.slice(0, -1).join(', ') + ' and ' + open[open.length - 1];
+  const lead = open.length ? said + '.\n\n' : '';
   if(!confirm(lead.charAt(0).toUpperCase() + lead.slice(1)
             + 'End the block and see your score? Answers cannot be changed after this.')) return;
   state.graded = true;
@@ -1034,9 +1200,14 @@ function buildResultsBody(){
      answers for nearly all of it; a legacy block answers for a rounding
      error. A block half-worked before the update answers for about half,
      and there the column is worth keeping. */
-  const timedMs = QUESTIONS.reduce((t, q) => t + itemMsFor(q.n), 0);
+  const timedMs = answerMs();
   const blockMs = elapsedMs();
-  const anyTime = blockMs > 0 ? timedMs >= blockMs * 0.2 : timedMs > 0;
+  /* A tutor block cannot predate per-item timing, and its item clocks stop at
+     each check while the block clock carries on through the explanations, so
+     the proportion is no test of anything there: a block read carefully would
+     lose its Time column for it. */
+  const anyTime = tutor() ? timedMs > 0
+                : (blockMs > 0 ? timedMs >= blockMs * 0.2 : timedMs > 0);
   const table = document.querySelector('.results-table');
   if(table) table.classList.toggle('no-times', !anyTime);
   if(!anyTime && resultsSort.key === 'time') resultsSort = {key:'item', dir:'asc'};
@@ -1154,8 +1325,13 @@ function showResults(){
   // the breakdown beside it already says "30 Correct"
   document.getElementById('scoreFrac').textContent = '';
   const answeredN = total - unanswered;
-  document.getElementById('scoreTime').textContent = formatDuration(elapsedMs()) + ' elapsed'
-    + (answeredN ? ' · ' + formatItemTime(elapsedMs() / answeredN) + ' per item' : '');
+  /* A tutor-mode score was worked with the answers coming in as it went, so
+     the line says so; and its pace is time to answer, since the block clock
+     also carries the time spent reading explanations. */
+  document.getElementById('scoreTime').textContent = (tutor() ? 'Tutor mode · ' : '')
+    + formatDuration(elapsedMs()) + ' elapsed'
+    + (answeredN ? ' · ' + formatItemTime(paceMs(answeredN))
+                 + (tutor() ? ' per item to answer' : ' per item') : '');
   /* What most people do next is work through what they missed, so that is
      the first button; going back to wherever the block ended is second, and
      says which item that is. */
@@ -1189,6 +1365,7 @@ document.getElementById('downloadBtn').addEventListener('click', () => {
   const pct = Math.round((correct/total)*100);
   let lines = [EXAM.title + ' - Results',
     EXAM.label ? EXAM.label : null,
+    tutor() ? 'Tutor mode: each answer was checked as it was given' : null,
     `Score: ${correct} of ${total} correct (${pct}%)`,
     `Incorrect: ${incorrect}    Unanswered: ${unanswered}`,
     `Time elapsed: ${formatDuration(elapsedMs())}`,
@@ -1340,7 +1517,8 @@ function renderPauseFigures(){
     // which exam; how far through it is the "answered" figure below, and
     // "item 40 of 50" beside "39 / 50" read as two counts of one thing
     where.textContent = [EXAM.title.replace(/\s+Practice Exam$/i, ''),
-                         (EXAM.label || '').replace(/^CMS\s+/i, '')]
+                         (EXAM.label || '').replace(/^CMS\s+/i, ''),
+                         tutor() ? 'Tutor mode' : '']
                         .filter(Boolean).join(' · ');
   }
   /* Three figures, each with its own label, rather than one sentence strung
@@ -1350,7 +1528,10 @@ function renderPauseFigures(){
   const pace = document.getElementById('pausedPace');
   if(pace){
     document.getElementById('pausedPaceWrap').style.display = answered ? '' : 'none';
-    if(answered) pace.textContent = formatItemTime(elapsedMs() / answered);
+    if(answered) pace.textContent = formatItemTime(paceMs(answered));
+    // the same figure the results screen gives, under the same name
+    document.getElementById('pausedPaceLabel').textContent =
+      tutor() ? 'per item to answer' : 'per item';
   }
 }
 
@@ -1470,7 +1651,8 @@ document.addEventListener('click', (e) => {
 });
 
 // keyboard shortcuts: left/right arrows navigate, letter keys select option,
-// M toggles "mark for review", Esc closes the review overlay or pauses
+// M toggles "mark for review", Enter checks the answer in tutor mode, Esc
+// closes the review overlay or pauses
 document.addEventListener('keydown', (e) => {
   // keystrokes aimed at a text field (e.g. the lab-values search box) must
   // never drive the exam
@@ -1516,6 +1698,14 @@ document.addEventListener('keydown', (e) => {
   if(document.getElementById('resultsScreen').style.display === 'block') return;
   if(e.key === 'Escape'){ pauseExam(); return; }
   if(e.ctrlKey || e.metaKey || e.altKey) return;   // browser shortcuts stay browser shortcuts
+  /* Enter checks the answer in tutor mode. Not when a button or link has the
+     focus: Enter is already that control's own key, and checking as well
+     would make Enter on a focused Next both check the item and leave it. */
+  if(e.key === 'Enter'){
+    if(t && t.closest && t.closest('button, a, summary')) return;
+    if(tutor()){ e.preventDefault(); checkAnswer(); }
+    return;
+  }
   if(e.key === 'ArrowRight'){ e.preventDefault(); goNext(); }
   else if(e.key === 'ArrowLeft'){ e.preventDefault(); goPrev(); }
   else if(e.key === 'm' || e.key === 'M'){
@@ -1531,7 +1721,7 @@ document.addEventListener('keydown', (e) => {
     e.preventDefault();
     toggleNotes();
   }
-  else if(!state.graded){
+  else if(!revealed(currentQ().n)){
     const letter = e.key.toUpperCase();
     const q = currentQ();
     if(q.options.some(o => o[0] === letter)){
@@ -1576,19 +1766,76 @@ function enterExam(){
   }
 }
 
-document.getElementById('beginBtn').addEventListener('click', enterExam);
+/* Which mode the start screen offers first: the one last chosen in this
+   browser. Like the text size it is a preference rather than progress, so it
+   lives under its own key and outlives any one exam's saved state. */
+const MODE_KEY = 'shelfpractice_mode';
+function preferredMode(){
+  try{ return localStorage.getItem(MODE_KEY) === 'tutor' ? 'tutor' : 'exam'; }
+  catch(e){ return 'exam'; }
+}
+function pickedMode(){
+  const r = document.querySelector('input[name="mode"]:checked');
+  return r && r.value === 'tutor' ? 'tutor' : 'exam';
+}
+function showModePick(mode){
+  document.querySelectorAll('input[name="mode"]').forEach(r => { r.checked = r.value === mode; });
+}
+
+/* The start screen in one of its two states. A block with nothing in it
+   offers the mode and Begin; a block with progress offers Resume, names the
+   mode it is being worked in, and keeps the choice out of reach, since the
+   mode is fixed for the attempt and Start over is how it is chosen again. */
+function renderStart(){
+  const hasProgress = Object.keys(state.answers).length > 0 || state.graded ||
+                      state.paused || elapsedMs() > 0;
+  document.getElementById('resumeRow').style.display = hasProgress ? 'flex' : 'none';
+  document.getElementById('resumeMeta').style.display = hasProgress ? '' : 'none';
+  document.getElementById('beginRow').style.display = hasProgress ? 'none' : 'flex';
+  document.getElementById('modePick').style.display = hasProgress ? 'none' : '';
+  if(!hasProgress){
+    showModePick(preferredMode());
+    return;
+  }
+  /* Someone coming back wants to carry on, so the button says exactly where
+     it goes, the bar says how far along they are, and the instructions they
+     have already read fold away under their heading. */
+  const answered = Object.keys(state.answers).length;
+  document.getElementById('resumeLabel').textContent =
+    (state.graded && state.onResults) ? 'Back to your results'
+      : (state.graded ? 'Continue reviewing' : 'Resume exam');
+  document.getElementById('resumeCount').textContent =
+    (tutor() ? 'Tutor mode · ' : '') + answered + ' of ' + QUESTIONS.length + ' answered';
+  document.getElementById('resumeState').textContent = state.graded && state.score
+    ? 'Scored ' + state.score.correct + ' / ' + state.score.total
+    : spentLabel(elapsedMs());
+  document.getElementById('resumeFill').style.width = (answered / QUESTIONS.length) * 100 + '%';
+}
+
+document.getElementById('beginBtn').addEventListener('click', () => {
+  state.mode = pickedMode();
+  try{ localStorage.setItem(MODE_KEY, state.mode); }catch(e){}
+  enterExam();
+});
 /* Resume on the start screen is already the decision to carry on, so an exam
    left paused does not stop at the pause card to be resumed a second time. */
 document.getElementById('resumeBtn').addEventListener('click', () => {
   state.paused = false;
   enterExam();
 });
+/* Starting over is starting again, and starting is where the mode is chosen,
+   so it lands on the fresh start screen with the mode it had still selected
+   rather than going straight in. One more Enter, and the choice is real. */
 document.getElementById('startOverBtn').addEventListener('click', () => {
   // this throws away everything, so it asks first — the same guard Restart has
   if(!confirm('Start this exam over? This clears your answers, highlights and score.')) return;
+  const was = state.mode;
   clearProgress(false);
-  enterExam();   // which starts the clock
+  renderStart();
+  showModePick(was);
+  document.getElementById('beginBtn').focus();
 });
+document.getElementById('checkBtn').addEventListener('click', checkAnswer);
 
 /* Closing, reloading or navigating away stops the clock, so time away from
    the page is never time on the block; entering again restarts it. The one
@@ -1922,26 +2169,9 @@ if(enteredThisSession()){
   enterExam();
 }else{
   document.getElementById('startScreen').style.display = 'flex';
-  const hasProgress = Object.keys(state.answers).length > 0 || state.graded ||
-                      state.paused || elapsedMs() > 0;
-  if(hasProgress){
-    /* Someone coming back wants to carry on, so the button says exactly where
-       it goes, the bar says how far along they are, and the instructions they
-       have already read fold away under their heading. */
-    const answered = Object.keys(state.answers).length;
-    document.getElementById('resumeRow').style.display = 'flex';
-    document.getElementById('resumeMeta').style.display = '';
-    document.getElementById('resumeLabel').textContent =
-      (state.graded && state.onResults) ? 'Back to your results'
-        : (state.graded ? 'Continue reviewing' : 'Resume exam');
-    document.getElementById('resumeCount').textContent =
-      answered + ' of ' + QUESTIONS.length + ' answered';
-    document.getElementById('resumeState').textContent = state.graded && state.score
-      ? 'Scored ' + state.score.correct + ' / ' + state.score.total
-      : spentLabel(elapsedMs());
-    document.getElementById('resumeFill').style.width = (answered / QUESTIONS.length) * 100 + '%';
-  }else{
-    document.getElementById('beginRow').style.display = 'flex';
+  renderStart();
+  // a first visit gets the instructions open; a returning one has read them
+  if(document.getElementById('beginRow').style.display !== 'none'){
     document.getElementById('startHelp').open = true;
   }
 }

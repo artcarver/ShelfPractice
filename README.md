@@ -12,8 +12,8 @@ walkthrough.html    What the exam screen is, shown with a working item in it
 assets/
   theme.css         Design tokens shared by every page
   exam.css          Exam page styles
-  exam.js           Shared engine (navigation, grading, highlighting,
-                    cross-outs, lab tables, saved progress)
+  exam.js           Shared engine (navigation, grading, tutor mode,
+                    highlighting, cross-outs, lab tables, saved progress)
   labvalues.css     Styles for the Lab Values reference panel
   labvalues.js      Lab Values data + panel (searchable, tabbed)
   transfer.js       Export and import of saved progress, shared by both pages
@@ -72,13 +72,63 @@ medium radius and a hairline `--divider` between rows, overlays use the large
 one; buttons and headings are sentence case; and colour carries a fixed
 meaning — green for correct, red for incorrect, grey for unanswered, violet
 for marked. Unanswered is never shown in red, since it is not the same signal
-as a missed answer.
+as a missed answer. Tutor mode adds one state, answered but not yet checked,
+and gives it the chrome's navy rather than a result colour.
 
 **Rendering and exam content are fully separate.** Everything under `assets/`
 plus `exam.html` is shared machinery and never changes when you add an exam.
 Everything under `exams/` is content. `exam.html` merges an exam's catalog entry
 from `manifest.js` with its `data.js` into `window.EXAM`, then hands that to the
 engine — so the engine has no knowledge of any particular exam.
+
+### Tutor mode
+
+A block is worked in one of two modes, chosen on the start screen. **Exam
+mode** is the form as it is sat: nothing is revealed until you end the block.
+**Tutor mode** is the question-bank habit — pick a choice, press **Check
+answer** (or <kbd>Enter</kbd>), and that item locks and opens exactly as a
+graded item does, with the banner, the key and the explanation. The block
+still ends with End block and the same results screen. The start screen
+offers the mode you last chose in this browser, kept under its own key like
+the text size.
+
+The mode is fixed for the attempt. Switching halfway would leave an exam-mode
+score with revealed items in it, so the choice is offered only on a fresh
+start, and Start over returns to it rather than going straight back in. Restart,
+inside the exam, carries on in the mode it was in. Saved progress from before
+tutor mode existed has no mode recorded and opens as an exam-mode block, which
+is what it was.
+
+Checking is its own step rather than a click on a choice, so a choice can still
+be changed and crossed out until the moment it is checked, and it needs a
+choice to check: an item never answered stays blank until the block ends.
+Ending the block grades an answer that was picked but never checked as it
+stands, the same as exam mode does, and the confirmation says how many there
+are.
+
+**Sets are checked together.** The explanation of the first item in a set
+argues through every shared choice, and on most of the sets on the shelf it
+names the second item's answer outright: Neurology Form 4's item 4 describes
+the lesion item 5 asks for, and Surgery Form 4's item 25 does the same for
+item 26. So the button on either item of a set waits until both are answered,
+says why, and reveals both at once. A set is the run of neighbouring items that
+print the same notice, which `verify-exam.mjs` holds every form to.
+
+An item's clock stops when it is checked, and does not start again when you
+come back to it: its time is the time it took to answer. The block clock runs
+on through the explanations, since that is study time too, so in tutor mode the
+pace on the pause card and the results screen is made from the item times —
+"per item to answer" — rather than from the block clock. For the same reason
+the results table always keeps its Time column for a tutor block: the test
+that hides it, item times accounting for under a fifth of the block, exists for
+blocks saved before per-item timing, and a careful tutor block would fail it.
+
+The subbar keeps score as you go ("9 of 12 correct"), and the item grid shows
+checked items in their result colours with the answered-but-unchecked ones in
+navy beside them. A tutor-mode score is named as one wherever it appears — the
+results line, the downloaded report, the exam list, the import dialog — since
+it was earned with each answer shown as it went in and is not the same figure
+as a cold one.
 
 ### Carrying progress between browsers
 
@@ -262,7 +312,7 @@ Keyboard shortcuts on the exam page: <kbd>←</kbd>/<kbd>→</kbd> change items,
 <kbd>A</kbd>–<kbd>E</kbd> select an answer, <kbd>M</kbd> toggles "mark for
 review", <kbd>N</kbd> opens or closes the notepad, <kbd>−</kbd>/<kbd>+</kbd>
 step the text size, <kbd>Enter</kbd> begins or
-resumes from the start screen, and
+resumes from the start screen and, in tutor mode, checks the answer, and
 <kbd>Esc</kbd> closes the topmost layer (the text-size panel, then an enlarged
 exhibit, then the review overlay) before pausing. Keystrokes aimed at a text field — like the Lab
 Values search box — are left alone. Right-clicking an answer choice crosses

@@ -6,6 +6,8 @@
 // site, answers every item from the answer key in Chromium, and expects a
 // perfect score with a clean console — which catches broken HTML in an
 // explanation, a missing exhibit and a manifest that disagrees with the data.
+// It does that twice: once in exam mode, and once in tutor mode, checking each
+// item (each set as one) and expecting its answer and explanation to show.
 
 import { readFileSync } from 'node:fs';
 import { spawn, execSync } from 'node:child_process';
@@ -103,6 +105,32 @@ for (const q of questions) {
   if (q.lead && !q.setNote) fail(`${at}: lead without setNote`);
 }
 
+// Tutor mode checks a set as one unit, and the engine finds a set as the run
+// of neighbouring items that print the same notice. A notice on one item
+// alone, or on items with others between them, would leave a set that tutor
+// mode checks one item at a time — and the first item's explanation would
+// hand over the second item's answer. The notice also names its items, so it
+// has to name the ones it actually sits on.
+const units = [];
+questions.forEach((q, i) => {
+  const prev = questions[i - 1];
+  if (q.setNote && prev && prev.setNote === q.setNote) units[units.length - 1].push(q.n);
+  else units.push([q.n]);
+});
+const runsByNote = new Map();
+for (const u of units) {
+  const note = questions.find((q) => q.n === u[0]).setNote;
+  if (!note) continue;
+  if (u.length < 2) fail(`item ${u[0]}: setNote, but no neighbouring item prints the same notice`);
+  const named = (note.match(/\d+/g) || []).map(Number);
+  if (named.join(',') !== u.join(','))
+    fail(`items ${u.join(', ')}: the set's notice names item(s) ${named.join(', ') || 'none'}`);
+  runsByNote.set(note, (runsByNote.get(note) || 0) + 1);
+}
+for (const [note, runs] of runsByNote)
+  if (runs > 1) fail(`the notice "${note.slice(0, 40)}…" is on items that are not neighbours`);
+const unitOf = (n) => units.find((u) => u.includes(n));
+
 for (const n of Object.keys(answerKey))
   if (!seen.has(Number(n))) fail(`answer key has item ${n}, which has no question`);
 
@@ -148,8 +176,11 @@ for (const spec of candidates.filter(Boolean)) {
     const require = createRequire(import.meta.url);
     let target = spec;
     try { target = require.resolve(spec); } catch { /* an absolute path is fine as-is */ }
-    ({ chromium } = await import(target));
-    break;
+    // A CommonJS build imports with its exports on `default`, and one that
+    // loads but carries no browser is no reason to stop looking.
+    const mod = await import(target);
+    chromium = mod.chromium || (mod.default && mod.default.chromium) || null;
+    if (chromium) break;
   } catch { /* try the next one */ }
 }
 if (!chromium) console.log('note: Playwright not installed, skipping the browser run');
@@ -159,33 +190,83 @@ if (chromium) {
   const server = spawn('python3', ['-m', 'http.server', String(port)], { cwd: root, stdio: 'ignore' });
   await new Promise((r) => setTimeout(r, 900));
   const browser = await chromium.launch();
-  try {
-    const page = await browser.newPage();
+
+  /* One block, worked from the key in the mode named. Each run has a context
+     of its own, which is its own storage: the start screen offers whichever
+     mode was chosen last, and one run's choice must not become the other's. */
+  async function workBlock(mode) {
+    const context = await browser.newContext();
+    const page = await context.newPage();
     const noise = [];
     page.on('console', (m) => m.type() === 'error' && noise.push(m.text()));
     page.on('pageerror', (e) => noise.push('pageerror: ' + e.message));
     // Ending the block always asks first; the run means to end it.
     page.on('dialog', (d) => d.accept());
-    await page.goto(`http://localhost:${port}/exam.html?exam=${slug}`);
-    await page.click('#beginBtn');
-    await page.waitForSelector('#qstem', { state: 'visible' });
+    try {
+      await page.goto(`http://localhost:${port}/exam.html?exam=${slug}`);
+      await page.check(`input[name="mode"][value="${mode}"]`);
+      await page.click('#beginBtn');
+      await page.waitForSelector('#qstem', { state: 'visible' });
 
-    for (let i = 1; i <= questions.length; i++) {
-      const letter = answerKey[String(i)];
-      const idx = questions[i - 1].options.findIndex(([l]) => l === letter);
-      await page.locator('#qoptions .opt').nth(idx).click();
-      if (i < questions.length) await page.click('#nextBtn2');
+      // A checked item shows its answer as a graded one does: the banner, and
+      // the explanation where there is one. The check button has gone.
+      const expectRevealed = async (n) => {
+        const at = `tutor run, item ${n}`;
+        if ((await page.textContent('#curItem')).trim() !== String(n))
+          return fail(`${at}: expected to be on this item`);
+        const cls = (await page.getAttribute('#gradedBanner', 'class')) || '';
+        if (!/\bcorrect-banner\b/.test(cls)) fail(`${at}: checking it did not show a correct banner`);
+        if (explanations[String(n)] && !(await page.isVisible('#explanation')))
+          fail(`${at}: checked, but its explanation is not showing`);
+        if (await page.isVisible('#checkRow')) fail(`${at}: the check button is still showing`);
+      };
+
+      for (let i = 1; i <= questions.length; i++) {
+        const q = questions[i - 1];
+        const idx = q.options.findIndex(([l]) => l === answerKey[String(i)]);
+        await page.locator('#qoptions .opt').nth(idx).click();
+        if (mode === 'tutor') {
+          // a set waits for its last item, then reveals every item in it
+          const unit = unitOf(q.n);
+          if (unit[unit.length - 1] !== q.n) {
+            if (!(await page.isDisabled('#checkBtn')))
+              fail(`tutor run, item ${q.n}: Check is on before the rest of its set is answered`);
+          } else {
+            await page.click('#checkBtn');
+            await expectRevealed(q.n);
+            for (let k = unit.length - 2; k >= 0; k--) {
+              await page.click('#prevBtn2');
+              await expectRevealed(unit[k]);
+            }
+            for (let k = 1; k < unit.length; k++) await page.click('#nextBtn2');
+          }
+        }
+        if (i < questions.length) await page.click('#nextBtn2');
+      }
+      if (mode === 'tutor') {
+        const tally = (await page.textContent('#answeredNote')).trim();
+        const want = `${questions.length} of ${questions.length} correct`;
+        if (tally !== want) fail(`tutor run: the running score reads "${tally}", not "${want}"`);
+      }
+      await page.click('#reviewOpenBtn');
+      await page.click('#finishBtn');
+      await page.waitForSelector('#resultsScreen', { state: 'visible' });
+      await page.waitForTimeout(400);
+
+      const pct = (await page.textContent('#scorePercent')).trim();
+      console.log(`browser run, ${mode} mode: ${pct}`);
+      if (pct !== '100%') fail(`${mode} run scored ${pct}, so the key and the choices disagree`);
+      if (mode === 'tutor' && !/^Tutor mode/.test((await page.textContent('#scoreTime')).trim()))
+        fail('tutor run: the results line does not name the mode');
+      for (const n of noise) fail(`console (${mode} run): ${n}`);
+    } finally {
+      await context.close();
     }
-    await page.click('#reviewOpenBtn');
-    await page.click('#finishBtn');
-    await page.waitForSelector('#resultsScreen', { state: 'visible' });
-    await page.waitForTimeout(400);
+  }
 
-    const pct = (await page.textContent('#scorePercent')).trim();
-    const frac = (await page.textContent('#scoreFrac')).trim();
-    console.log(`browser run: ${pct} (${frac})`);
-    if (pct !== '100%') fail(`browser run scored ${pct}, so the key and the choices disagree`);
-    for (const n of noise) fail(`console: ${n}`);
+  try {
+    await workBlock('exam');
+    await workBlock('tutor');
   } catch (err) {
     fail(`browser run did not finish: ${err.message.split('\n')[0]}`);
   } finally {

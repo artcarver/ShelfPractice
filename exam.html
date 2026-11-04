@@ -28,7 +28,7 @@
     <div class="pause-stats">
       <div><b id="pausedAnswered">0 / 0</b><span>answered</span></div>
       <div><b id="pausedElapsed">00:00:00</b><span>elapsed</span></div>
-      <div id="pausedPaceWrap"><b id="pausedPace">0:00</b><span>per item</span></div>
+      <div id="pausedPaceWrap"><b id="pausedPace">0:00</b><span id="pausedPaceLabel">per item</span></div>
     </div>
     <button class="btn" id="resumeExamBtn">Resume exam</button>
     <div class="pause-foot"><a href="index.html">Back to the exam list</a> &middot; your progress is saved</div>
@@ -48,6 +48,21 @@
       <button class="btn" id="resumeBtn"><span id="resumeLabel">Resume</span><kbd>Enter</kbd></button>
       <button type="button" class="text-link start-over" id="startOverBtn" title="Clears your answers, highlights and score">Start over</button>
     </div>
+    <!-- How the block shows its answers. Offered only on a fresh start: the
+         mode is fixed for the attempt, and Start over offers it again. -->
+    <fieldset class="mode-pick" id="modePick" style="display:none">
+      <legend class="sr-only">When to see the answers</legend>
+      <label class="mode-opt">
+        <input type="radio" name="mode" value="exam">
+        <span class="mode-text"><span class="mode-name">Exam mode</span>
+          <span class="mode-say">Answers and explanations when you end the block</span></span>
+      </label>
+      <label class="mode-opt">
+        <input type="radio" name="mode" value="tutor">
+        <span class="mode-text"><span class="mode-name">Tutor mode</span>
+          <span class="mode-say">Check each answer as you go, with its explanation</span></span>
+      </label>
+    </fieldset>
     <div class="start-actions" id="beginRow" style="display:none">
       <button class="btn" id="beginBtn">Begin exam<kbd>Enter</kbd></button>
     </div>
@@ -78,10 +93,15 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
           <span><b>Pause</b> stops the clock and hides the question</span>
         </div>
+        <div class="how-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-3.8 10.6c.6.6.8 1.3.8 2.4h6c0-1.1.2-1.8.8-2.4A6 6 0 0 0 12 3Z"/></svg>
+          <span>In <b>Tutor mode</b>, <b>Check answer</b> or <b>Enter</b> shows each answer and its explanation as you go</span>
+        </div>
       </div>
       <div class="start-keys">
         <span><kbd>&#8592;</kbd><kbd>&#8594;</kbd> change item</span>
         <span><kbd>A</kbd>&ndash;<kbd>E</kbd> answer</span>
+        <span><kbd>Enter</kbd> check (tutor)</span>
         <span><kbd>M</kbd> mark</span>
         <span><kbd>N</kbd> notes</span>
         <span><kbd>Esc</kbd> pause</span>
@@ -172,6 +192,14 @@
         <div class="stem" id="qstem"></div>
         <div class="set-lead" id="setLead" style="display:none"></div>
         <div class="options" id="qoptions"></div>
+
+        <!-- Tutor mode only, and only until the item is checked. It sits under
+             the choices, where the hand is, and the explanation opens in its
+             place; Previous and Next stay where they always are. -->
+        <div class="check-row" id="checkRow" hidden>
+          <button type="button" class="btn" id="checkBtn"><span id="checkLabel">Check answer</span><kbd>Enter</kbd></button>
+          <span class="check-hint" id="checkHint" aria-live="polite"></span>
+        </div>
 
         <div class="explanation" id="explanation" style="display:none"></div>
       </main>

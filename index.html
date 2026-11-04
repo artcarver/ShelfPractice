@@ -287,14 +287,17 @@
       s = raw ? JSON.parse(raw) : null;
     }catch(err){}
     if(!s) return {kind:'new'};
+    /* A tutor-mode score was earned with each answer shown as it went in, so
+       it is named as one wherever it appears beside a score that was not. */
+    const tutor = s.mode === 'tutor';
     if(s.graded && s.score && s.score.total){
       return {kind:'done', correct:s.score.correct, total:s.score.total,
-              pct: Math.round((s.score.correct / s.score.total) * 100)};
+              pct: Math.round((s.score.correct / s.score.total) * 100), tutor:tutor};
     }
     const answered = Object.keys(s.answers || {}).length;
     if(answered || s.elapsedMs || s.runningSince)
       return {kind:'going', answered:answered, total:e.items || 0,
-              savedAt: s.savedAt || 0};
+              savedAt: s.savedAt || 0, tutor:tutor};
     return {kind:'new'};
   }
 
@@ -310,11 +313,11 @@
     let state = '', cta = 'Start';
     if(p.kind === 'done'){
       state = '<div class="row-state"><span class="pct">' + p.pct + '%</span> · '
-            + p.correct + ' of ' + p.total + ' correct</div>';
+            + p.correct + ' of ' + p.total + ' correct' + (p.tutor ? ' · tutor' : '') + '</div>';
       cta = 'Review';
     }else if(p.kind === 'going'){
       state = '<div class="row-state"><b>' + p.answered + '</b> of ' + p.total
-            + ' answered</div>';
+            + ' answered' + (p.tutor ? ' · tutor' : '') + '</div>';
       cta = 'Resume';
     }
 
@@ -553,7 +556,8 @@
       const where = p.kind === 'done'
         ? 'scored ' + p.pct + '%, ' + p.correct + ' of ' + p.total + ' correct'
         : p.answered + ' of ' + (e.items || '?') + ' answered';
-      lines.push('  ' + (e.title + (e.label ? ' ' + e.label : '')) + ' - ' + where);
+      const mode = p.tutor ? ', tutor mode' : '';
+      lines.push('  ' + (e.title + (e.label ? ' ' + e.label : '')) + ' - ' + where + mode);
     });
     lines.push('', 'To load this into another browser, open the exam list there and',
                    'choose Import progress at the foot of the page.');
