@@ -149,8 +149,6 @@
     border:1px solid rgba(255,255,255,.45);border-bottom-width:1px;
     background:rgba(255,255,255,.12);color:#fff;
   }
-  .start-try{font-size:var(--fs-sm);color:var(--muted);}
-  .start-try a{color:var(--navy);font-weight:600;}
   /* Start over throws work away (it asks first), so it is a quiet link at the
      far end of the row rather than a button competing with Resume. */
   .start-actions .start-over{
@@ -384,7 +382,6 @@
     .pick-grid{grid-template-columns:1fr;}
     .start-actions .btn{flex:1 1 100%;justify-content:center;}
     .start-actions .start-over{margin:0 auto;}
-    .start-try{flex-basis:100%;text-align:center;}
     .status-figs{grid-template-columns:repeat(2,minmax(0,1fr));}
     .start-foot{flex-direction:column;align-items:flex-start;}
     .side-h-rule{padding:13px 16px 11px;}

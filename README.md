@@ -289,10 +289,11 @@ sentence in its caption and one in the closing line. The item and its
 explanation were written for the page, and it says so under the frame, so the
 tour gives away nothing that is on a form.
 
-The landing page links it from its foot (**How it works**), and an exam's
-start screen carries it beside **Begin**. It used to be a navy "New here?" card
-above the list as well, which came out to leave the notice below as the one
-thing between the heading and the exams. All three pages carry a `noindex` meta
+The landing page links it from its foot (**How it works**), and that is the
+one way in. It used to be offered twice more, as a navy "New here?" card above
+the list and as "New to the site? Try a sample question" beside an exam's
+**Begin**; both came out, leaving the notice below as the one thing between
+the heading and the exams, and Begin alone on its row. All three pages carry a `noindex` meta
 tag, since the site is passed between people who already know what it is.
 
 Above the list, the landing page carries a notice of what is new, the one
