@@ -153,8 +153,10 @@
      that lost its mode on the way across would come back as an exam-mode one,
      with every item it had already checked hidden again. */
   const ENUMS = {mode: ['exam', 'tutor']};
-  const NUMS = ['idx','elapsedMs','runningSince','itemSince','itemSinceN'];
-  const BOOLS = ['notesOpen','graded','paused','onResults'];
+  const NUMS = ['idx','elapsedMs','runningSince','itemSince','itemSinceN','gradedAt'];
+  /* A timed block that lost `timed` on the way across would come back
+     counting up, with no limit on it. */
+  const BOOLS = ['notesOpen','graded','paused','onResults','timed','timeUp'];
 
   function sanitize(raw){
     if(!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
@@ -221,7 +223,7 @@
   function describe(st, items){
     if(!st) return 'nothing saved';
     // the list names a tutor-mode block as one, and so does this
-    const mode = st.mode === 'tutor' ? ', tutor mode' : '';
+    const mode = (st.mode === 'tutor' ? ', tutor mode' : '') + (st.timed === true ? ', timed' : '');
     if(st.graded && st.score && st.score.total)
       return 'scored ' + Math.round((st.score.correct / st.score.total) * 100) + '%'
            + ', ' + st.score.correct + ' of ' + st.score.total + ' correct' + mode;

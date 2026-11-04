@@ -20,19 +20,26 @@ const IMAGES = (() => {
 })();
 
 document.title = EXAM.title;
-document.getElementById('loadingText').textContent = 'Loading ' + EXAM.title + '…';
-document.getElementById('examName').textContent = EXAM.title;
-document.getElementById('examSub').textContent = QUESTIONS.length + ' questions · untimed';
+/* The subject is what tells one exam from another, so it is the start
+   screen's heading, with "Practice Exam" under it; every surgery form shares
+   the full title, and the chip above says which form this is. */
+const SUBJECT = EXAM.title.replace(/\s+Practice Exams?$/i, '') || EXAM.title;
+document.getElementById('examName').textContent = SUBJECT;
+(() => {
+  const sub = document.getElementById('examSub');
+  sub.textContent = EXAM.title.slice(SUBJECT.length).trim();
+  sub.hidden = !sub.textContent;
+})();
 /* The bar names the subject and, beside it, the form. It has room for one
-   short line, so the title drops its "Practice Exam" suffix there — the start
-   screen, the browser tab and the results screen all still say it in full. */
+   short line, so the title drops its "Practice Exam" suffix there — the
+   browser tab and the results screen still say it in full. */
 const titleBar = document.getElementById('examTitleBar');
-titleBar.textContent = EXAM.title.replace(/\s+Practice Exam$/i, '');
+titleBar.textContent = SUBJECT;
 titleBar.title = EXAM.title;   // the long subjects have to ellipsize
 if(EXAM.label){
   const chip = document.getElementById('examLabel');
   chip.textContent = EXAM.label;
-  chip.style.display = '';
+  chip.hidden = false;
   /* The bar has the subject beside it, so the tag carries only the part the
      subject does not: "CMS Form 6" becomes "Form 6". The start screen still
      shows the label in full. */
@@ -80,7 +87,14 @@ const state = {
      record saved before tutor mode existed has no mode, and reads as "exam",
      which is what it was. */
   mode: 'exam',
-  checked: {}       // n -> true once that item's answer has been checked
+  checked: {},      // n -> true once that item's answer has been checked
+  /* Whether the block runs against the real form's clock, chosen beside the
+     mode and fixed with it. A timed block counts down from timeLimitMs() and
+     ends itself at zero, which sets `timeUp`. `gradedAt` dates the score for
+     the start screen. Records from before either existed are untimed. */
+  timed: false,
+  timeUp: false,
+  gradedAt: null
 };
 
 const STORAGE_KEY = EXAM.storageKey || ('exam_state_' + EXAM.id);
@@ -104,6 +118,9 @@ function loadState(){
       state.onResults = !!saved.onResults;
       state.mode = saved.mode === 'tutor' ? 'tutor' : 'exam';
       state.checked = saved.checked || {};
+      state.timed = saved.timed === true;
+      state.timeUp = saved.timeUp === true;
+      state.gradedAt = saved.gradedAt || null;
       state.itemMs = saved.itemMs || {};
       state.itemSince = saved.itemSince || null;
       state.itemSinceN = saved.itemSinceN || null;
@@ -147,6 +164,7 @@ function saveState(){
       graded: state.graded, paused: state.paused,
       score: state.score, onResults: state.onResults,
       mode: state.mode, checked: state.checked,
+      timed: state.timed, timeUp: state.timeUp, gradedAt: state.gradedAt,
       elapsedMs: state.elapsedMs, runningSince: state.runningSince,
       itemMs: state.itemMs, itemSince: state.itemSince, itemSinceN: state.itemSinceN,
       savedAt: Date.now()
@@ -272,6 +290,41 @@ function answerMs(){
 function paceMs(answered){
   if(!answered) return 0;
   return (tutor() ? answerMs() : elapsedMs()) / answered;
+}
+
+/* ---------- timed mode ---------- */
+
+/* The pace the real forms are written to: a self-assessment gives 50 items
+   1 h 15 min, which is 90 seconds an item, the same pace the shelf itself
+   keeps. The limit scales with the block, so a form of any length gets the
+   same pace rather than the same total. */
+const SHELF_PACE_MS = 90000;
+function timeLimitMs(){ return QUESTIONS.length * SHELF_PACE_MS; }
+function remainingMs(){ return Math.max(0, timeLimitMs() - elapsedMs()); }
+
+/* The one way a block ends: from End block, or from a timed block's clock
+   reaching zero. */
+function gradeBlock(){
+  state.graded = true;
+  state.score = computeScore();
+  state.gradedAt = Date.now();
+  stopClock();            // the block is over; the clock stops with it
+  saveState();
+  closeReview();
+  showResults();
+}
+
+/* Time is up. Whatever is open over the question closes first, so the
+   results screen is not left under a dialog, and the banked time is held at
+   the limit: the tick that noticed can land a second past it. */
+function timeUp(){
+  if(state.graded || !state.timed) return;
+  state.timeUp = true;
+  stopClock();
+  state.elapsedMs = Math.min(state.elapsedMs, timeLimitMs());
+  closeLightbox();
+  showSizePop(false);
+  gradeBlock();
 }
 
 /* The check button, and what it says when it cannot act yet. */
@@ -855,13 +908,15 @@ function markedIndexes(){
    the exam (Restart) or from the start screen (Start over). `running` is the
    only difference between them — Restart hands you the first item with the
    clock already going, where Start over leaves it stopped until you begin.
-   The mode is left as it was: Restart carries on in it, and Start over hands
-   the choice back to the start screen, which offers it again. */
+   The mode and the clock are left as they were: Restart carries on in them
+   (a timed block starts its full time again), and Start over hands the choice
+   back to the start screen, which offers both again. */
 function clearProgress(running){
   state.idx = 0;
   state.answers = {}; state.marked = {}; state.struck = {}; state.highlights = {};
   state.notes = {}; state.checked = {};
   state.graded = false; state.score = null; state.onResults = false;
+  state.timeUp = false; state.gradedAt = null;
   resultsFilter = 'all'; resultsAttrs.clear(); resultsSort = {key:'item', dir:'asc'};
   expandedNotes.clear();
   state.paused = false;
@@ -1026,12 +1081,7 @@ document.getElementById('finishBtn').addEventListener('click', () => {
   const lead = open.length ? said + '.\n\n' : '';
   if(!confirm(lead.charAt(0).toUpperCase() + lead.slice(1)
             + 'End the block and see your score? Answers cannot be changed after this.')) return;
-  state.graded = true;
-  state.score = computeScore();
-  stopClock();            // the block is over; the clock stops with it
-  saveState();
-  closeReview();
-  showResults();
+  gradeBlock();
 });
 
 function computeScore(){
@@ -1328,10 +1378,14 @@ function showResults(){
   /* A tutor-mode score was worked with the answers coming in as it went, so
      the line says so; and its pace is time to answer, since the block clock
      also carries the time spent reading explanations. */
+  /* A timed block says so, and says its time against the limit it had. */
   document.getElementById('scoreTime').textContent = (tutor() ? 'Tutor mode · ' : '')
-    + formatDuration(elapsedMs()) + ' elapsed'
+    + (state.timed ? (state.timeUp ? 'Time ran out · ' : 'Timed · ') : '')
+    + formatDuration(elapsedMs())
+    + (state.timed ? ' of ' + formatDuration(timeLimitMs()) : ' elapsed')
     + (answeredN ? ' · ' + formatItemTime(paceMs(answeredN))
                  + (tutor() ? ' per item to answer' : ' per item') : '');
+  document.getElementById('timeUpNote').hidden = !state.timeUp;
   /* What most people do next is work through what they missed, so that is
      the first button; going back to wherever the block ended is second, and
      says which item that is. */
@@ -1360,12 +1414,15 @@ document.getElementById('backToExamBtn').addEventListener('click', () => {
   scrollQuestionTop();
 });
 
-document.getElementById('downloadBtn').addEventListener('click', () => {
+/* The results screen and the start screen of a scored block both offer this. */
+function downloadResults(){
   const {correct, incorrect, unanswered, total} = computeScore();
   const pct = Math.round((correct/total)*100);
   let lines = [EXAM.title + ' - Results',
     EXAM.label ? EXAM.label : null,
     tutor() ? 'Tutor mode: each answer was checked as it was given' : null,
+    state.timed ? 'Timed: ' + formatDuration(timeLimitMs()) + ' limit'
+                  + (state.timeUp ? ', and time ran out' : '') : null,
     `Score: ${correct} of ${total} correct (${pct}%)`,
     `Incorrect: ${incorrect}    Unanswered: ${unanswered}`,
     `Time elapsed: ${formatDuration(elapsedMs())}`,
@@ -1408,7 +1465,9 @@ document.getElementById('downloadBtn').addEventListener('click', () => {
   SHELF_TRANSFER.download(
     'shelfpractice-' + EXAM.slug + '-' + new Date().toISOString().slice(0, 10) + '.txt',
     text);
-});
+}
+document.getElementById('downloadBtn').addEventListener('click', downloadResults);
+document.getElementById('startDownloadBtn').addEventListener('click', downloadResults);
 
 /* Import lives on the start screen, before an exam is under way: it writes
    over saved progress, which is a thing to do on the way in and not in the
@@ -1443,21 +1502,34 @@ function formatDuration(ms){
   const h = Math.floor(secs/3600), m = Math.floor((secs%3600)/60), s = secs%60;
   return `${pad(h)}:${pad(m)}:${pad(s)}`;
 }
-// "1 h 12 min elapsed", for the start screen, where seconds are noise
-function spentLabel(ms){
+// "1 h 12 min", for the start screen, where seconds are noise
+function humanDuration(ms){
   const mins = Math.floor(ms / 60000), h = Math.floor(mins / 60);
-  const txt = h ? h + ' h ' + (mins % 60) + ' min' : (mins ? mins + ' min' : 'under a minute');
-  return txt + ' elapsed';
+  return h ? h + ' h ' + (mins % 60) + ' min' : (mins ? mins + ' min' : 'under a minute');
+}
+/* A timed block shows what is left, an untimed one what has gone. The
+   countdown rounds up, so it reads 00:00:00 only at the moment it ends. */
+function counting(){ return state.timed && !state.graded; }
+function clockText(){
+  return counting()
+    ? formatDuration(Math.ceil(remainingMs() / 1000) * 1000)
+    : formatDuration(elapsedMs());
 }
 function tickTimer(){
-  const label = formatDuration(elapsedMs());
-  document.getElementById('timer').innerHTML =
-    '<span class="timer-label">' + (state.paused ? 'Paused: ' : 'Elapsed: ') + '</span>' + label;
-  document.getElementById('timer').classList.toggle('is-paused', state.paused);
+  const label = clockText();
+  const word = counting()
+    ? (state.paused ? 'Paused, remaining: ' : 'Remaining: ')
+    : (state.paused ? 'Paused: ' : 'Elapsed: ');
+  const timer = document.getElementById('timer');
+  timer.innerHTML = '<span class="timer-label">' + word + '</span>' + label;
+  timer.classList.toggle('is-paused', state.paused);
+  timer.classList.toggle('is-low', counting() && !state.paused && remainingMs() <= 5 * 60000);
   if(state.paused){
     const el = document.getElementById('pausedElapsed');
     if(el) el.textContent = label;
   }
+  // only a block someone is in can run out; the start screen just reports it
+  if(counting() && enteredExam && !state.paused && remainingMs() <= 0) timeUp();
 }
 setInterval(tickTimer, 1000);
 
@@ -1516,15 +1588,26 @@ function renderPauseFigures(){
   if(where){
     // which exam; how far through it is the "answered" figure below, and
     // "item 40 of 50" beside "39 / 50" read as two counts of one thing
-    where.textContent = [EXAM.title.replace(/\s+Practice Exam$/i, ''),
+    where.textContent = [SUBJECT,
                          (EXAM.label || '').replace(/^CMS\s+/i, ''),
-                         tutor() ? 'Tutor mode' : '']
+                         tutor() ? 'Tutor mode' : '',
+                         state.timed ? 'Timed' : '']
                         .filter(Boolean).join(' · ');
   }
+  /* The same bar the start screen draws, so the two say it the same way. */
+  const fill = document.getElementById('pauseFill');
+  if(fill){
+    fill.style.width = (answered / QUESTIONS.length) * 100 + '%';
+    document.getElementById('pauseBar').setAttribute('aria-label',
+      answered + ' of ' + QUESTIONS.length + ' items answered');
+  }
   /* Three figures, each with its own label, rather than one sentence strung
-     together with dots that read as a run-on. */
+     together with dots that read as a run-on. A timed block's clock figure
+     is the time left, since that is the one it is racing. */
   const ans = document.getElementById('pausedAnswered');
   if(ans) ans.textContent = answered + ' / ' + QUESTIONS.length;
+  const clockLabel = document.getElementById('pausedElapsedLabel');
+  if(clockLabel) clockLabel.textContent = counting() ? 'left' : 'elapsed';
   const pace = document.getElementById('pausedPace');
   if(pace){
     document.getElementById('pausedPaceWrap').style.display = answered ? '' : 'none';
@@ -1666,7 +1749,7 @@ document.addEventListener('keydown', (e) => {
     // on the start screen only Enter does anything: begin, or resume
     if(e.key === 'Enter' && !(t && t.closest && t.closest('button, summary, a')) &&
        document.getElementById('startScreen').style.display !== 'none'){
-      const resuming = document.getElementById('resumeRow').style.display !== 'none';
+      const resuming = !document.getElementById('resumeRow').hidden;
       document.getElementById(resuming ? 'resumeBtn' : 'beginBtn').click();
     }
     return;
@@ -1766,73 +1849,329 @@ function enterExam(){
   }
 }
 
-/* Which mode the start screen offers first: the one last chosen in this
-   browser. Like the text size it is a preference rather than progress, so it
-   lives under its own key and outlives any one exam's saved state. */
+/* Which mode and which clock the start screen offers first: the ones last
+   chosen in this browser. Like the text size they are preferences rather than
+   progress, so they live under their own keys and outlive any one exam's
+   saved state. */
 const MODE_KEY = 'shelfpractice_mode';
+const CLOCK_KEY = 'shelfpractice_clock';
 function preferredMode(){
   try{ return localStorage.getItem(MODE_KEY) === 'tutor' ? 'tutor' : 'exam'; }
   catch(e){ return 'exam'; }
+}
+function preferredClock(){
+  try{ return localStorage.getItem(CLOCK_KEY) === 'timed' ? 'timed' : 'untimed'; }
+  catch(e){ return 'untimed'; }
 }
 function pickedMode(){
   const r = document.querySelector('input[name="mode"]:checked');
   return r && r.value === 'tutor' ? 'tutor' : 'exam';
 }
+function pickedClock(){
+  const r = document.querySelector('input[name="clock"]:checked');
+  return r && r.value === 'timed' ? 'timed' : 'untimed';
+}
 function showModePick(mode){
   document.querySelectorAll('input[name="mode"]').forEach(r => { r.checked = r.value === mode; });
 }
+function showClockPick(clock){
+  document.querySelectorAll('input[name="clock"]').forEach(r => { r.checked = r.value === clock; });
+  renderClockNote();
+}
+/* The line under the clock says what the choice will do, and the button says
+   which one it is about to start. */
+function renderClockNote(){
+  const timed = pickedClock() === 'timed';
+  document.getElementById('clockNote').textContent = timed
+    ? 'The clock starts at ' + formatDuration(timeLimitMs()) + ' and ends the block at zero, '
+      + 'as the real form does. Pause still stops it.'
+    : 'No limit. The clock counts up, and Pause stops it whenever you step away.';
+  document.getElementById('beginLabel').textContent = timed ? 'Begin timed exam' : 'Begin exam';
+}
+document.querySelectorAll('input[name="clock"]').forEach(r =>
+  r.addEventListener('change', renderClockNote));
 
-/* The start screen in one of its two states. A block with nothing in it
-   offers the mode and Begin; a block with progress offers Resume, names the
-   mode it is being worked in, and keeps the choice out of reach, since the
-   mode is fixed for the attempt and Start over is how it is chosen again. */
+/* The block's own figures, which do not change with its state. */
+document.getElementById('factItems').textContent = QUESTIONS.length;
+document.getElementById('factPace').textContent =
+  'per item, ' + humanDuration(timeLimitMs()) + ' in all';
+document.getElementById('timedName').textContent = 'Timed, ' + humanDuration(timeLimitMs());
+
+/* ---------- this subject's other forms ---------- */
+
+/* Every form of the subject, newest first, in the order the exam list uses,
+   so the side column and the list agree on what "next" means. Their saved
+   progress is read the way the list reads it, without loading their data. */
+const SHORT_SUBJECT = {'Obstetrics and Gynecology': 'OB/GYN'};
+const subjectName = SHORT_SUBJECT[SUBJECT] || SUBJECT;
+const formCollator = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'});
+const SIBLINGS = (window.EXAMS || [])
+  .filter(e => (e.title.replace(/\s+Practice Exams?$/i, '') || e.title) === SUBJECT)
+  .sort((a, b) => formCollator.compare(b.label || b.title, a.label || a.title));
+function formName(e){ return (e.label || e.title).replace(/^CMS\s+/i, ''); }
+
+function hasProgress(){
+  return Object.keys(state.answers).length > 0 || state.graded ||
+         state.paused || elapsedMs() > 0;
+}
+/* Where a form stands: this one from the live state, the others from what
+   their own pages saved. */
+function standingOf(e){
+  let s;
+  if(e.slug === EXAM.slug){
+    if(!hasProgress()) return {kind: 'new'};
+    s = state;
+  }else{
+    s = window.SHELF_TRANSFER ? SHELF_TRANSFER.readState(e) : null;
+    if(!s) return {kind: 'new'};
+  }
+  if(s.graded && s.score && s.score.total){
+    return {kind: 'done', correct: s.score.correct, total: s.score.total,
+            pct: Math.round((s.score.correct / s.score.total) * 100)};
+  }
+  const answered = Object.keys(s.answers || {}).length;
+  if(answered || s.elapsedMs || s.runningSince){
+    const total = e.slug === EXAM.slug ? QUESTIONS.length : (e.items || 0);
+    return {kind: 'going', answered, total};
+  }
+  return {kind: 'new'};
+}
+
+function renderForms(){
+  const card = document.getElementById('formsCard');
+  card.hidden = SIBLINGS.length < 2;
+  if(card.hidden) return;
+  document.getElementById('formsHead').textContent = 'Your ' + subjectName + ' forms';
+  const list = document.getElementById('formList');
+  list.innerHTML = '';
+  SIBLINGS.forEach(e => {
+    const here = e.slug === EXAM.slug;
+    const p = standingOf(e);
+    const row = document.createElement(here ? 'div' : 'a');
+    row.className = 'form-row' + (here ? ' is-here' : '');
+    if(!here) row.href = 'exam.html?exam=' + encodeURIComponent(e.slug);
+    let said, stateHTML;
+    if(p.kind === 'done'){
+      said = p.pct + '%, ' + p.correct + ' of ' + p.total + ' correct';
+      stateHTML = '<span><b>' + p.pct + '%</b> · ' + p.correct + ' of ' + p.total + '</span>';
+    }else if(p.kind === 'going'){
+      said = p.answered + ' of ' + p.total + ' answered';
+      const w = p.total ? Math.min(100, (p.answered / p.total) * 100) : 0;
+      stateHTML = '<span class="mini-track" aria-hidden="true"><span class="mini-fill" style="width:'
+                + w + '%"></span></span>' + p.answered + ' of ' + p.total;
+    }else{
+      said = 'not started';
+      stateHTML = 'Not started';
+    }
+    row.innerHTML = '<span class="form-name">' + escapeHtml(formName(e))
+      + (here ? '<span class="here-tag">This form</span>' : '') + '</span>'
+      + '<span class="form-state">' + stateHTML + '</span>';
+    if(!here) row.setAttribute('aria-label', formName(e) + ', ' + said);
+    const li = document.createElement('li');
+    li.append(row);
+    list.append(li);
+  });
+}
+
+/* Once a form is scored, the useful question is which one to take next: the
+   newest of the subject not yet started, or failing that the newest one left
+   half done. With every form scored there is nothing to suggest. */
+function renderNextUp(){
+  const card = document.getElementById('nextCard');
+  card.hidden = true;
+  if(!state.graded) return;
+  const others = SIBLINGS.filter(e => e.slug !== EXAM.slug)
+                         .map(e => ({e, p: standingOf(e)}));
+  const fresh = others.find(x => x.p.kind === 'new');
+  const going = others.find(x => x.p.kind === 'going');
+  const pick = fresh || going;
+  if(!pick) return;
+  const name = formName(pick.e);
+  document.getElementById('nextSay').textContent = fresh
+    ? name + ' is the newest ' + subjectName + ' form you have not started.'
+    : name + ' is still under way: ' + pick.p.answered + ' of ' + pick.p.total + ' answered.';
+  document.getElementById('nextGoLabel').textContent = (fresh ? 'Start ' : 'Resume ') + name;
+  document.getElementById('nextGo').href = 'exam.html?exam=' + encodeURIComponent(pick.e.slug);
+  card.hidden = false;
+}
+
+/* "today", "yesterday", or the date, the way the exam list says it. */
+function whenSaid(ms){
+  if(!ms) return '';
+  const d = new Date(ms), now = new Date();
+  const day = x => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+  const diff = Math.round((day(now) - day(d)) / 86400000);
+  if(diff <= 0) return 'today';
+  if(diff === 1) return 'yesterday';
+  return d.toLocaleDateString(undefined, {month: 'short', day: 'numeric'});
+}
+
+function itemCount(n){ return n + (n === 1 ? ' item' : ' items'); }
+
+/* ---------- the start screen ---------- */
+
+/* One of three states. A block with nothing in it says what it is and offers
+   the mode, the clock and Begin. A block under way says where it stands and
+   how its pace is going, and offers Resume. A scored block gives the score
+   and the way into what was missed. The choices stay out of reach once a
+   block has begun: they are fixed for the attempt, and Start over is how they
+   are chosen again. */
 function renderStart(){
-  const hasProgress = Object.keys(state.answers).length > 0 || state.graded ||
-                      state.paused || elapsedMs() > 0;
-  document.getElementById('resumeRow').style.display = hasProgress ? 'flex' : 'none';
-  document.getElementById('resumeMeta').style.display = hasProgress ? '' : 'none';
-  document.getElementById('beginRow').style.display = hasProgress ? 'none' : 'flex';
-  document.getElementById('modePick').style.display = hasProgress ? 'none' : '';
-  if(!hasProgress){
+  const going = hasProgress();
+  const graded = going && state.graded;
+  document.getElementById('freshBlock').hidden = going;
+  document.getElementById('progressBlock').hidden = !going || graded;
+  document.getElementById('scoreBlock').hidden = !graded;
+  document.getElementById('resumeRow').hidden = !going;
+  document.getElementById('startImportBtn').hidden = graded;
+  document.getElementById('startDownloadBtn').hidden = !graded;
+  renderForms();
+  renderNextUp();
+
+  const note = document.getElementById('examNote');
+  const foot = document.getElementById('startFootText');
+  if(!going){
+    note.textContent = (SIBLINGS.length > 1 && SIBLINGS[0].slug === EXAM.slug)
+      ? 'Newest of ' + SIBLINGS.length + ' ' + subjectName + ' forms' : '';
+    foot.textContent = 'Progress saves in this browser only.';
     showModePick(preferredMode());
+    showClockPick(preferredClock());
     return;
   }
-  /* Someone coming back wants to carry on, so the button says exactly where
-     it goes, the bar says how far along they are, and the instructions they
-     have already read fold away under their heading. */
+
   const answered = Object.keys(state.answers).length;
-  document.getElementById('resumeLabel').textContent =
-    (state.graded && state.onResults) ? 'Back to your results'
-      : (state.graded ? 'Continue reviewing' : 'Resume exam');
-  document.getElementById('resumeCount').textContent =
-    (tutor() ? 'Tutor mode · ' : '') + answered + ' of ' + QUESTIONS.length + ' answered';
-  document.getElementById('resumeState').textContent = state.graded && state.score
-    ? 'Scored ' + state.score.correct + ' / ' + state.score.total
-    : spentLabel(elapsedMs());
-  document.getElementById('resumeFill').style.width = (answered / QUESTIONS.length) * 100 + '%';
+  const total = QUESTIONS.length;
+  const marked = markedIndexes();
+  const resume = document.getElementById('resumeLabel');
+  const markedBtn = document.getElementById('startMarkedBtn');
+  const missedBtn = document.getElementById('startMissedBtn');
+
+  if(graded){
+    note.textContent = state.gradedAt ? 'Finished ' + whenSaid(state.gradedAt) : 'Scored';
+    foot.textContent = 'Starting over clears this score. Download it first to keep a copy.';
+    const s = state.score || computeScore();
+    const pct = Math.round((s.correct / s.total) * 100);
+    document.getElementById('startPct').textContent = pct + '%';
+    document.getElementById('startFrac').innerHTML = '<b>' + s.correct + '</b> of ' + s.total + ' correct';
+    const answeredN = s.total - s.unanswered;
+    document.getElementById('scoreMeta').textContent = [
+      tutor() ? 'Tutor mode' : 'Exam mode',
+      state.timed ? (state.timeUp ? 'time ran out' : 'timed') : '',
+      humanDuration(elapsedMs()),
+      answeredN ? formatItemTime(paceMs(answeredN)) + ' per item' : ''
+    ].filter(Boolean).join(' · ');
+    [['segC', 'keyC', s.correct], ['segX', 'keyX', s.incorrect], ['segU', 'keyU', s.unanswered]]
+      .forEach(([seg, key, n]) => {
+        const el = document.getElementById(seg);
+        el.style.flex = n + ' 1 0';
+        el.hidden = !n;
+        document.getElementById(key).textContent = n;
+      });
+    document.getElementById('splitBar').setAttribute('aria-label',
+      s.correct + ' correct, ' + s.incorrect + ' incorrect, ' + s.unanswered + ' unanswered');
+    resume.textContent = state.onResults ? 'Back to your results' : 'Continue reviewing';
+    const missed = incorrectIndexes().length;
+    missedBtn.hidden = !missed;
+    missedBtn.textContent = 'Review missed items (' + missed + ')';
+    markedBtn.hidden = true;
+    return;
+  }
+
+  /* Under way: the button says exactly where it goes, the figures say how
+     far along the block is, and the controls fold away under their heading. */
+  const last = whenSaid(state.savedAt);
+  note.textContent = last ? 'Last worked on ' + last : '';
+  foot.textContent = 'The mode and clock are fixed for this attempt. Start over to change them.';
+  document.getElementById('resumeCount').textContent = answered + ' of ' + total + ' answered';
+  document.getElementById('resumeMode').textContent =
+    (tutor() ? 'Tutor mode' : 'Exam mode') + ', ' + (state.timed ? 'timed' : 'untimed')
+    + (state.paused ? ', paused' : '');
+  document.getElementById('resumeFill').style.width = (answered / total) * 100 + '%';
+  document.getElementById('resumeTrack').setAttribute('aria-label',
+    answered + ' of ' + total + ' items answered');
+  document.getElementById('figNext').textContent = 'Item ' + currentQ().n;
+  const figMarked = document.getElementById('figMarked');
+  figMarked.textContent = marked.length ? itemCount(marked.length) : 'None';
+  figMarked.classList.toggle('is-marked', marked.length > 0);
+  document.getElementById('figTimeLabel').textContent = state.timed ? 'Left' : 'Elapsed';
+  document.getElementById('figTime').textContent =
+    humanDuration(state.timed ? remainingMs() : elapsedMs());
+
+  /* Pace is time per answered item, measured the way the results screen
+     measures it, and set beside the 90 seconds the real form allows. */
+  const pace = answered ? paceMs(answered) : 0;
+  // a record with no item times (one saved before they were kept) has no pace
+  const paced = pace >= 1000;
+  document.getElementById('figPaceWrap').hidden = !paced;
+  document.getElementById('figPace').textContent = formatItemTime(pace);
+  document.getElementById('figPaceUnit').textContent = tutor() ? 'per item to answer' : 'per item';
+  const left = total - answered;
+  const bits = [];
+  if(tutor()){
+    const t = checkedTally();
+    if(t.checked) bits.push(t.correct + ' of ' + t.checked + ' checked so far are right.');
+  }
+  if(state.timed){
+    bits.push(left
+      ? humanDuration(remainingMs()) + ' left for ' + itemCount(left) + ': '
+        + formatItemTime(remainingMs() / left) + ' per item from here.'
+      : 'Every item answered, with ' + humanDuration(remainingMs()) + ' to spare.');
+  }else if(paced){
+    const rest = Math.round((left * pace) / 60000) * 60000;
+    bits.push((pace <= SHELF_PACE_MS ? 'Under' : 'Over') + ' the '
+      + formatItemTime(SHELF_PACE_MS) + ' shelf pace.'
+      + (left ? ' At this rate the last ' + itemCount(left) + ' take '
+                + (rest ? 'about ' + humanDuration(rest) : 'under a minute') + '.' : ''));
+  }
+  document.getElementById('paceNote').textContent = bits.join(' ');
+
+  resume.textContent = 'Resume at item ' + currentQ().n;
+  markedBtn.hidden = !marked.length;
+  document.getElementById('startMarkedLabel').textContent =
+    'Go to marked items (' + marked.length + ')';
+  missedBtn.hidden = true;
 }
 
 document.getElementById('beginBtn').addEventListener('click', () => {
   state.mode = pickedMode();
-  try{ localStorage.setItem(MODE_KEY, state.mode); }catch(e){}
+  state.timed = pickedClock() === 'timed';
+  try{
+    localStorage.setItem(MODE_KEY, state.mode);
+    localStorage.setItem(CLOCK_KEY, state.timed ? 'timed' : 'untimed');
+  }catch(e){}
   enterExam();
 });
 /* Resume on the start screen is already the decision to carry on, so an exam
-   left paused does not stop at the pause card to be resumed a second time. */
-document.getElementById('resumeBtn').addEventListener('click', () => {
+   left paused does not stop at the pause card to be resumed a second time.
+   The two shortcuts beside it are the same decision with a destination: the
+   first marked item, or the first one missed, from which Next incorrect and
+   the review grid take over. */
+function enterAt(i){
   state.paused = false;
   enterExam();
+  if(i >= 0) goToItem(i);
+}
+document.getElementById('resumeBtn').addEventListener('click', () => enterAt(-1));
+document.getElementById('startMarkedBtn').addEventListener('click', () => {
+  const list = markedIndexes();
+  enterAt(list.length ? list[0] : -1);
 });
-/* Starting over is starting again, and starting is where the mode is chosen,
-   so it lands on the fresh start screen with the mode it had still selected
-   rather than going straight in. One more Enter, and the choice is real. */
+document.getElementById('startMissedBtn').addEventListener('click', () => {
+  const list = incorrectIndexes();
+  enterAt(list.length ? list[0] : -1);
+});
+/* Starting over is starting again, and starting is where the mode and the
+   clock are chosen, so it lands on the fresh start screen with the ones it
+   had still selected rather than going straight in. One more Enter, and the
+   choice is real. */
 document.getElementById('startOverBtn').addEventListener('click', () => {
   // this throws away everything, so it asks first — the same guard Restart has
-  if(!confirm('Start this exam over? This clears your answers, highlights and score.')) return;
-  const was = state.mode;
+  if(!confirm('Start this exam over? This clears your answers, highlights, notes and score.')) return;
+  const wasMode = state.mode, wasClock = state.timed ? 'timed' : 'untimed';
   clearProgress(false);
   renderStart();
-  showModePick(was);
+  showModePick(wasMode);
+  showClockPick(wasClock);
   document.getElementById('beginBtn').focus();
 });
 document.getElementById('checkBtn').addEventListener('click', checkAnswer);
@@ -2158,20 +2497,18 @@ loadState();
 if(!enteredThisSession()) bankAbandonedClock();
 renderPause();
 
-/* The splash covers the real work — the manifest, this exam's data.js and the
-   lab values all have to load before we get here. There is nothing left to
-   wait for at this point, so show the start screen straight away rather than
-   holding it behind a timer. */
+/* The loading screen covers the real work — the manifest, this exam's
+   data.js and the lab values all have to load before we get here. There is
+   nothing left to wait for at this point, so show the start screen straight
+   away rather than holding it behind a timer. */
 document.getElementById('loadingScreen').style.display = 'none';
 
 if(enteredThisSession()){
   // same tab, already working here: a reload should not interrupt
   enterExam();
 }else{
-  document.getElementById('startScreen').style.display = 'flex';
+  document.getElementById('startScreen').style.display = 'block';
   renderStart();
-  // a first visit gets the instructions open; a returning one has read them
-  if(document.getElementById('beginRow').style.display !== 'none'){
-    document.getElementById('startHelp').open = true;
-  }
+  // a first visit gets the controls open; a returning one has read them
+  document.getElementById('startHelp').open = !hasProgress();
 }
