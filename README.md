@@ -294,6 +294,13 @@ first visit and hides once any exam has been started; an exam's start screen
 carries the same link under **Begin**. All three pages carry a `noindex` meta
 tag, since the site is passed between people who already know what it is.
 
+Above both, the landing page carries a notice of what is new, a white strip
+with a **New** chip so it reads as neither an exam row nor the navy tour card.
+It says *Now with tutor and timed mode!* and goes for good once its close
+button is pressed, remembered per browser under `shelf_news_dismissed_modes`.
+The key names this notice, so a later one takes a key of its own and shows to
+everyone again.
+
 A **Pause** button in the toolbar (or the <kbd>Esc</kbd> key) stops the clock and
 hides the question behind an overlay until you resume. The elapsed time is banked
 rather than derived from a start timestamp, so paused time is excluded, the pause
