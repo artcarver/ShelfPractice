@@ -168,6 +168,7 @@
   .status-head p{margin:0;}
   .status-big{font-size:var(--fs-lg);font-weight:700;color:var(--navy-dark);font-variant-numeric:tabular-nums;}
   .status-mode{font-size:var(--fs-sm);color:var(--muted);}
+  .status-act{margin-left:10px;font-size:var(--fs-sm);}
   .status-track{margin-top:10px;height:8px;border-radius:var(--r-pill);background:#e1e8ee;overflow:hidden;}
   .status-fill{height:100%;background:var(--answered);border-radius:inherit;}
   .status-figs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:16px 0 0;}
@@ -538,6 +539,10 @@
   /* Timed mode's last five minutes: the caution amber the results use for an
      item that ran long, not the incorrect red, since nothing is wrong yet. */
   .timer.is-low{color:var(--slow);font-weight:600;}
+  /* Beside the countdown, quiet until it is wanted: the way out of the clock
+     for someone it is doing more harm than good. */
+  .timer-off{font-size:var(--fs-xs);color:var(--muted);}
+  .timer-off:hover{color:var(--navy);}
   .time-up-note{
     margin:-6px 0 18px;padding:10px 14px;
     border:1px solid #ecd9b4;border-radius:var(--r-sm);
@@ -548,6 +553,19 @@
 
   /* paused overlay */
   #pauseScreen{z-index:300;}
+  /* Time is up: the pause card's shape, with the caution amber the clock wore
+     for its last five minutes, and two buttons of equal width side by side. */
+  #timeUpScreen{z-index:310;}
+  .pause-card.time-card .time-icon{background:#fbf4e6;color:var(--slow);}
+  .time-card h1:focus{outline:none;}
+  .time-say{margin:18px 0 0;font-size:var(--fs-base);color:var(--text);line-height:1.55;}
+  .time-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px;}
+  .time-card .time-actions .btn{
+    justify-content:center;margin-top:0;padding:0 16px;
+  }
+  @media (max-width:560px){
+    .time-actions{grid-template-columns:1fr;}
+  }
   .pause-card{
     background:#fff;color:var(--text);
     border-radius:var(--r-lg);
@@ -585,6 +603,8 @@
     font-size:var(--fs-md);
   }
   .pause-say{margin:12px 0 0;font-size:var(--fs-sm);color:var(--muted);}
+  .pause-timer-off{display:inline-flex;align-items:center;min-height:36px;margin-top:6px;font-size:var(--fs-sm);}
+  .pause-timer-off[hidden]{display:none;}
   .pause-foot{
     display:flex;justify-content:center;align-items:center;gap:6px 14px;flex-wrap:wrap;
     margin-top:22px;padding-top:14px;border-top:1px solid var(--divider);
@@ -1230,6 +1250,8 @@
     .mark-flag, .answered-note, .timer{white-space:nowrap;}
     .subbar-status{gap:10px;}
     .timer:not(.is-paused) .timer-label{display:none;}
+    /* no room for a fourth thing on the line; the pause card offers it */
+    .timer-off{display:none;}
     /* A lab table as wide as its columns cannot fit a phone: it keeps its
        indent small, and scrolls sideways on its own rather than taking the
        whole page with it. */

@@ -153,7 +153,8 @@
      that lost its mode on the way across would come back as an exam-mode one,
      with every item it had already checked hidden again. */
   const ENUMS = {mode: ['exam', 'tutor']};
-  const NUMS = ['idx','elapsedMs','runningSince','itemSince','itemSinceN','gradedAt'];
+  const NUMS = ['idx','elapsedMs','runningSince','itemSince','itemSinceN','gradedAt',
+                'timerOffAt'];
   /* A timed block that lost `timed` on the way across would come back
      counting up, with no limit on it. */
   const BOOLS = ['notesOpen','graded','paused','onResults','timed','timeUp'];
@@ -169,6 +170,8 @@
     BOOLS.forEach(k => { if(typeof raw[k] === 'boolean') out[k] = raw[k]; });
     Object.keys(ENUMS).forEach(k => { if(ENUMS[k].indexOf(raw[k]) !== -1) out[k] = raw[k]; });
     if(raw.score && typeof raw.score === 'object') out.score = raw.score;
+    // a timed block that ran out and kept going: its score at the limit
+    if(raw.scoreAtTimeUp && typeof raw.scoreAtTimeUp === 'object') out.scoreAtTimeUp = raw.scoreAtTimeUp;
     if(raw.notesPos && typeof raw.notesPos === 'object') out.notesPos = raw.notesPos;
     return out;
   }

@@ -80,7 +80,32 @@
     </div>
     <button class="btn" id="resumeExamBtn"><span>Resume exam</span><kbd>Esc</kbd></button>
     <p class="pause-say">The clock is stopped and the question stays hidden until you resume.</p>
+    <button type="button" class="text-link pause-timer-off" id="pauseTimerOffBtn" hidden>Turn off the timer for the rest of this block</button>
     <div class="pause-foot"><a href="index.html">Back to the exam list</a><span aria-hidden="true">&middot;</span><span>Progress is saved</span></div>
+  </div>
+</div>
+
+<!-- A timed block at zero. The clock is stopped and the question hidden until
+     one of the two is chosen: end there, as the real form does, or carry on
+     without the timer. -->
+<div class="splash" id="timeUpScreen" style="display:none" role="dialog" aria-modal="true"
+     aria-labelledby="timeUpHead" aria-describedby="timeUpSay">
+  <div class="pause-card time-card">
+    <div class="pause-icon time-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="14" r="7"/><path d="M12 14V10.5"/><path d="M10 3h4"/><path d="M12 3v4"/></svg></div>
+    <h1 id="timeUpHead" tabindex="-1">Time is up</h1>
+    <div class="pause-where">The <span id="timeUpLimit"></span> limit has run out.</div>
+    <div class="pause-stats">
+      <div><b id="timeUpAnswered">0 / 0</b><span>answered</span></div>
+      <div><b id="timeUpMarked">0</b><span>marked</span></div>
+    </div>
+    <p class="time-say" id="timeUpSay">On test day the block would end here. You can end it now and see
+      your score, or keep going without the timer.</p>
+    <div class="time-actions">
+      <button type="button" class="btn" id="timeEndBtn">End and see my score</button>
+      <button type="button" class="btn secondary" id="timeKeepBtn">Keep going, untimed</button>
+    </div>
+    <p class="pause-say">If you keep going, your results will show where you stood when time
+      ran out as well as your final score.</p>
   </div>
 </div>
 
@@ -113,7 +138,8 @@
 
         <!-- How the block shows its answers, and whether it runs against a
              clock. Both are offered only on a fresh start: they are fixed for
-             the attempt, and Start over offers them again. -->
+             the attempt, and Start over offers them again. A timed block can
+             still turn its timer off partway, but not back on. -->
         <fieldset class="mode-pick" id="modePick">
           <legend>When to see the answers</legend>
           <div class="pick-grid">
@@ -152,7 +178,8 @@
       <div class="start-status" id="progressBlock" hidden>
         <div class="status-head">
           <p class="status-big" id="resumeCount"></p>
-          <p class="status-mode" id="resumeMode"></p>
+          <p class="status-mode"><span id="resumeMode"></span><button type="button"
+             class="text-link status-act" id="startTimerOffBtn" hidden>Turn off timer</button></p>
         </div>
         <div class="status-track" id="resumeTrack" role="img"><div class="status-fill" id="resumeFill"></div></div>
         <dl class="status-figs">
@@ -307,6 +334,9 @@
         <div class="subbar-status">
           <span class="answered-note" id="answeredNote"></span>
           <div class="timer" id="timer">Elapsed: 00:00:00</div>
+          <!-- a timed block only: drops the countdown for the rest of it -->
+          <button type="button" class="text-link timer-off" id="timerOffBtn" hidden
+                  title="Turn off the countdown for the rest of this block">Turn off timer</button>
         </div>
       </div>
       <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
@@ -342,7 +372,7 @@
       <!-- Results screen -->
       <div id="resultsScreen">
         <h1>Exam complete</h1>
-        <p class="time-up-note" id="timeUpNote" hidden>Time ran out, so the block ended itself. Anything left blank counts as unanswered.</p>
+        <p class="time-up-note" id="timeUpNote" hidden></p>
         <p>Select any item below to reopen it with the answer explanation. Narrow the list to the ones you missed, the ones you marked for review, or the ones you left a note on.</p>
 
         <div class="score-card">

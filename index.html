@@ -214,8 +214,8 @@
   .row-when{color:var(--faint);}
 
   .foot{margin-top:30px;font-size:var(--fs-xs);color:var(--faint);text-align:center;}
-  /* The tour lives here, along with the start screen's "Try a sample
-     question": always reachable, never in the way of the list. */
+  /* The tour lives here, and only here: always reachable, never in the way
+     of the list. */
   .foot a{color:var(--faint);text-decoration:underline;}
   .foot a:hover{color:var(--navy);}
   .foot .sep{margin:0 8px;opacity:.55;}
@@ -600,7 +600,7 @@
       a.innerHTML =
         '<div class="row-main">' +
           '<div class="row-form">' + subject + (e.label ? ' · ' + e.label : '') + '</div>' +
-          '<div class="row-len"><b>' + p.answered + '</b> of ' + p.total + ' answered' +
+          '<div class="row-len"><b>' + p.answered + '</b> of ' + p.total + ' answered' + tags(p) +
             (last ? '<span class="row-when"> · ' + last + '</span>' : '') + '</div>' +
         '</div>' +
         '<div class="row-go"><span>Resume</span>' + CHEV + '</div>';
