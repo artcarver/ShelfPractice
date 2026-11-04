@@ -178,10 +178,10 @@ much of it was written:
 
 | key | drawn as |
 | --- | --- |
-| `all` | Explanation written by AI, not transcribed from the form. |
-| `part` | Part of this explanation written by AI, not transcribed from the form. |
-| `objective` | Educational objective written by AI, not transcribed from the form. |
-| `objective+discussion` | Educational objective and discussion written by AI, not transcribed from the form. |
+| `all` | This explanation was written by AI to fill a gap in the original. |
+| `part` | Part of this explanation was written by AI to fill a gap in the original. |
+| `objective` | The educational objective was written by AI to fill a gap in the original. |
+| `objective+discussion` | The educational objective and discussion were written by AI to fill a gap in the original. |
 
     const WRITTEN = {"11": "all", "47": "part"};
 

@@ -678,13 +678,12 @@ function render(){
 
   const note = document.getElementById('answeredNote');
   if(note){
-    const tally = tutor() ? checkedTally() : null;
+    /* While the block is open this is a count, not a score, in either mode:
+       tutor mode's running score is on the review grid, a click away, rather
+       than in view beside every question. */
     if(state.graded){
       const s = state.score || computeScore();
       note.textContent = `Score: ${s.correct} of ${s.total} correct`;
-    }else if(tally && tally.checked){
-      // tutor mode keeps score as it goes, which is the point of it
-      note.textContent = `${tally.correct} of ${tally.checked} correct`;
     }else{
       // "of 50" is already in the Item box beside it; two "of 50"s read as
       // two counts of one thing
@@ -853,11 +852,11 @@ function choiceTable(q){
    number to one of these keys. Anything else is ignored rather than drawn,
    since a line nobody can read is worse than no line. */
 const WRITTEN_NOTE = {
-  all: 'Explanation written by AI, not transcribed from the form.',
-  part: 'Part of this explanation written by AI, not transcribed from the form.',
-  objective: 'Educational objective written by AI, not transcribed from the form.',
+  all: 'This explanation was written by AI to fill a gap in the original.',
+  part: 'Part of this explanation was written by AI to fill a gap in the original.',
+  objective: 'The educational objective was written by AI to fill a gap in the original.',
   'objective+discussion':
-    'Educational objective and discussion written by AI, not transcribed from the form.'
+    'The educational objective and discussion were written by AI to fill a gap in the original.'
 };
 function writtenNote(kind){
   const text = WRITTEN_NOTE[kind];
@@ -1133,7 +1132,10 @@ function openReview(){
     + key('u', blank, 'unanswered')
     + key('m', markedCount, 'marked for review')
     + key('n', notedCount, notedCount === 1 ? 'note' : 'notes');
-  document.getElementById('summaryRow').innerHTML = '';
+  /* Tutor mode's running score, said once in words above the grid. */
+  const tally = mixed ? checkedTally() : null;
+  document.getElementById('summaryRow').innerHTML = (tally && tally.checked)
+    ? '<span><b>' + tally.correct + ' of ' + tally.checked + '</b> correct so far</span>' : '';
   document.getElementById('finishBtn').style.display = state.graded ? 'none' : '';
   // in tutor mode the item still open is the one not yet checked, answered or not
   const first = document.getElementById('firstUnansweredBtn');

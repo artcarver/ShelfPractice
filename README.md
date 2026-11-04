@@ -132,9 +132,10 @@ Time column for a tutor block: the test that hides it, item times accounting
 for under a fifth of the block, exists for blocks saved before per-item
 timing, and an older tutor block read carefully would fail it.
 
-The subbar keeps score as you go ("9 of 12 correct"), and the item grid shows
-checked items in their result colours with the answered-but-unchecked ones in
-navy beside them. A tutor-mode score is named as one wherever it appears — the
+The running score ("9 of 12 correct so far") is on the Review grid, a click
+away, rather than in the subbar beside every question, which counts answers as
+it does in exam mode. The grid shows checked items in their result colours
+with the answered-but-unchecked ones in navy beside them. A tutor-mode score is named as one wherever it appears — the
 results line, the downloaded report, the exam list, the import dialog — since
 it was earned with each answer shown as it went in and is not the same figure
 as a cold one.
