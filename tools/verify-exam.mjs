@@ -243,12 +243,13 @@ if (chromium) {
         }
         if (i < questions.length) await page.click('#nextBtn2');
       }
+      await page.click('#reviewOpenBtn');
+      // tutor mode keeps its running score on the review grid, not the subbar
       if (mode === 'tutor') {
-        const tally = (await page.textContent('#answeredNote')).trim();
-        const want = `${questions.length} of ${questions.length} correct`;
+        const tally = (await page.textContent('#summaryRow')).trim();
+        const want = `${questions.length} of ${questions.length} correct so far`;
         if (tally !== want) fail(`tutor run: the running score reads "${tally}", not "${want}"`);
       }
-      await page.click('#reviewOpenBtn');
       await page.click('#finishBtn');
       await page.waitForSelector('#resultsScreen', { state: 'visible' });
       await page.waitForTimeout(400);
