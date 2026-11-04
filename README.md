@@ -295,13 +295,12 @@ above the list as well, which came out to leave the notice below as the one
 thing between the heading and the exams. All three pages carry a `noindex` meta
 tag, since the site is passed between people who already know what it is.
 
-Above the list, the landing page carries a notice of what is new, made to look
-like nothing else on the page: a butter-yellow card with a chunky edge, a
-tilted navy **New!** sticker, a chip for each mode and a stopwatch whose hand
-sweeps round twice and stops (it stands still under reduced motion, and drops
-out of a narrow window). It says *Now with tutor and timed mode!* and goes for
-good once its close button is pressed, remembered per browser under
-`shelf_news_dismissed_modes`.
+Above the list, the landing page carries a notice of what is new, the one
+navy card on a page of white panels: a yellow **New** ribbon across its
+corner, a scatter of confetti, and a tile for each mode with its icon in a
+yellow ring and a one-line description beside it. It says *Now with tutor and
+timed mode!* and goes for good once its close button is pressed, remembered
+per browser under `shelf_news_dismissed_modes`.
 The key names this notice, so a later one takes a key of its own and shows to
 everyone again.
 
