@@ -1676,20 +1676,15 @@ function clockText(){
 }
 function tickTimer(){
   const label = clockText();
-  // stopped because the item on screen is checked, and being read
-  const held = enteredExam && !state.paused && reviewing();
-  const word = held
-    ? (counting() ? 'Paused while reviewing, remaining: ' : 'Paused while reviewing: ')
-    : counting()
+  /* A tutor block's clock stopped on a checked item says nothing about it:
+     the figure simply stands still, the way question banks do it. */
+  const word = counting()
     ? (state.paused ? 'Paused, remaining: ' : 'Remaining: ')
     : (state.paused ? 'Paused: ' : 'Elapsed: ');
   const timer = document.getElementById('timer');
   timer.innerHTML = '<span class="timer-label">' + word + '</span>' + label;
   timer.classList.toggle('is-paused', state.paused);
-  timer.classList.toggle('is-held', held);
-  timer.title = held ? 'In tutor mode the clock stops while a checked item is on screen, '
-                     + 'and starts again on one you have not checked.' : '';
-  timer.classList.toggle('is-low', counting() && !state.paused && !held && remainingMs() <= 5 * 60000);
+  timer.classList.toggle('is-low', counting() && !state.paused && remainingMs() <= 5 * 60000);
   document.getElementById('timerOffBtn').hidden = !counting();
   if(state.paused){
     const el = document.getElementById('pausedElapsed');

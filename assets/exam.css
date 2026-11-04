@@ -536,8 +536,6 @@
   .progress-fill{height:100%;width:0;background:var(--navy);transition:width .25s;}
   .progress-fill.graded{background:var(--correct);}
   .timer.is-paused{color:var(--marked);font-weight:600;}
-  /* tutor mode, a checked item on screen: stopped, though not paused */
-  .timer.is-held{color:var(--marked);}
   /* Timed mode's last five minutes: the caution amber the results use for an
      item that ran long, not the incorrect red, since nothing is wrong yet. */
   .timer.is-low{color:var(--slow);font-weight:600;}
