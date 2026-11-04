@@ -192,8 +192,36 @@ function elapsedMs(){
 }
 function startClock(){
   if(timeUpOpen) return;   // stopped at the limit until a choice is made
-  if(!state.runningSince && !state.paused && !state.graded) state.runningSince = Date.now();
+  if(!state.runningSince && !state.paused && !state.graded && !reviewing())
+    state.runningSince = Date.now();
   startItemClock();   // guards itself; a no-op unless a question is on screen
+}
+
+/* Tutor mode: reading. Once an item is checked, what is on screen is its
+   answer and explanation, which is study, not work on the block. So the
+   block clock (and a timed block's countdown) stops the moment an item is
+   checked, stays stopped on any checked item you come back to, and starts
+   again on the first item you move to that you have not checked. The clock
+   then holds only the time spent answering, and reading never costs time on
+   a timed block. */
+function reviewing(){
+  if(!tutor() || state.graded || state.onResults) return false;
+  const q = QUESTIONS[state.idx];
+  return !!q && !!state.checked[q.n];
+}
+/* After every move, and on checking: stop the block clock on a checked item,
+   start it on one being worked. Only the block clock: a checked item's own
+   clock has already stopped for good. */
+function syncReviewClock(){
+  if(!enteredExam || state.paused || state.graded || timeUpOpen) return;
+  if(reviewing()){
+    if(state.runningSince){
+      state.elapsedMs += Date.now() - state.runningSince;
+      state.runningSince = null;
+    }
+  }else{
+    startClock();
+  }
 }
 function stopClock(){
   if(state.runningSince){
@@ -210,8 +238,8 @@ function startItemClock(){
   const q = QUESTIONS[state.idx];
   if(!q) return;
   /* A checked item's time is the time it took to answer. What follows is
-     reading the explanation, which the block clock keeps and the item's own
-     clock does not, so going back to it later adds nothing. */
+     reading the explanation, which neither clock keeps (see reviewing), so
+     going back to it later adds nothing. */
   if(state.checked[q.n]) return;
   state.itemSince = Date.now();
   state.itemSinceN = q.n;
@@ -296,8 +324,9 @@ function checkedTally(){
 }
 
 /* Time to answer, summed over the items that have one. In tutor mode this,
-   not the block clock, is what a per-item pace is made of: the block clock
-   also holds the time spent reading explanations. */
+   not the block clock, is what a per-item pace is made of. The block clock
+   now stops on a checked item too, so the two nearly agree, but a tutor
+   block saved before it did holds its reading time on the block clock. */
 function answerMs(){
   return QUESTIONS.reduce((t, q) => t + itemMsFor(q.n), 0);
 }
@@ -464,6 +493,7 @@ function checkAnswer(){
   if(unit.some(n => !state.answers[n])) return;
   stopItemClock();          // the item's time ends with its answer
   unit.forEach(n => { state.checked[n] = true; });
+  syncReviewClock();        // and the block clock stops while it is read
   saveState();
   render();
   nudgeToExplanation();
@@ -751,6 +781,7 @@ function goToItem(i){
   if(i < 0 || i >= QUESTIONS.length) return;
   stopItemClock();    // bank against the item being left, before idx moves
   state.idx = i;
+  syncReviewClock();  // a checked item stops the clock; an unchecked one starts it
   saveState();
   showQuestionView();
   render();
@@ -1359,10 +1390,10 @@ function buildResultsBody(){
      and there the column is worth keeping. */
   const timedMs = answerMs();
   const blockMs = elapsedMs();
-  /* A tutor block cannot predate per-item timing, and its item clocks stop at
-     each check while the block clock carries on through the explanations, so
-     the proportion is no test of anything there: a block read carefully would
-     lose its Time column for it. */
+  /* A tutor block cannot predate per-item timing, and one saved before the
+     block clock stopped on checked items carried on through the
+     explanations, so the proportion is no test of anything there: a block
+     read carefully would lose its Time column for it. */
   const anyTime = tutor() ? timedMs > 0
                 : (blockMs > 0 ? timedMs >= blockMs * 0.2 : timedMs > 0);
   const table = document.querySelector('.results-table');
@@ -1483,8 +1514,8 @@ function showResults(){
   document.getElementById('scoreFrac').textContent = '';
   const answeredN = total - unanswered;
   /* A tutor-mode score was worked with the answers coming in as it went, so
-     the line says so; and its pace is time to answer, since the block clock
-     also carries the time spent reading explanations. */
+     the line says so; and its pace is time to answer, made from the item
+     times (see answerMs). */
   /* A timed block says so, and says its time against the limit it had. */
   document.getElementById('scoreTime').textContent = (tutor() ? 'Tutor mode · ' : '')
     + (state.timed ? (state.timeUp ? 'Time ran out · ' : 'Timed · ')
@@ -1645,13 +1676,20 @@ function clockText(){
 }
 function tickTimer(){
   const label = clockText();
-  const word = counting()
+  // stopped because the item on screen is checked, and being read
+  const held = enteredExam && !state.paused && reviewing();
+  const word = held
+    ? (counting() ? 'Paused while reviewing, remaining: ' : 'Paused while reviewing: ')
+    : counting()
     ? (state.paused ? 'Paused, remaining: ' : 'Remaining: ')
     : (state.paused ? 'Paused: ' : 'Elapsed: ');
   const timer = document.getElementById('timer');
   timer.innerHTML = '<span class="timer-label">' + word + '</span>' + label;
   timer.classList.toggle('is-paused', state.paused);
-  timer.classList.toggle('is-low', counting() && !state.paused && remainingMs() <= 5 * 60000);
+  timer.classList.toggle('is-held', held);
+  timer.title = held ? 'In tutor mode the clock stops while a checked item is on screen, '
+                     + 'and starts again on one you have not checked.' : '';
+  timer.classList.toggle('is-low', counting() && !state.paused && !held && remainingMs() <= 5 * 60000);
   document.getElementById('timerOffBtn').hidden = !counting();
   if(state.paused){
     const el = document.getElementById('pausedElapsed');

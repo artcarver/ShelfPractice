@@ -116,13 +116,21 @@ says why, and reveals both at once. A set is the run of neighbouring items that
 print the same notice, which `verify-exam.mjs` holds every form to.
 
 An item's clock stops when it is checked, and does not start again when you
-come back to it: its time is the time it took to answer. The block clock runs
-on through the explanations, since that is study time too, so in tutor mode the
-pace on the pause card and the results screen is made from the item times —
-"per item to answer" — rather than from the block clock. For the same reason
-the results table always keeps its Time column for a tutor block: the test
-that hides it, item times accounting for under a fifth of the block, exists for
-blocks saved before per-item timing, and a careful tutor block would fail it.
+come back to it: its time is the time it took to answer. **The block clock
+stops too.** Once an item is checked, what is on screen is its answer and
+explanation, which is study rather than work on the block, so the block clock
+(or a timed block's countdown) stops the moment you check, stays stopped on any
+checked item you go back to, and starts again on the first item you move to
+that you have not checked. The subbar reads *Paused while reviewing* while it
+is stopped. The block's time is then the time spent answering, and reading
+never costs time on a timed block. A choice picked but not checked is still
+being worked, so the clock runs on it. In tutor mode the pace on the pause card
+and the results screen is made from the item times, "per item to answer",
+which agree with the block clock now but not for a tutor block saved before it
+stopped for reading. For the same reason the results table always keeps its
+Time column for a tutor block: the test that hides it, item times accounting
+for under a fifth of the block, exists for blocks saved before per-item
+timing, and an older tutor block read carefully would fail it.
 
 The subbar keeps score as you go ("9 of 12 correct"), and the item grid shows
 checked items in their result colours with the answered-but-unchecked ones in
