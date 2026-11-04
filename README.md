@@ -10,9 +10,10 @@ exam.html           The exam page — one shell shared by every exam,
                     selected with ?exam=<slug>
 walkthrough.html    What the exam screen is, shown with a working item in it
 assets/
-  theme.css         Design tokens shared by every page
+  theme.css         Design tokens shared by every page, and the site font
+  fonts/            Inter, the one typeface every page is set in, and its licence
   exam.css          Exam page styles
-  exam.js           Shared engine (navigation, grading, tutor mode,
+  exam.js           Shared engine (navigation, grading, tutor and timed mode,
                     highlighting, cross-outs, lab tables, saved progress)
   labvalues.css     Styles for the Lab Values reference panel
   labvalues.js      Lab Values data + panel (searchable, tabbed)
@@ -130,6 +131,74 @@ results line, the downloaded report, the exam list, the import dialog — since
 it was earned with each answer shown as it went in and is not the same figure
 as a cold one.
 
+### Timed mode
+
+Beside the mode, the start screen offers the clock: **Untimed**, which counts
+up with no limit, or **Timed**, which counts down from the real form's limit
+and ends the block itself at zero. The limit is 90 seconds an item, the pace
+the self-assessments and the shelf are both written to, so a 50-item form gets
+1 h 15 min; it is worked out from the item count rather than typed in, so a
+form of another length keeps the pace rather than the total. The toolbar clock
+reads *Remaining* and turns amber in the last five minutes. Pause still stops
+it, and so does leaving the page, the same as an untimed block.
+
+At zero the block is graded as it stands, exactly as End block would grade it,
+and the results screen says that time ran out and that blanks count as
+unanswered. The time on the block is held at the limit, since the tick that
+notices can land a second past it. Like the mode, the clock is fixed for the
+attempt, offered again by Start over, remembered per browser under its own key,
+and named wherever a score is (" · timed" on the exam list, "Time ran out" on
+the results line). Records saved before timed mode existed are untimed.
+
+### The start screen
+
+The start screen is a page of the site rather than a card on a wall of navy:
+the exam list's top bar, with **All exams** in it, over the exam in a white
+panel and a side column that drops under it on a phone. The heading is the
+subject, since that is what tells one exam from another, with the form in the
+chip above it. It has three states.
+
+- **Fresh:** what the block is in three figures (the item count, the shelf
+  pace and that it saves itself), then the mode and the clock, then
+  **Begin**, whose label says whether it is about to start a timed block.
+- **Under way:** how many are answered, on a bar, then four figures: the item
+  **Resume** goes to, how many are marked, the time gone (or left, in a timed
+  block) and the pace per item. The line under them sets that pace against the
+  1:30 shelf pace and says what the rest would take at it; a tutor block adds
+  how many of its checked answers were right. **Go to marked items** goes
+  straight to the first one you flagged.
+- **Scored:** the score, a bar of correct, incorrect and unanswered with their
+  counts beside it, and **Review missed items**, which opens the first one with
+  Next incorrect ready to step through the rest. **Download results** sits at
+  the foot, since Start over is the next thing that would throw the score away.
+
+The side column lists every form of the subject, newest first, with how each
+stands, so the next form is one click away rather than back on the list. A
+scored block adds **Next up**: the newest form of the subject not yet started,
+or failing that the newest one left half done. Under it are the controls, open
+on a first visit and folded after; a touch screen gets its own table, since it
+has no keys and no right button.
+
+The loading screen is the same page with the same header, drawn from the
+manifest before any question has arrived, so the name and form are on screen
+from the first frame. A link that names no exam gets a card that says so, names
+the closest forms (the same subject's nearest form numbers, or failing that the
+fewest letters away), and offers the whole list; one whose questions would not
+load offers **Try again**.
+
+### Typeface
+
+Every page is set in Inter, shipped with the site in `assets/fonts/` rather
+than taken from the system or fetched from anyone else. The system stack it
+replaced drew Segoe UI on Windows and Arial nearly everywhere else, which moved
+line lengths and the width of the choices from one machine to the next. The
+file is Inter 4.1's variable font, every weight in one file, cut to the
+characters the exams use: Latin with accents, Greek, superscripts and
+subscripts (Ca²⁺, CO₂), arrows and ≤ ≥ ≈ −. To recut it after a form brings a
+new character, subset `InterVariable.ttf` from the release with fontTools'
+`pyftsubset` to the same ranges plus the new one (`--flavor=woff2`, keeping the
+`tnum` feature the figures use). The OFL licence travels beside it.
+
 ### Carrying progress between browsers
 
 Everything an exam knows about you lives in this browser's `localStorage` and
@@ -230,9 +299,9 @@ hides the question behind an overlay until you resume. The elapsed time is banke
 rather than derived from a start timestamp, so paused time is excluded, the pause
 survives a reload, and the clock stops for good once the block is graded.
 
-The card covers the bar, so it restates where you are — the exam, the form and
-the item — and how the block stands on one line: time, how many are answered,
-and what that works out to an item. It is a glance, not a report; the figures
+The card covers the bar, so it restates where you are — the exam and the
+form — and how the block stands: a bar, then how many are answered, the time
+(what is left, in a timed block) and what that works out to an item. It is a glance, not a report; the figures
 worth studying belong to the results screen. Leaving from here is a link rather
 than a hunt for the back button, since everything is already saved.
 

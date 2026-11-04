@@ -8,6 +8,9 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%230b4a73'/%3E%3Crect x='5.4' y='5.6' width='3.2' height='12.8' rx='1.3' fill='%23fff'/%3E%3Crect x='10.4' y='8.2' width='3.2' height='10.2' rx='1.3' fill='%23fff'/%3E%3Crect x='15.4' y='10.6' width='3.2' height='7.8' rx='1.3' fill='%23fff'/%3E%3C/svg%3E">
 <title>Shelf Practice Exams</title>
+<!-- the site font, asked for before the stylesheet that names it so the first
+     paint is already in it rather than swapping a moment later -->
+<link rel="preload" href="assets/fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="assets/theme.css">
 <link rel="stylesheet" href="assets/transfer.css">
 <style>
@@ -290,14 +293,15 @@
     /* A tutor-mode score was earned with each answer shown as it went in, so
        it is named as one wherever it appears beside a score that was not. */
     const tutor = s.mode === 'tutor';
+    const timed = s.timed === true;
     if(s.graded && s.score && s.score.total){
       return {kind:'done', correct:s.score.correct, total:s.score.total,
-              pct: Math.round((s.score.correct / s.score.total) * 100), tutor:tutor};
+              pct: Math.round((s.score.correct / s.score.total) * 100), tutor:tutor, timed:timed};
     }
     const answered = Object.keys(s.answers || {}).length;
     if(answered || s.elapsedMs || s.runningSince)
       return {kind:'going', answered:answered, total:e.items || 0,
-              savedAt: s.savedAt || 0, tutor:tutor};
+              savedAt: s.savedAt || 0, tutor:tutor, timed:timed};
     return {kind:'new'};
   }
 
@@ -308,16 +312,22 @@
   }
   const CHEV = chevron('');
 
+  /* How a block was worked, where it was not the default: tutor mode, the
+     real form's clock, or both. */
+  function tags(p){
+    return (p.tutor ? ' · tutor' : '') + (p.timed ? ' · timed' : '');
+  }
+
   function row(e){
     const p = progressOf(e);
     let state = '', cta = 'Start';
     if(p.kind === 'done'){
       state = '<div class="row-state"><span class="pct">' + p.pct + '%</span> · '
-            + p.correct + ' of ' + p.total + ' correct' + (p.tutor ? ' · tutor' : '') + '</div>';
+            + p.correct + ' of ' + p.total + ' correct' + tags(p) + '</div>';
       cta = 'Review';
     }else if(p.kind === 'going'){
       state = '<div class="row-state"><b>' + p.answered + '</b> of ' + p.total
-            + ' answered' + (p.tutor ? ' · tutor' : '') + '</div>';
+            + ' answered' + tags(p) + '</div>';
       cta = 'Resume';
     }
 
@@ -556,7 +566,7 @@
       const where = p.kind === 'done'
         ? 'scored ' + p.pct + '%, ' + p.correct + ' of ' + p.total + ' correct'
         : p.answered + ' of ' + (e.items || '?') + ' answered';
-      const mode = p.tutor ? ', tutor mode' : '';
+      const mode = (p.tutor ? ', tutor mode' : '') + (p.timed ? ', timed' : '');
       lines.push('  ' + (e.title + (e.label ? ' ' + e.label : '')) + ' - ' + where + mode);
     });
     lines.push('', 'To load this into another browser, open the exam list there and',

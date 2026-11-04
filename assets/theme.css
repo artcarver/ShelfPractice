@@ -5,9 +5,30 @@
  * inventing its own. Page-specific rules live in index.html and exam.css and
  * are expected to reach for these variables rather than raw values.
  *
- * The scales are deliberately short — four radii, six type sizes. When a new
+ * The scales are deliberately short — four radii, seven type sizes. When a new
  * piece of UI needs a value, it takes the nearest step rather than adding one.
  */
+
+/* One typeface on every machine. A system stack drew the site in Segoe UI on
+   Windows and Arial nearly everywhere else, which changed line lengths, the
+   width of the choices and the look of the numbers from one laptop to the
+   next. Inter ships with the site instead, so nothing is fetched from anyone
+   else and it works offline from a saved copy.
+
+   The file is Inter 4.1's variable font (every weight in one file, with its
+   optical-size axis) cut down to the characters these exams use: Latin with
+   accents, Greek for alpha and beta, superscripts and subscripts for Ca²⁺ and
+   CO₂, arrows, and the maths signs ≤ ≥ ≈ −. A character outside that set
+   falls through to the system font rather than showing a box. The licence
+   travels beside it, as the OFL asks. */
+@font-face{
+  font-family:"Inter";
+  src:url("fonts/InterVariable.woff2") format("woff2");
+  font-weight:100 900;
+  font-style:normal;
+  font-display:swap;
+}
+
 :root{
   /* --- brand and surface --- */
   --navy:#0b4a73;          /* chrome, links, primary buttons */
@@ -57,16 +78,25 @@
   --r-pill:999px;
 
   /* --- type --- */
-  --font:"Segoe UI",Arial,Helvetica,sans-serif;
+  /* Inter first; the rest only paint until it arrives, or for a character it
+     does not carry */
+  --font:"Inter","Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
   --fs-xs:12px;            /* captions, toolbar labels */
   --fs-sm:13px;            /* dense UI text */
   --fs-base:14.5px;        /* body and question text */
   --fs-md:15.5px;          /* row titles, emphasised UI */
   --fs-lg:20px;            /* section headings */
   --fs-xl:23px;            /* page headings */
+  --fs-display:30px;       /* the exam's name on its start screen, the one
+                              place a heading has to hold the page on its own */
 
   /* --- elevation --- */
   --shadow-md:0 3px 14px rgba(11,74,115,.12);
+
+  /* The incorrect share of a score bar. Beside the correct green the full
+     incorrect red is nearly the same lightness, so the two only differed in
+     hue; this lighter step keeps the bar readable without colour vision. */
+  --incorrect-soft:#e08a7e;
 }
 
 *{box-sizing:border-box;}

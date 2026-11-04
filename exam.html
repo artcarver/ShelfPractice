@@ -8,6 +8,9 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%230b4a73'/%3E%3Crect x='5.4' y='5.6' width='3.2' height='12.8' rx='1.3' fill='%23fff'/%3E%3Crect x='10.4' y='8.2' width='3.2' height='10.2' rx='1.3' fill='%23fff'/%3E%3Crect x='15.4' y='10.6' width='3.2' height='7.8' rx='1.3' fill='%23fff'/%3E%3C/svg%3E">
 <title>Practice Exam</title>
+<!-- the site font, asked for before the stylesheet that names it so the first
+     paint is already in it rather than swapping a moment later -->
+<link rel="preload" href="assets/fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="assets/theme.css">
 <link rel="stylesheet" href="assets/exam.css">
 <link rel="stylesheet" href="assets/labvalues.css">
@@ -15,102 +18,226 @@
 </head>
 <body>
 
-<div class="splash" id="loadingScreen">
-  <div class="spinner"></div>
-  <div class="splash-text" id="loadingText">Loading&hellip;</div>
+<!-- Loading, and the two ways it can fail. The shell below reads the manifest
+     before anything else, so the exam's name and form are on screen from the
+     first frame and only the questions are still on their way. The page is the
+     same light one the start screen is, so loading into it is not a flash of
+     navy followed by something else. -->
+<div class="start-page" id="loadingScreen">
+  <header class="start-bar">
+    <a class="brand" href="index.html" title="All practice exams"><svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><rect x="1.5" y="1.5" width="21" height="21" rx="5.5"/><rect class="mark-bar" x="6" y="6" width="2.9" height="12" rx="1.2"/><rect class="mark-bar" x="10.6" y="8.4" width="2.9" height="9.6" rx="1.2"/><rect class="mark-bar" x="15.2" y="10.6" width="2.9" height="7.4" rx="1.2"/></svg><span class="brand-name">Shelf Practice</span></a>
+    <a class="bar-link" href="index.html"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7.5" height="7.5" rx="1"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1"/></svg><span>All exams</span></a>
+  </header>
+  <main class="start-wrap" id="bootWrap">
+    <section class="start-card" id="bootCard" aria-busy="true" aria-labelledby="bootName">
+      <div class="start-chips"><span class="form-chip" id="bootLabel" hidden></span></div>
+      <h1 id="bootName">Loading the exam</h1>
+      <p class="sub" id="bootSub" hidden></p>
+      <div class="boot-status" role="status">
+        <p id="loadingText">Loading&hellip;</p>
+        <div class="boot-track"><div class="boot-fill"></div></div>
+      </div>
+      <div class="boot-skel" aria-hidden="true">
+        <div class="skel-row three"><span></span><span></span><span></span></div>
+        <span class="skel-line"></span>
+        <div class="skel-row two"><span></span><span></span></div>
+        <span class="skel-btn"></span>
+      </div>
+    </section>
+    <aside class="start-side" id="bootSide" aria-hidden="true">
+      <div class="side-card skel-card"><span class="skel-line short"></span><span class="skel-line"></span><span class="skel-line"></span><span class="skel-line"></span><span class="skel-line part"></span></div>
+    </aside>
+
+    <!-- What a link that names no exam, or one whose questions would not load,
+         gets instead: what went wrong in a sentence, the nearest forms, and a
+         way out that is not the browser's Back button. -->
+    <section class="start-card msg-card" id="missCard" aria-labelledby="missHead" hidden>
+      <div class="msg-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></div>
+      <h1 id="missHead"></h1>
+      <p class="msg-say" id="missSay"></p>
+      <div id="missMatches" hidden>
+        <h2 class="side-h">Closest matches</h2>
+        <ul class="match-list" id="missList"></ul>
+      </div>
+      <div class="msg-actions">
+        <button type="button" class="btn" id="missRetry" hidden>Try again</button>
+        <a class="btn" id="missAll" href="index.html">See all exams</a>
+      </div>
+    </section>
+  </main>
 </div>
 
 <div class="splash" id="pauseScreen" style="display:none">
   <div class="pause-card">
-    <div class="pause-icon"><svg width="38" height="38" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg></div>
+    <div class="pause-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg></div>
     <h1>Exam paused</h1>
     <div class="pause-where" id="pauseWhere"></div>
+    <div class="pause-bar" id="pauseBar" role="img"><div class="pause-fill" id="pauseFill"></div></div>
     <div class="pause-stats">
       <div><b id="pausedAnswered">0 / 0</b><span>answered</span></div>
-      <div><b id="pausedElapsed">00:00:00</b><span>elapsed</span></div>
+      <div><b id="pausedElapsed">00:00:00</b><span id="pausedElapsedLabel">elapsed</span></div>
       <div id="pausedPaceWrap"><b id="pausedPace">0:00</b><span id="pausedPaceLabel">per item</span></div>
     </div>
-    <button class="btn" id="resumeExamBtn">Resume exam</button>
-    <div class="pause-foot"><a href="index.html">Back to the exam list</a> &middot; your progress is saved</div>
+    <button class="btn" id="resumeExamBtn"><span>Resume exam</span><kbd>Esc</kbd></button>
+    <p class="pause-say">The clock is stopped and the question stays hidden until you resume.</p>
+    <div class="pause-foot"><a href="index.html">Back to the exam list</a><span aria-hidden="true">&middot;</span><span>Progress is saved</span></div>
   </div>
 </div>
 
-<div class="splash" id="startScreen" style="display:none">
-  <div class="start-card">
-    <div class="form-chip" id="examLabel" style="display:none"></div>
-    <h1 id="examName"></h1>
-    <p class="sub" id="examSub"></p>
-    <div class="start-progress" id="resumeMeta" style="display:none">
-      <div class="start-progress-line"><span id="resumeCount"></span><span id="resumeState"></span></div>
-      <div class="start-progress-track"><div class="start-progress-fill" id="resumeFill"></div></div>
-    </div>
-    <div class="start-actions" id="resumeRow" style="display:none">
-      <button class="btn" id="resumeBtn"><span id="resumeLabel">Resume</span><kbd>Enter</kbd></button>
-      <button type="button" class="text-link start-over" id="startOverBtn" title="Clears your answers, highlights and score">Start over</button>
-    </div>
-    <!-- How the block shows its answers. Offered only on a fresh start: the
-         mode is fixed for the attempt, and Start over offers it again. -->
-    <fieldset class="mode-pick" id="modePick" style="display:none">
-      <legend class="sr-only">When to see the answers</legend>
-      <label class="mode-opt">
-        <input type="radio" name="mode" value="exam">
-        <span class="mode-text"><span class="mode-name">Exam mode</span>
-          <span class="mode-say">Answers and explanations when you end the block</span></span>
-      </label>
-      <label class="mode-opt">
-        <input type="radio" name="mode" value="tutor">
-        <span class="mode-text"><span class="mode-name">Tutor mode</span>
-          <span class="mode-say">Check each answer as you go, with its explanation</span></span>
-      </label>
-    </fieldset>
-    <div class="start-actions" id="beginRow" style="display:none">
-      <button class="btn" id="beginBtn">Begin exam<kbd>Enter</kbd></button>
-    </div>
-    <details class="start-help" id="startHelp">
-      <summary>How the exam works</summary>
-      <div class="start-how">
-        <div class="how-item">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5.5"/></svg>
-          <span>Click a choice, or press <b>A</b>&ndash;<b>E</b>, to answer</span>
-        </div>
-        <div class="how-item">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M5.8 5.8l12.4 12.4"/></svg>
-          <span>Right-click a choice, or its <b>ab</b> tab, to cross it out</span>
-        </div>
-        <div class="how-item">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
-          <span>Drag across the question to highlight it; click a highlight to remove it</span>
-        </div>
-        <div class="how-item">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21V4"/><path d="M4 4h13l-2.5 4L17 12H4"/></svg>
-          <span>Mark items for review and jump to any item from <b>Review</b></span>
-        </div>
-        <div class="how-item">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h9l5 5v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14 3v5h5"/><path d="M8 12h8M8 16h5"/></svg>
-          <span><b>Notes</b>, or <b>N</b>, opens a note for the item you are on</span>
-        </div>
-        <div class="how-item">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
-          <span><b>Pause</b> stops the clock and hides the question</span>
-        </div>
-        <div class="how-item">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-3.8 10.6c.6.6.8 1.3.8 2.4h6c0-1.1.2-1.8.8-2.4A6 6 0 0 0 12 3Z"/></svg>
-          <span>In <b>Tutor mode</b>, <b>Check answer</b> or <b>Enter</b> shows each answer and its explanation as you go</span>
+<!-- The start screen, in one of three states: a fresh block (what it is, and
+     the two choices fixed for the attempt), a block under way (where it stands
+     and how the pace is going), or a scored one (the score, and the way into
+     what was missed). assets/exam.js picks the state; the side column lists
+     the other forms of the subject and the controls, in every state. -->
+<div class="start-page" id="startScreen" style="display:none">
+  <header class="start-bar">
+    <a class="brand" href="index.html" title="All practice exams"><svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><rect x="1.5" y="1.5" width="21" height="21" rx="5.5"/><rect class="mark-bar" x="6" y="6" width="2.9" height="12" rx="1.2"/><rect class="mark-bar" x="10.6" y="8.4" width="2.9" height="9.6" rx="1.2"/><rect class="mark-bar" x="15.2" y="10.6" width="2.9" height="7.4" rx="1.2"/></svg><span class="brand-name">Shelf Practice</span></a>
+    <a class="bar-link" href="index.html"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7.5" height="7.5" rx="1"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1"/></svg><span>All exams</span></a>
+  </header>
+
+  <main class="start-wrap">
+    <section class="start-card" aria-labelledby="examName">
+      <div class="start-chips">
+        <span class="form-chip" id="examLabel" hidden></span>
+        <span class="start-note" id="examNote"></span>
+      </div>
+      <h1 id="examName"></h1>
+      <p class="sub" id="examSub"></p>
+
+      <div id="freshBlock" hidden>
+        <dl class="start-facts">
+          <div><dt>Questions</dt><dd class="fact-big" id="factItems"></dd><dd>in one block</dd></div>
+          <div><dt>Shelf pace</dt><dd class="fact-big">90 s</dd><dd id="factPace"></dd></div>
+          <div><dt>Saving</dt><dd class="fact-big">Automatic</dd><dd>close the tab any time</dd></div>
+        </dl>
+
+        <!-- How the block shows its answers, and whether it runs against a
+             clock. Both are offered only on a fresh start: they are fixed for
+             the attempt, and Start over offers them again. -->
+        <fieldset class="mode-pick" id="modePick">
+          <legend>When to see the answers</legend>
+          <div class="pick-grid">
+            <label class="mode-opt">
+              <input type="radio" name="mode" value="exam">
+              <span class="mode-text"><span class="mode-name">Exam mode</span>
+                <span class="mode-say">Work the whole block, then see every answer and explanation when you end it. Closest to test day.</span></span>
+            </label>
+            <label class="mode-opt">
+              <input type="radio" name="mode" value="tutor">
+              <span class="mode-text"><span class="mode-name">Tutor mode</span>
+                <span class="mode-say">Check each answer as you go and read its explanation before moving on. Best while learning a topic.</span></span>
+            </label>
+          </div>
+        </fieldset>
+        <fieldset class="mode-pick" id="clockPick">
+          <legend>Clock</legend>
+          <div class="pick-grid">
+            <label class="mode-opt clock-opt">
+              <input type="radio" name="clock" value="untimed">
+              <span class="mode-name">Untimed</span><span class="mode-say">counts up</span>
+            </label>
+            <label class="mode-opt clock-opt">
+              <input type="radio" name="clock" value="timed">
+              <span class="mode-name" id="timedName">Timed</span><span class="mode-say">counts down</span>
+            </label>
+          </div>
+          <p class="clock-note" id="clockNote"></p>
+        </fieldset>
+
+        <div class="start-actions" id="beginRow">
+          <button class="btn" id="beginBtn"><span id="beginLabel">Begin exam</span><kbd>Enter</kbd></button>
+          <span class="start-try">New to the site? <a href="walkthrough.html">Try a sample question</a></span>
         </div>
       </div>
-      <div class="start-keys">
-        <span><kbd>&#8592;</kbd><kbd>&#8594;</kbd> change item</span>
-        <span><kbd>A</kbd>&ndash;<kbd>E</kbd> answer</span>
-        <span><kbd>Enter</kbd> check (tutor)</span>
-        <span><kbd>M</kbd> mark</span>
-        <span><kbd>N</kbd> notes</span>
-        <span><kbd>Esc</kbd> pause</span>
+
+      <div class="start-status" id="progressBlock" hidden>
+        <div class="status-head">
+          <p class="status-big" id="resumeCount"></p>
+          <p class="status-mode" id="resumeMode"></p>
+        </div>
+        <div class="status-track" id="resumeTrack" role="img"><div class="status-fill" id="resumeFill"></div></div>
+        <dl class="status-figs">
+          <div><dt>Next up</dt><dd id="figNext"></dd></div>
+          <div><dt>Marked</dt><dd id="figMarked"></dd></div>
+          <div><dt id="figTimeLabel">Elapsed</dt><dd id="figTime"></dd></div>
+          <div id="figPaceWrap"><dt>Pace</dt><dd><span id="figPace"></span> <small id="figPaceUnit">per item</small></dd></div>
+        </dl>
+        <p class="status-note" id="paceNote"></p>
       </div>
-    </details>
-    <p class="start-tour">Progress saves automatically in this browser.
-      <span class="start-tour-links"><a href="walkthrough.html">Try a sample question</a><span
-      class="start-sep">&middot;</span><button type="button" class="start-import" id="startImportBtn">Import progress</button></span></p>
-  </div>
+
+      <div class="start-status" id="scoreBlock" hidden>
+        <div class="status-head">
+          <p class="score-line"><b class="score-big" id="startPct"></b><span class="score-frac" id="startFrac"></span></p>
+          <p class="status-mode" id="scoreMeta"></p>
+        </div>
+        <div class="split-bar" id="splitBar" role="img">
+          <span class="seg-c" id="segC"></span><span class="seg-x" id="segX"></span><span class="seg-u" id="segU"></span>
+        </div>
+        <ul class="split-key">
+          <li><span class="key-dot seg-c"></span><b id="keyC"></b> correct</li>
+          <li><span class="key-dot seg-x"></span><b id="keyX"></b> incorrect</li>
+          <li><span class="key-dot seg-u"></span><b id="keyU"></b> unanswered</li>
+        </ul>
+      </div>
+
+      <div class="start-actions" id="resumeRow" hidden>
+        <button class="btn" id="resumeBtn"><span id="resumeLabel">Resume</span><kbd>Enter</kbd></button>
+        <button type="button" class="btn secondary" id="startMarkedBtn" hidden><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21V4"/><path d="M4 4h13l-2.5 4L17 12H4"/></svg><span id="startMarkedLabel"></span></button>
+        <button type="button" class="btn secondary" id="startMissedBtn" hidden></button>
+        <button type="button" class="text-link start-over" id="startOverBtn" title="Clears your answers, highlights, notes and score">Start over</button>
+      </div>
+
+      <div class="start-foot">
+        <span id="startFootText"></span>
+        <button type="button" class="text-link" id="startImportBtn">Import progress from another browser</button>
+        <button type="button" class="text-link" id="startDownloadBtn" hidden
+                title="A readable report, and the progress itself so another browser can take it back">Download results</button>
+      </div>
+    </section>
+
+    <aside class="start-side">
+      <section class="side-card next-card" id="nextCard" aria-labelledby="nextHead" hidden>
+        <h2 class="side-h" id="nextHead">Next up</h2>
+        <p class="next-say" id="nextSay"></p>
+        <a class="btn next-go" id="nextGo" href="index.html"><span id="nextGoLabel"></span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></a>
+      </section>
+
+      <section class="side-card" id="formsCard" aria-labelledby="formsHead" hidden>
+        <h2 class="side-h side-h-rule" id="formsHead"></h2>
+        <ul class="form-list" id="formList"></ul>
+      </section>
+
+      <!-- Open for a first visit, folded once a block is under way. A touch
+           screen has no keys to press and no right button, so it gets its own
+           table rather than a list of shortcuts it cannot use. -->
+      <details class="side-card side-help" id="startHelp">
+        <summary><span class="side-h">Controls</span></summary>
+        <table class="keys-table keys-desk">
+          <tbody>
+            <tr><th scope="row">Answer</th><td class="k"><kbd>A</kbd> to <kbd>E</kbd>, or click</td></tr>
+            <tr><th scope="row">Cross out a choice</th><td>right-click it, or its <b>ab</b> tab</td></tr>
+            <tr><th scope="row">Highlight</th><td>drag across the question</td></tr>
+            <tr><th scope="row">Previous, next</th><td class="k"><kbd>&#8592;</kbd> <kbd>&#8594;</kbd></td></tr>
+            <tr><th scope="row">Mark for review</th><td class="k"><kbd>M</kbd></td></tr>
+            <tr><th scope="row">Note on this item</th><td class="k"><kbd>N</kbd></td></tr>
+            <tr><th scope="row">Text size</th><td class="k"><kbd>&minus;</kbd> <kbd>+</kbd></td></tr>
+            <tr><th scope="row">Pause the clock</th><td class="k"><kbd>Esc</kbd></td></tr>
+            <tr><th scope="row">Check answer, tutor mode</th><td class="k"><kbd>Enter</kbd></td></tr>
+          </tbody>
+        </table>
+        <table class="keys-table keys-touch">
+          <tbody>
+            <tr><th scope="row">Answer</th><td>tap a choice</td></tr>
+            <tr><th scope="row">Cross out a choice</th><td>tap its <b>ab</b> tab</td></tr>
+            <tr><th scope="row">Mark for review</th><td>the box under the toolbar</td></tr>
+            <tr><th scope="row">Notes, Pause, Review</th><td>in the toolbar</td></tr>
+            <tr><th scope="row">Check answer</th><td>under the choices, tutor mode</td></tr>
+          </tbody>
+        </table>
+        <p class="side-foot"><b>Lab Values</b> in the toolbar keeps reference ranges open beside the question.</p>
+      </details>
+    </aside>
+  </main>
 </div>
 
 <div id="app">
@@ -216,6 +343,7 @@
       <!-- Results screen -->
       <div id="resultsScreen">
         <h1>Exam complete</h1>
+        <p class="time-up-note" id="timeUpNote" hidden>Time ran out, so the block ended itself. Anything left blank counts as unanswered.</p>
         <p>Select any item below to reopen it with the answer explanation. Narrow the list to the ones you missed, the ones you marked for review, or the ones you left a note on.</p>
 
         <div class="score-card">
@@ -322,24 +450,127 @@
 <script src="assets/transfer.js"></script>
 <script>
 (() => {
+  const exams = window.EXAMS || [];
   const slug = new URLSearchParams(location.search).get('exam');
-  const entry = (window.EXAMS || []).find(e => e.slug === slug);
+  const entry = exams.find(e => e.slug === slug);
+  const $ = id => document.getElementById(id);
+  const subjectOf = e => e.title.replace(/\s+Practice Exams?$/i, '') || e.title;
+
+  function code(text){
+    const c = document.createElement('code');
+    c.textContent = text;
+    return c;
+  }
+
+  /* A link that names no exam, or whose questions would not come, trades the
+     loading card for a message card: one sentence on what went wrong, the
+     forms it most likely meant, and a way on. */
+  function showMessage(head, say, matches, retry){
+    document.title = head + ' · Shelf Practice';
+    $('bootCard').hidden = true;
+    $('bootSide').hidden = true;
+    $('bootWrap').classList.add('is-msg');
+    $('missCard').hidden = false;
+    $('missHead').textContent = head;
+    $('missSay').replaceChildren(...say);
+    if(matches.length){
+      $('missMatches').hidden = false;
+      matches.forEach(e => {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = 'exam.html?exam=' + encodeURIComponent(e.slug);
+        const name = document.createElement('span');
+        name.className = 'match-name';
+        name.textContent = subjectOf(e);
+        const form = document.createElement('span');
+        form.className = 'match-form';
+        form.textContent = e.label ? ' · ' + e.label : '';
+        const wrap = document.createElement('span');
+        wrap.append(name, form);
+        a.append(wrap);
+        a.insertAdjacentHTML('beforeend', '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" '
+          + 'stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" '
+          + 'aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>');
+        li.append(a);
+        $('missList').append(li);
+      });
+    }
+    if(retry){
+      $('missRetry').hidden = false;
+      $('missRetry').addEventListener('click', () => location.reload());
+      $('missAll').classList.add('secondary');
+      $('missAll').textContent = 'Back to the exam list';
+    }else{
+      $('missAll').textContent = 'See all ' + exams.length + ' exams';
+    }
+  }
+
+  /* The forms a mistyped or cut-short link most likely meant. A slug in the
+     usual subject-formN shape is matched on its subject, nearest form number
+     first; anything else, on how few letters stand between it and a real one. */
+  function closest(raw){
+    const s = (raw || '').toLowerCase().trim();
+    if(!s) return [];
+    const num = e => parseInt((e.slug.match(/(\d+)$/) || [0, 0])[1], 10);
+    const m = s.match(/^(.*?)-?form-?(\d+)$/);
+    if(m){
+      const same = exams.filter(e => e.slug.replace(/-?form\d+$/, '') === m[1]);
+      const want = parseInt(m[2], 10);
+      if(same.length) return same.slice()
+        .sort((a, b) => Math.abs(num(a) - want) - Math.abs(num(b) - want) || num(b) - num(a))
+        .slice(0, 3);
+    }
+    const starts = exams.filter(e => e.slug.startsWith(s));
+    if(starts.length) return starts.slice().sort((a, b) => num(b) - num(a)).slice(0, 3);
+    const lev = (a, b) => {
+      let prev = Array.from({length: b.length + 1}, (_, j) => j);
+      for(let i = 1; i <= a.length; i++){
+        const cur = [i];
+        for(let j = 1; j <= b.length; j++)
+          cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+        prev = cur;
+      }
+      return prev[b.length];
+    };
+    const reach = Math.max(3, Math.round(s.length * 0.4));
+    return exams.map(e => ({e, d: lev(s, e.slug)}))
+      .filter(x => x.d <= reach)
+      .sort((a, b) => a.d - b.d)
+      .slice(0, 3)
+      .map(x => x.e);
+  }
 
   if(!entry){
-    document.getElementById('loadingText').innerHTML =
-      (slug ? 'Unknown exam &ldquo;' + slug.replace(/[<>&]/g, '') + '&rdquo;. '
-            : 'No exam selected. ') +
-      '<a style="color:#fff" href="index.html">Back to the exam list</a>';
+    if(slug){
+      showMessage('That exam is not on the list',
+        ['The link asked for ', code(slug), ', which is not one of the ' + exams.length
+         + ' forms here. It may have been typed by hand or cut short.'],
+        closest(slug), false);
+    }else{
+      showMessage('No exam was chosen',
+        ['This link does not name an exam. Every form is on the exam list.'], [], false);
+    }
     return;
   }
+
+  /* Everything the start screen leads with is in the manifest, so it is
+     drawn now; the engine fills in the rest once the questions arrive. */
+  document.title = entry.title;
+  const subject = subjectOf(entry);
+  $('bootName').textContent = subject;
+  const suffix = entry.title.slice(subject.length).trim();
+  if(suffix){ $('bootSub').textContent = suffix; $('bootSub').hidden = false; }
+  if(entry.label){ $('bootLabel').textContent = entry.label; $('bootLabel').hidden = false; }
+  $('loadingText').textContent = 'Loading ' + (entry.items ? entry.items + ' questions' : 'the questions') + '…';
 
   const load = (src, done) => {
     const s = document.createElement('script');
     s.src = src;
     s.onload = done;
     s.onerror = () => {
-      document.getElementById('loadingText').textContent =
-        'Could not load ' + src;
+      showMessage('This exam did not load',
+        ['Its questions, ', code(src), ', could not be fetched. Check the connection and try again.'],
+        [], true);
     };
     document.body.appendChild(s);
   };
