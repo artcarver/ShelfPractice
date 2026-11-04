@@ -1081,6 +1081,10 @@ document.getElementById('finishBtn').addEventListener('click', () => {
   const lead = open.length ? said + '.\n\n' : '';
   if(!confirm(lead.charAt(0).toUpperCase() + lead.slice(1)
             + 'End the block and see your score? Answers cannot be changed after this.')) return;
+  /* The confirmation stops the page, the clock's tick included, while the
+     block clock still reads the wall clock. A timed block whose time ran out
+     while it was open has run out, and ends that way, held at the limit. */
+  if(state.timed && remainingMs() <= 0){ timeUp(); return; }
   gradeBlock();
 });
 
