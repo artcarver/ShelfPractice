@@ -153,7 +153,8 @@
      that lost its mode on the way across would come back as an exam-mode one,
      with every item it had already checked hidden again. */
   const ENUMS = {mode: ['exam', 'tutor']};
-  const NUMS = ['idx','elapsedMs','runningSince','itemSince','itemSinceN','gradedAt'];
+  const NUMS = ['idx','elapsedMs','runningSince','itemSince','itemSinceN','gradedAt',
+                'timerOffAt'];
   /* A timed block that lost `timed` on the way across would come back
      counting up, with no limit on it. */
   const BOOLS = ['notesOpen','graded','paused','onResults','timed','timeUp'];

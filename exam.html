@@ -80,6 +80,7 @@
     </div>
     <button class="btn" id="resumeExamBtn"><span>Resume exam</span><kbd>Esc</kbd></button>
     <p class="pause-say">The clock is stopped and the question stays hidden until you resume.</p>
+    <button type="button" class="text-link pause-timer-off" id="pauseTimerOffBtn" hidden>Turn off the timer for the rest of this block</button>
     <div class="pause-foot"><a href="index.html">Back to the exam list</a><span aria-hidden="true">&middot;</span><span>Progress is saved</span></div>
   </div>
 </div>
@@ -113,7 +114,8 @@
 
         <!-- How the block shows its answers, and whether it runs against a
              clock. Both are offered only on a fresh start: they are fixed for
-             the attempt, and Start over offers them again. -->
+             the attempt, and Start over offers them again. A timed block can
+             still turn its timer off partway, but not back on. -->
         <fieldset class="mode-pick" id="modePick">
           <legend>When to see the answers</legend>
           <div class="pick-grid">
@@ -152,7 +154,8 @@
       <div class="start-status" id="progressBlock" hidden>
         <div class="status-head">
           <p class="status-big" id="resumeCount"></p>
-          <p class="status-mode" id="resumeMode"></p>
+          <p class="status-mode"><span id="resumeMode"></span><button type="button"
+             class="text-link status-act" id="startTimerOffBtn" hidden>Turn off timer</button></p>
         </div>
         <div class="status-track" id="resumeTrack" role="img"><div class="status-fill" id="resumeFill"></div></div>
         <dl class="status-figs">
@@ -307,6 +310,9 @@
         <div class="subbar-status">
           <span class="answered-note" id="answeredNote"></span>
           <div class="timer" id="timer">Elapsed: 00:00:00</div>
+          <!-- a timed block only: drops the countdown for the rest of it -->
+          <button type="button" class="text-link timer-off" id="timerOffBtn" hidden
+                  title="Turn off the countdown for the rest of this block">Turn off timer</button>
         </div>
       </div>
       <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
