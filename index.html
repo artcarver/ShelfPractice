@@ -128,37 +128,68 @@
   a.row:hover{background:var(--navy-tint);}
   a.row:hover .row-go svg{color:var(--navy);transform:translateX(2px);}
 
-  /* One line above the list, offering the tour to someone who has not seen it.
-     A white box with an accent was still a variation on an exam row, and a
-     tinted one read as a row switched off. So it is filled, in the navy the
-     top bar already wears: the one surface on this page that is not a white
-     panel on grey, which is what makes it legible as a different kind of
-     thing at a glance rather than on inspection. It stays one line, and it
-     goes for good once an exam has been started. */
-  a.tour{
-    display:flex;align-items:center;gap:12px;
-    margin-top:16px;padding:10px 14px;
-    background:var(--navy);
-    border:1px solid var(--navy);
-    border-radius:var(--r-sm);
-    text-decoration:none;
-    transition:background .12s, border-color .12s;
+  /* What is new. Everything else on this page is a white panel on grey, so
+     the notice is the one navy card on it: a yellow ribbon across its corner,
+     a scatter of confetti, and a tile for each mode with its icon in a yellow
+     ring and its description held to one line, so the ring sits level with
+     both lines beside it. It goes for good once dismissed, per browser. */
+  .news{
+    position:relative;overflow:hidden;
+    margin-top:20px;padding:24px 24px 22px;
+    background:var(--navy);color:#fff;
+    border-radius:var(--r-lg);
+    animation:news-in .4s ease-out both;
   }
-  a.tour:hover{background:var(--navy-dark);border-color:var(--navy-dark);}
-  a.tour:focus-visible{outline:2px solid var(--navy-dark);outline-offset:2px;}
-  .tour-text{
-    flex:1 1 auto;min-width:0;
-    font-size:var(--fs-sm);line-height:1.5;
-    color:#dce8f0;
+  /* the hidden attribute has to win over the animation's display */
+  .news[hidden]{display:none;}
+  @keyframes news-in{
+    from{opacity:0;transform:translateY(-6px);}
+    to{opacity:1;transform:none;}
   }
-  .tour-go{
-    flex:none;display:flex;align-items:center;gap:4px;
-    font-size:var(--fs-sm);font-weight:600;color:#fff;white-space:nowrap;
+  /* the ribbon is a band turned 45 degrees, clipped by the card's corner */
+  .news-ribbon{
+    position:absolute;left:-46px;top:18px;width:160px;padding:4px 0;
+    background:#ffd35c;color:var(--navy-dark);
+    text-align:center;
+    font-size:var(--fs-xs);font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+    transform:rotate(-45deg);
+    box-shadow:0 2px 0 rgba(0,0,0,.18);
   }
-  .tour-go svg{color:rgba(255,255,255,.6);transition:color .12s, transform .12s;}
-  a.tour:hover .tour-go svg{color:#fff;transform:translateX(2px);}
-  /* a.tour is a flex box, which outranks the [hidden] attribute on its own */
-  a.tour[hidden]{display:none;}
+  /* only in the empty corner beside the close button, clear of the words */
+  .news-confetti{position:absolute;right:60px;top:6px;width:160px;height:84px;pointer-events:none;}
+  .news-top{position:relative;padding:0 44px 0 54px;}
+  .news-head{margin:0;font-size:var(--fs-xl);font-weight:800;line-height:1.2;letter-spacing:-.3px;}
+  .news-say{margin:6px 0 0;font-size:var(--fs-base);color:#cfe0ec;}
+  .news-feats{
+    position:relative;
+    list-style:none;margin:18px 0 0;padding:0;
+    display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;
+  }
+  .news-feats li{
+    display:flex;align-items:center;gap:12px;min-width:0;
+    padding:14px 16px;
+    background:var(--navy-dark);
+    border:1px solid rgba(255,255,255,.16);border-radius:var(--r-md);
+  }
+  .news-icon{
+    flex:none;width:38px;height:38px;
+    border:2px solid #ffd35c;border-radius:var(--r-pill);color:#ffd35c;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .news-feat{display:flex;flex-direction:column;gap:1px;min-width:0;}
+  .news-feat b{font-size:var(--fs-md);font-weight:700;}
+  .news-feat span{font-size:var(--fs-sm);color:#cfe0ec;white-space:nowrap;}
+  .news-x{
+    position:absolute;top:12px;right:12px;
+    width:40px;height:40px;
+    display:flex;align-items:center;justify-content:center;
+    border:0;border-radius:var(--r-sm);
+    background:rgba(255,255,255,.1);color:#fff;cursor:pointer;
+    transition:background .12s;
+  }
+  .news-x:hover{background:rgba(255,255,255,.2);}
+  .news-x:focus-visible{outline:2px solid #fff;outline-offset:-2px;}
+  h1:focus{outline:none;}
 
   /* Coming back is the common visit, and the exam you were in the middle of
      is otherwise one click deep inside its subject. So whatever is under way
@@ -183,9 +214,8 @@
   .row-when{color:var(--faint);}
 
   .foot{margin-top:30px;font-size:var(--fs-xs);color:var(--faint);text-align:center;}
-  /* Once the note above has done its work it goes, but the tour itself stays
-     reachable from here for good: someone who half-remembers a control and
-     wants to look it up should not have to have kept the banner. */
+  /* The tour lives here, along with the start screen's "Try a sample
+     question": always reachable, never in the way of the list. */
   .foot a{color:var(--faint);text-decoration:underline;}
   .foot a:hover{color:var(--navy);}
   .foot .sep{margin:0 8px;opacity:.55;}
@@ -212,12 +242,24 @@
     /* The open chevron keeps its quarter turn: with the transition gone it is
        a state indicator drawn in one position, not a movement. */
     a.row:hover .row-go svg,
-    .exam-row:hover .row-go svg,
-    a.tour:hover .tour-go svg{transform:none;}
+    .exam-row:hover .row-go svg{transform:none;}
+    /* the notice simply appears */
+    .news{animation:none;}
   }
 
+  /* as the window narrows the confetti goes first, before it can reach the
+     words, and then the tiles stack, so each description keeps its one line */
+  @media (max-width:860px){
+    .news-confetti{display:none;}
+  }
+  @media (max-width:700px){
+    .news-feats{grid-template-columns:1fr;}
+  }
   @media (max-width:520px){
     main{padding:24px 14px 40px;}
+    .news{padding:20px 16px 18px;}
+    .news-top{padding-right:40px;}
+    .news-feat span{white-space:normal;}
     .row-go span{display:none;}   /* the chevron carries it on a phone */
     /* A phone has no room for name, status and action side by side: the
        subject's counts and a form's status each drop to a second line under
@@ -239,13 +281,34 @@
   </header>
 
   <main>
-    <h1>Practice exams</h1>
+    <h1 id="pageHead" tabindex="-1">Practice exams</h1>
     <p class="lede" id="lede">Every item has a full explanation. Progress saves in this browser.</p>
 
-    <a class="tour" href="walkthrough.html" id="tourCard" hidden>
-      <span class="tour-text">New here?</span>
-      <span class="tour-go"><span>Try a question</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></span>
-    </a>
+    <!-- Shown until it is dismissed, then never again in this browser. -->
+    <section class="news" id="newsBanner" aria-label="What is new" hidden>
+      <span class="news-ribbon" aria-hidden="true">New</span>
+      <svg class="news-confetti" viewBox="0 0 160 84" aria-hidden="true">
+        <rect x="10" y="16" width="12" height="5" rx="2.5" fill="#ffd35c" transform="rotate(-20 16 18)"/>
+        <circle cx="50" cy="46" r="3.5" fill="#fff" opacity=".7"/>
+        <rect x="84" y="8" width="10" height="5" rx="2.5" fill="#8ec5e8" transform="rotate(35 89 10)"/>
+        <circle cx="116" cy="34" r="3.5" fill="#ffd35c"/>
+        <path d="M122 66c5-4 10 0 15-4" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".6"/>
+        <rect x="140" y="12" width="11" height="5" rx="2.5" fill="#fff" opacity=".7" transform="rotate(-30 145 14)"/>
+        <circle cx="76" cy="72" r="3" fill="#8ec5e8"/>
+        <path d="M22 62l6 6M28 62l-6 6" stroke="#ffd35c" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+      <div class="news-top">
+        <p class="news-head">Now with tutor and timed mode!</p>
+        <p class="news-say">Choose either one on any exam&rsquo;s start screen.</p>
+      </div>
+      <ul class="news-feats">
+        <li><span class="news-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-3.8 10.6c.6.6.8 1.3.8 2.4h6c0-1.1.2-1.8.8-2.4A6 6 0 0 0 12 3Z"/></svg></span><span class="news-feat"><b>Tutor mode</b><span>Check each answer as you go.</span></span></li>
+        <li><span class="news-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="14" r="7"/><path d="M12 14V10.5"/><path d="M10 3h4"/><path d="M12 3v4"/></svg></span><span class="news-feat"><b>Timed mode</b><span>90 seconds an item, as on test day.</span></span></li>
+      </ul>
+      <button type="button" class="news-x" id="newsDismiss" aria-label="Dismiss this notice"
+              title="Dismiss"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </section>
 
     <section class="resume-block" id="resumeBlock" aria-labelledby="resumeHead" hidden>
       <h2 class="resume-h" id="resumeHead">Pick up where you left off</h2>
@@ -439,7 +502,7 @@
      open is read back from storage, so nothing closes under you. */
   function renderList(){
     list.innerHTML = '';
-    placeTourCard();
+    placeNews();
     placeTransfer();
     placeResume();
     const open = readOpen();
@@ -545,13 +608,23 @@
     });
   }
 
-  /* The card exists to answer "is this just screenshots", and anyone who has
-     opened an exam has already had it answered. It shows on a first visit and
-     then gets out of the way for good, which is what lets it be loud. */
-  function placeTourCard(){
-    const started = exams.some(e => progressOf(e).kind !== 'new');
-    document.getElementById('tourCard').hidden = started;
+  /* The notice of what is new. Dismissing it is remembered under its own key,
+     a preference like the open subjects, so it outlives any exam's progress
+     and is not carried by Export. A browser that will not store it simply
+     shows the notice again next time. The key names this notice, so a later
+     one can take a new key and show to everyone again. */
+  const NEWS_KEY = 'shelf_news_dismissed_modes';
+  function placeNews(){
+    let gone = false;
+    try{ gone = localStorage.getItem(NEWS_KEY) === '1'; }catch(err){}
+    document.getElementById('newsBanner').hidden = gone;
   }
+  document.getElementById('newsDismiss').addEventListener('click', () => {
+    try{ localStorage.setItem(NEWS_KEY, '1'); }catch(err){}
+    document.getElementById('newsBanner').hidden = true;
+    // the button is gone, so focus goes to the heading just above where it was
+    document.getElementById('pageHead').focus();
+  });
 
   /* ---------- carrying progress to another browser ---------- */
 

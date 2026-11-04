@@ -289,10 +289,21 @@ sentence in its caption and one in the closing line. The item and its
 explanation were written for the page, and it says so under the frame, so the
 tour gives away nothing that is on a form.
 
-The landing page carries it as a card above the first subject, which shows on a
-first visit and hides once any exam has been started; an exam's start screen
-carries the same link under **Begin**. All three pages carry a `noindex` meta
+The landing page links it from its foot (**How it works**), and that is the
+one way in. It used to be offered twice more, as a navy "New here?" card above
+the list and as "New to the site? Try a sample question" beside an exam's
+**Begin**; both came out, leaving the notice below as the one thing between
+the heading and the exams, and Begin alone on its row. All three pages carry a `noindex` meta
 tag, since the site is passed between people who already know what it is.
+
+Above the list, the landing page carries a notice of what is new, the one
+navy card on a page of white panels: a yellow **New** ribbon across its
+corner, a scatter of confetti, and a tile for each mode with its icon in a
+yellow ring and a one-line description beside it. It says *Now with tutor and
+timed mode!* and goes for good once its close button is pressed, remembered
+per browser under `shelf_news_dismissed_modes`.
+The key names this notice, so a later one takes a key of its own and shows to
+everyone again.
 
 A **Pause** button in the toolbar (or the <kbd>Esc</kbd> key) stops the clock and
 hides the question behind an overlay until you resume. The elapsed time is banked
