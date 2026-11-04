@@ -289,12 +289,13 @@ sentence in its caption and one in the closing line. The item and its
 explanation were written for the page, and it says so under the frame, so the
 tour gives away nothing that is on a form.
 
-The landing page carries it as a card above the first subject, which shows on a
-first visit and hides once any exam has been started; an exam's start screen
-carries the same link under **Begin**. All three pages carry a `noindex` meta
+The landing page links it from its foot (**How it works**), and an exam's
+start screen carries it beside **Begin**. It used to be a navy "New here?" card
+above the list as well, which came out to leave the notice below as the one
+thing between the heading and the exams. All three pages carry a `noindex` meta
 tag, since the site is passed between people who already know what it is.
 
-Above both, the landing page carries a notice of what is new, made to look
+Above the list, the landing page carries a notice of what is new, made to look
 like nothing else on the page: a butter-yellow card with a chunky edge, a
 tilted navy **New!** sticker, a chip for each mode and a stopwatch whose hand
 sweeps round twice and stops (it stands still under reduced motion, and drops

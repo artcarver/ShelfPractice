@@ -129,7 +129,7 @@
   a.row:hover .row-go svg{color:var(--navy);transform:translateX(2px);}
 
   /* What is new. Everything else on this page is a white panel on grey or the
-     navy tour card, so the notice is neither: a warm butter card with a
+     navy top bar, so the notice is neither: a warm butter card with a
      chunky edge, a tilted sticker, a chip for each mode and a stopwatch whose
      hand sweeps round a couple of times and then stops. It goes for good once
      dismissed, per browser. */
@@ -196,38 +196,6 @@
   .news-x:focus-visible{outline:2px solid var(--navy);outline-offset:-2px;}
   h1:focus{outline:none;}
 
-  /* One line above the list, offering the tour to someone who has not seen it.
-     A white box with an accent was still a variation on an exam row, and a
-     tinted one read as a row switched off. So it is filled, in the navy the
-     top bar already wears: the one surface on this page that is not a white
-     panel on grey, which is what makes it legible as a different kind of
-     thing at a glance rather than on inspection. It stays one line, and it
-     goes for good once an exam has been started. */
-  a.tour{
-    display:flex;align-items:center;gap:12px;
-    margin-top:16px;padding:10px 14px;
-    background:var(--navy);
-    border:1px solid var(--navy);
-    border-radius:var(--r-sm);
-    text-decoration:none;
-    transition:background .12s, border-color .12s;
-  }
-  a.tour:hover{background:var(--navy-dark);border-color:var(--navy-dark);}
-  a.tour:focus-visible{outline:2px solid var(--navy-dark);outline-offset:2px;}
-  .tour-text{
-    flex:1 1 auto;min-width:0;
-    font-size:var(--fs-sm);line-height:1.5;
-    color:#dce8f0;
-  }
-  .tour-go{
-    flex:none;display:flex;align-items:center;gap:4px;
-    font-size:var(--fs-sm);font-weight:600;color:#fff;white-space:nowrap;
-  }
-  .tour-go svg{color:rgba(255,255,255,.6);transition:color .12s, transform .12s;}
-  a.tour:hover .tour-go svg{color:#fff;transform:translateX(2px);}
-  /* a.tour is a flex box, which outranks the [hidden] attribute on its own */
-  a.tour[hidden]{display:none;}
-
   /* Coming back is the common visit, and the exam you were in the middle of
      is otherwise one click deep inside its subject. So whatever is under way
      sits above the list, newest first, as rows of the same family as the
@@ -251,9 +219,8 @@
   .row-when{color:var(--faint);}
 
   .foot{margin-top:30px;font-size:var(--fs-xs);color:var(--faint);text-align:center;}
-  /* Once the note above has done its work it goes, but the tour itself stays
-     reachable from here for good: someone who half-remembers a control and
-     wants to look it up should not have to have kept the banner. */
+  /* The tour lives here, along with the start screen's "Try a sample
+     question": always reachable, never in the way of the list. */
   .foot a{color:var(--faint);text-decoration:underline;}
   .foot a:hover{color:var(--navy);}
   .foot .sep{margin:0 8px;opacity:.55;}
@@ -280,8 +247,7 @@
     /* The open chevron keeps its quarter turn: with the transition gone it is
        a state indicator drawn in one position, not a movement. */
     a.row:hover .row-go svg,
-    .exam-row:hover .row-go svg,
-    a.tour:hover .tour-go svg{transform:none;}
+    .exam-row:hover .row-go svg{transform:none;}
     /* the notice simply appears, and its stopwatch stands still */
     .news, .news-art .sw-hand{animation:none;}
   }
@@ -349,11 +315,6 @@
               title="Dismiss"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
               stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
     </section>
-
-    <a class="tour" href="walkthrough.html" id="tourCard" hidden>
-      <span class="tour-text">New here?</span>
-      <span class="tour-go"><span>Try a question</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></span>
-    </a>
 
     <section class="resume-block" id="resumeBlock" aria-labelledby="resumeHead" hidden>
       <h2 class="resume-h" id="resumeHead">Pick up where you left off</h2>
@@ -548,7 +509,6 @@
   function renderList(){
     list.innerHTML = '';
     placeNews();
-    placeTourCard();
     placeTransfer();
     placeResume();
     const open = readOpen();
@@ -652,14 +612,6 @@
         '<div class="row-go"><span>Resume</span>' + CHEV + '</div>';
       rows.append(a);
     });
-  }
-
-  /* The card exists to answer "is this just screenshots", and anyone who has
-     opened an exam has already had it answered. It shows on a first visit and
-     then gets out of the way for good, which is what lets it be loud. */
-  function placeTourCard(){
-    const started = exams.some(e => progressOf(e).kind !== 'new');
-    document.getElementById('tourCard').hidden = started;
   }
 
   /* The notice of what is new. Dismissing it is remembered under its own key,
