@@ -278,8 +278,12 @@ work, after transcribing and copy-editing, and it changes no word:
 - leave the objective alone, since the engine draws it
 
 Check it the way copy-edits are checked. Strip the tags from before and
-after, and the words must be identical. Obstetrics and Gynecology Form 9 is
-the first form laid out this way.
+after, and the words must be identical. Where a form also needs copy-editing,
+do that first and commit it on its own, then lay it out against the
+copy-edited text. Each commit then holds one kind of change: a corrected word
+never sits inside a commit that says it only moved tags, and the layout check
+can still demand identical words. Obstetrics and Gynecology Forms 9 and 10 are
+laid out this way, and Form 10 was copy-edited first.
 
 ## 7. The answer key
 
