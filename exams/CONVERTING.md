@@ -262,6 +262,25 @@ Copy-edit the text inside marked items as well — prose that was never the form
 raises no fidelity question at all — but leave the marks as they are, and add
 none for a correction.
 
+### Laying it out for reading
+
+A form prints its discussion as one paragraph of a hundred to three hundred
+words, which is a wall to read on a screen. Laying it out is a third kind of
+work, after transcribing and copy-editing, and it changes no word:
+
+- break the discussion where its subject turns (what the condition is, why
+  it fits this patient, how it is diagnosed, how it is treated), keeping the
+  sentences in the form's order
+- bold the answer where the discussion states it, and a few key terms, about
+  one a paragraph. Bolding much more makes it all look the same again.
+- bold each choice name in the Incorrect Answers paragraphs, including a second
+  choice the same paragraph names
+- leave the objective alone, since the engine draws it
+
+Check it the way copy-edits are checked. Strip the tags from before and
+after, and the words must be identical. Obstetrics and Gynecology Form 9 is
+the first form laid out this way.
+
 ## 7. The answer key
 
 This is the one thing that cannot be written. Explanation prose can be
