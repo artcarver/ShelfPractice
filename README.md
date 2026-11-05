@@ -488,8 +488,18 @@ Inside a panel each form gets a row: the form label, its question count, and —
 only once you have touched it — where it stands, either "3 of 50 answered" or
 the score. The row's action reads Start, Resume or Review to match. An
 untouched exam says nothing rather than repeating "Not started" down the whole
-list. It is all read from the same saved progress the engine writes, so no
-exam's `data.js` is loaded to draw the page.
+list. One you have opened but answered nothing in reads "Started". It is all
+read from the same saved progress the engine writes, so no exam's `data.js` is
+loaded to draw the page.
+
+Above the subjects, **Pick up where you left off** lists the forms under way,
+newest first, up to three ("latest 3 of 5" when there are more). It is an open
+panel of the same make as a subject's, and its rows are the same rows, built by
+the same code, Clear included; each name adds its subject, and the line under
+it says when it was last worked ("Last worked on today") in place of the
+question count. Coming back to the list with the browser's Back button redraws
+it, so a page restored from the back-forward cache does not show the progress
+from before the exam was opened.
 
 A row you have touched also carries a quiet **Clear**, which forgets that exam
 entirely — answers, score, highlights and notes — and returns the row to Start.

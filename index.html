@@ -62,12 +62,6 @@
     transform:rotate(90deg);color:var(--navy);
   }
   .group{border-top:1px solid var(--divider);}
-  a.row{
-    display:flex;align-items:center;gap:16px;
-    padding:15px 18px;
-    text-decoration:none;color:inherit;
-    transition:background .12s;
-  }
   .row-wrap + .row-wrap{border-top:1px solid var(--divider);}
 
   /* An exam row is one link and, when there is progress, one Clear button,
@@ -125,8 +119,6 @@
     white-space:nowrap;
   }
   .row-go svg{color:#b3c1cb;transition:color .12s, transform .12s;}
-  a.row:hover{background:var(--navy-tint);}
-  a.row:hover .row-go svg{color:var(--navy);transform:translateX(2px);}
 
   /* What is new. Everything else on this page is a white panel on grey, so
      the notice is the one navy card on it: a yellow ribbon across its corner,
@@ -193,25 +185,30 @@
 
   /* Coming back is the common visit, and the exam you were in the middle of
      is otherwise one click deep inside its subject. So whatever is under way
-     sits above the list, newest first, as rows of the same family as the
-     exam rows below it: a panel with a small heading, not a banner. */
+     sits above the list, newest first, as an open panel of the same make as
+     a subject's: a head row with its count, then the very rows the subjects
+     use, built by the same code, with the subject added to each name and
+     when it was last worked under it. */
   .resume-block{
     background:#fff;
     border:1px solid var(--border);
-    border-left:4px solid var(--navy);
     border-radius:var(--r-md);
     overflow:hidden;
     margin-top:16px;
   }
   .resume-block[hidden]{display:none;}
-  .resume-h{
-    margin:0;padding:12px 18px 0;
-    font-size:var(--fs-xs);font-weight:700;letter-spacing:.06em;text-transform:uppercase;
-    color:var(--muted);
+  .resume-head{
+    display:flex;align-items:center;gap:14px;
+    /* the right inset is the subject heads' chevron and its gap, so this
+       count lines up with theirs below it */
+    padding:15px 47px 15px 18px;
+    border-bottom:1px solid var(--divider);
   }
-  .resume-block a.row{padding:10px 18px 14px;}
-  .resume-block a.row + a.row{border-top:1px solid var(--divider);padding-top:14px;}
-  .row-when{color:var(--faint);}
+  .resume-h{
+    flex:1 1 auto;min-width:0;margin:0;
+    font-size:var(--fs-md);font-weight:600;color:var(--navy-dark);
+  }
+  .resume-meta{font-size:var(--fs-xs);color:var(--faint);white-space:nowrap;}
 
   .foot{margin-top:30px;font-size:var(--fs-xs);color:var(--faint);text-align:center;}
   /* The tour lives here, and only here: always reachable, never in the way
@@ -241,7 +238,6 @@
     *{transition:none !important;}
     /* The open chevron keeps its quarter turn: with the transition gone it is
        a state indicator drawn in one position, not a movement. */
-    a.row:hover .row-go svg,
     .exam-row:hover .row-go svg{transform:none;}
     /* the notice simply appears */
     .news{animation:none;}
@@ -311,7 +307,10 @@
     </section>
 
     <section class="resume-block" id="resumeBlock" aria-labelledby="resumeHead" hidden>
-      <h2 class="resume-h" id="resumeHead">Pick up where you left off</h2>
+      <div class="resume-head">
+        <h2 class="resume-h" id="resumeHead">Pick up where you left off</h2>
+        <span class="resume-meta" id="resumeMeta"></span>
+      </div>
       <div id="resumeRows"></div>
     </section>
 
@@ -345,6 +344,7 @@
      Clear can forget it, without loading its data.js. */
   const stateKey   = e => e.storageKey || ('exam_state_' + e.id);
   const sessionKey = e => 'exam_session_' + e.id;
+  const subjectOf  = e => e.title.replace(/\s*practice exams?\s*$/i, '') || e.title;
 
   function progressOf(e){
     let s = null;
@@ -381,7 +381,11 @@
     return (p.tutor ? ' · tutor' : '') + (p.timed ? ' · timed' : '');
   }
 
-  function row(e){
+  /* One exam's row. The resume panel asks for the same row with the subject
+     in its name, since it mixes subjects, and when it was last worked in
+     place of the question count. */
+  function row(e, opts){
+    const resume = !!(opts && opts.resume);
     const p = progressOf(e);
     let state = '', cta = 'Start';
     if(p.kind === 'done'){
@@ -389,8 +393,10 @@
             + p.correct + ' of ' + p.total + ' correct' + tags(p) + '</div>';
       cta = 'Review';
     }else if(p.kind === 'going'){
-      state = '<div class="row-state"><b>' + p.answered + '</b> of ' + p.total
-            + ' answered' + tags(p) + '</div>';
+      // begun, but nothing answered yet: "0 of 50 answered" reads as a fault
+      state = '<div class="row-state">'
+            + (p.answered ? '<b>' + p.answered + '</b> of ' + p.total + ' answered' : 'Started')
+            + tags(p) + '</div>';
       cta = 'Resume';
     }
 
@@ -399,9 +405,12 @@
     const a = document.createElement('a');
     a.className = 'row-link';
     a.href = 'exam.html?exam=' + encodeURIComponent(e.slug);
+    const name = resume ? subjectOf(e) + (e.label ? ' · ' + e.label : '') : (e.label || e.title);
+    const last = resume ? when(p.savedAt) : '';
     a.innerHTML =
-      '<div class="row-form">' + (e.label || e.title) + '</div>' +
-      '<div class="row-len">' + (e.items ? e.items + ' questions' : 'Practice block') + '</div>';
+      '<div class="row-form">' + name + '</div>' +
+      '<div class="row-len">' + (last ? 'Last worked on ' + last
+        : (e.items ? e.items + ' questions' : 'Practice block')) + '</div>';
     // the link's own text is only the form, so a reader gets the rest here
     const stateText = state.replace(/<[^>]+>/g, '');
     a.setAttribute('aria-label', [cta, e.title, e.label, stateText].filter(Boolean).join(', '));
@@ -457,7 +466,7 @@
   const byName = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'});
   const collected = new Map();
   exams.forEach(e => {
-    const subject = e.title.replace(/\s*practice exams?\s*$/i, '') || e.title;
+    const subject = subjectOf(e);
     if(!collected.has(subject)) collected.set(subject, []);
     collected.get(subject).push(e);
   });
@@ -591,23 +600,12 @@
     const rows = document.getElementById('resumeRows');
     rows.innerHTML = '';
     block.hidden = !going.length;
-    going.forEach(({e, p}) => {
-      const subject = e.title.replace(/\s*practice exams?\s*$/i, '') || e.title;
-      const a = document.createElement('a');
-      a.className = 'row';
-      a.href = 'exam.html?exam=' + encodeURIComponent(e.slug);
-      const last = when(p.savedAt);
-      a.innerHTML =
-        '<div class="row-main">' +
-          '<div class="row-form">' + subject + (e.label ? ' · ' + e.label : '') + '</div>' +
-          '<div class="row-len"><b>' + p.answered + '</b> of ' + p.total + ' answered' + tags(p) +
-            (last ? '<span class="row-when"> · ' + last + '</span>' : '') + '</div>' +
-        '</div>' +
-        '<div class="row-go"><span>Resume</span>' + CHEV + '</div>';
-      rows.append(a);
-    });
+    const total = exams.filter(e => progressOf(e).kind === 'going').length;
+    document.getElementById('resumeMeta').textContent = total > going.length
+      ? 'latest ' + going.length + ' of ' + total
+      : total + ' in progress';
+    going.forEach(({e}) => rows.append(row(e, {resume: true})));
   }
-
   /* The notice of what is new. Dismissing it is remembered under its own key,
      a preference like the open subjects, so it outlives any exam's progress
      and is not carried by Export. A browser that will not store it simply
@@ -673,6 +671,10 @@
      importing into it — and the storage event fires only in the tabs that did
      not do the writing, which is exactly the set that is now out of date. */
   window.addEventListener('storage', () => renderList());
+  /* Back from an exam can bring this page out of the browser's back-forward
+     cache as it was, with no load and no storage event, so the rows would
+     still show the progress from before the exam was opened. */
+  window.addEventListener('pageshow', (ev) => { if(ev.persisted) renderList(); });
 
   if(exams.length){
     describeShelf();
