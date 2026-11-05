@@ -678,16 +678,15 @@ function render(){
 
   const note = document.getElementById('answeredNote');
   if(note){
-    /* While the block is open this is a count, not a score, in either mode:
-       tutor mode's running score is on the review grid, a click away, rather
-       than in view beside every question. */
+    /* While the block is open the subbar holds the clock alone: the Item box
+       already says where you are, the progress line under the bar how far
+       along, and tutor mode's running score is on the review grid. Once the
+       block is graded, items reopened from the results carry the score. */
     if(state.graded){
       const s = state.score || computeScore();
       note.textContent = `Score: ${s.correct} of ${s.total} correct`;
     }else{
-      // "of 50" is already in the Item box beside it; two "of 50"s read as
-      // two counts of one thing
-      note.textContent = `${Object.keys(state.answers).length} answered`;
+      note.textContent = '';
     }
   }
   updateProgress();
