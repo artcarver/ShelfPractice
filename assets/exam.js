@@ -863,20 +863,26 @@ function writtenNote(kind){
 }
 
 /* The educational objective is the item compressed, and its first sentence is
-   usually the point. So it is drawn as a card under its own heading, with that
-   sentence as the headline and the rest at body weight: a whole paragraph in
-   bold left nothing standing out, in the objective or in the bold terms of the
-   discussion under it. The data keeps the form's own line, a
-   <p class="exp-obj"> that opens "Educational Objective:", and the heading is
-   lifted out of it here, so the way it is drawn never touches a data.js. A
-   paragraph that does not open that way is left as it is. */
+   usually the point. So it is drawn as a card, with that sentence as the
+   headline and the rest at body weight: a whole paragraph in bold left nothing
+   standing out, in the objective or in the bold terms of the discussion under
+   it. "Educational objective" runs into the headline in grey rather than
+   standing on a line of its own, where it sat directly under the panel's
+   EXPLANATION and read as a second heading. The dash between them is drawn,
+   not read: aria-hidden keeps a screen reader from announcing it.
+
+   The data keeps the form's own line, a <p class="exp-obj"> that opens
+   "Educational Objective:", and the label is lifted out of it here, so the
+   way it is drawn never touches a data.js. A paragraph that does not open
+   that way is left as it is. */
 const OBJECTIVE_RE = /^<p class="exp-obj">\s*Educational (objectives?)\s*:\s*([\s\S]*?)<\/p>/i;
 function objectiveCard(html){
   const m = html.match(OBJECTIVE_RE);
   if(!m) return html;
   const [lead, rest] = splitFirstSentence(m[2].trim());
-  return '<div class="exp-obj"><div class="exp-obj-h">Educational ' + m[1].toLowerCase() + '</div>'
-       + '<p class="exp-obj-lead">' + lead + '</p>'
+  return '<div class="exp-obj"><p class="exp-obj-lead">'
+       + '<span class="exp-obj-h">Educational ' + m[1].toLowerCase() + '</span>'
+       + '<span class="exp-obj-sep" aria-hidden="true">—</span>' + lead + '</p>'
        + (rest ? '<p>' + rest + '</p>' : '')
        + '</div>' + html.slice(m[0].length);
 }

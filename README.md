@@ -573,9 +573,9 @@ Two steps: drop in a folder, add a line to the manifest.
    const EXPLANATIONS = {
      // "1": "<p class=\"exp-obj\">Educational Objective: …</p><p>…</p>"
      // Optional. Rendered as HTML below the choices once the block is graded.
-     // The engine draws the objective paragraph as a card under its own
-     // heading, its first sentence as the headline, so keep the line as the
-     // form prints it.
+     // The engine draws the objective paragraph as a card, its first
+     // sentence as the headline with "Educational objective" run into it,
+     // so keep the line as the form prints it.
    };
    const WRITTEN = {
      // "21": "all"  — items whose explanation carries text the capture did not
