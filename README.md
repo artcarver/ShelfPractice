@@ -495,20 +495,24 @@ loaded to draw the page.
 Above the subjects, **Pick up where you left off** holds the one form you
 worked on last, and only that one: older forms left half done stay in their
 subjects rather than piling up here. It is an open panel of the same make as a
-subject's, and its row is the same row, built by the same code, Clear included;
+subject's, and its row is the same row, built by the same code, Reset included;
 the name adds its subject, and the line under it says when it was last worked
-("Last worked on today") in place of the question count. Clear it, and the
+("Last worked on today") in place of the question count. Reset it, and the
 next most recent takes its place. Coming back to the list with the browser's Back button redraws
 it, so a page restored from the back-forward cache does not show the progress
 from before the exam was opened.
 
-A row you have touched also carries a quiet **Clear**, which forgets that exam
+A row you have touched also carries a quiet **Reset**, which erases that exam
 entirely — answers, score, highlights and notes — and returns the row to Start.
+It was called Clear, which left open what it cleared (on the resume panel it
+read as clearing the row from the panel); Reset is the question banks' word for
+it. Its question names the form in full ("Reset Neurology CMS Form 4?"), since
+every subject has a Form 4.
 It is the difference between Start Over inside an exam, which empties the
 answers but leaves the exam started and still showing Resume, and wanting the
 list to look as though you had never opened it. It asks before it does
 anything, there is no undo, and an exam you have never opened has no button
-since it has nothing to clear.
+since it has nothing to reset.
 
 The exam page also loads `assets/labvalues.js` / `assets/labvalues.css`, which add a **Lab Values** button to the toolbar. It opens a searchable, tabbed reference panel (Serum / Cerebrospinal / Blood / Urine and BMI) that splits the screen beside the question. The lab-value data is shared across all exams — edit it once in `assets/labvalues.js`.
 

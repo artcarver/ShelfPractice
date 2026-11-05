@@ -64,12 +64,12 @@
   .group{border-top:1px solid var(--divider);}
   .row-wrap + .row-wrap{border-top:1px solid var(--divider);}
 
-  /* An exam row is one link and, when there is progress, one Clear button,
+  /* An exam row is one link and, when there is progress, one Reset button,
      and a button cannot sit inside a link. So the link holds the name and its
-     hit area is stretched over the whole row, and Clear sits above that, beside
+     hit area is stretched over the whole row, and Reset sits above that, beside
      the status it would erase. Start, Resume and Review then always end the
      row at its right edge, under the subject chevrons, whether a row has a
-     Clear or not. */
+     Reset or not. */
   .exam-row{
     position:relative;
     display:flex;align-items:center;gap:16px;
@@ -84,7 +84,7 @@
   .exam-row:hover .row-go svg{color:var(--navy);transform:translateX(2px);}
   .exam-row .row-clear{position:relative;z-index:1;}
 
-  /* Clearing an exam throws away answers, highlights and notes with no undo,
+  /* Resetting an exam throws away answers, highlights and notes with no undo,
      so the control stays out of the way: it appears only on a row that has
      something to clear, reads as faint metadata until you reach for it, and
      asks before it does anything. */
@@ -337,7 +337,7 @@
 
   /* Saved progress lives under the same two keys the engine writes — see the
      note in exams/manifest.js — so a row can say where that exam stands, and
-     Clear can forget it, without loading its data.js. */
+     Reset can forget it, without loading its data.js. */
   const stateKey   = e => e.storageKey || ('exam_state_' + e.id);
   const sessionKey = e => 'exam_session_' + e.id;
   const subjectOf  = e => e.title.replace(/\s*practice exams?\s*$/i, '') || e.title;
@@ -420,17 +420,21 @@
       const clear = document.createElement('button');
       clear.type = 'button';
       clear.className = 'row-clear';
-      clear.textContent = 'Clear';
-      clear.title = 'Forget this exam and start it fresh';
-      clear.setAttribute('aria-label',
-        [('Clear saved progress for ' + e.title), e.label].filter(Boolean).join(' '));
+      /* "Clear" left open what it cleared, and on the resume panel it read
+         as clearing the row from the panel. "Reset" is the question banks'
+         word for erasing progress, and the question names the form in full,
+         since every subject has a Form 4. */
+      const full = subjectOf(e) + (e.label ? ' ' + e.label : '');
+      clear.textContent = 'Reset';
+      clear.title = 'Erase your progress on this form and start it fresh';
+      clear.setAttribute('aria-label', 'Reset ' + full + ', erasing its progress');
       clear.addEventListener('click', () => {
         const what = p.kind === 'done'
-          ? 'your score and answers'
-          : 'your answers so far';
-        if(!confirm('Clear ' + (e.label || e.title) + '?\n\n'
-                  + 'This forgets ' + what + ', along with any highlights and '
-                  + 'notes, and returns the exam to Start. It cannot be undone.')) return;
+          ? 'your score, your answers'
+          : 'your answers';
+        if(!confirm('Reset ' + full + '?\n\n'
+                  + 'This erases ' + what + ', notes and highlights, and puts the '
+                  + 'form back to Start. It cannot be undone.')) return;
         forget(e);
         renderList();
       });
