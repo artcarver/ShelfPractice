@@ -469,7 +469,12 @@ were reading rather than jumping to the score.
 The start screen only appears when you arrive fresh. Reloading a tab you
 are already working in goes straight back into the exam — the per-tab flag
 lives in `sessionStorage`, so a reload keeps it while a new tab or a later
-visit does not, and those still get the resume / start-over choice. Start
+visit does not, and those still get the resume / start-over choice. A
+reload, or Back and Forward, returns to the exam as it was left, paused
+included. Following a link back to it in the same tab (the exam list's
+Resume, after leaving from the pause card) is the decision to carry on, as the
+start screen's Resume is, so a paused block resumes there instead of stopping
+at the pause card to be resumed a second time. Start
 Over is a quiet text link rather than a button beside Resume, and it asks
 for confirmation, since it throws away every answer.
 

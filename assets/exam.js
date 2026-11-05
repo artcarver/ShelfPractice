@@ -2684,8 +2684,22 @@ renderPause();
    away rather than holding it behind a timer. */
 document.getElementById('loadingScreen').style.display = 'none';
 
+/* How this page was reached. A reload, or Back and Forward, returns to the
+   exam as it was left, paused included. Following a link to it (the exam
+   list's Resume, a start screen's Next up) is the decision to carry on, the
+   same as the start screen's own Resume, so a paused block resumes there
+   rather than stopping at the pause card to be resumed a second time, which
+   also flashed the loading page before the navy card. */
+function arrivedByLink(){
+  try{
+    const nav = performance.getEntriesByType('navigation')[0];
+    return !!nav && nav.type === 'navigate';
+  }catch(e){ return false; }
+}
+
 if(enteredThisSession()){
   // same tab, already working here: a reload should not interrupt
+  if(arrivedByLink() && state.paused && !state.graded) state.paused = false;
   enterExam();
 }else{
   document.getElementById('startScreen').style.display = 'block';
