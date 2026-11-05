@@ -493,12 +493,16 @@ read from the same saved progress the engine writes, so no exam's `data.js` is
 loaded to draw the page.
 
 Above the subjects, **Pick up where you left off** holds the one form you
-worked on last, and only that one: older forms left half done stay in their
-subjects rather than piling up here. It is an open panel of the same make as a
-subject's, and its row is the same row, built by the same code, Reset included;
-the name adds its subject, and the line under it says when it was last worked
-("Last worked on today") in place of the question count. Reset it, and the
-next most recent takes its place. Coming back to the list with the browser's Back button redraws
+worked on last, if it is still under way: older forms left half done stay in
+their subjects rather than piling up here, and if the last thing you did was
+finish a form, the panel is not shown at all. It is an open panel of the same
+make as a subject's, and its row is the same row, built by the same code; the
+name adds its subject, and the line under it says when it was last worked
+("Last worked on today") in place of the question count. It has no Reset, which
+stays in the subjects: an **×** in its corner hides the panel instead, leaving
+the progress alone and the form in its subject. Hiding is remembered against
+when the form was last saved, so the next time any form is worked on, the
+panel is back with that one. Coming back to the list with the browser's Back button redraws
 it, so a page restored from the back-forward cache does not show the progress
 from before the exam was opened.
 
