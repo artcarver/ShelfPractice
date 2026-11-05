@@ -285,9 +285,9 @@ after, and the words must be identical. Where a form also needs copy-editing,
 do that first and commit it on its own, then lay it out against the
 copy-edited text. Each commit then holds one kind of change: a corrected word
 never sits inside a commit that says it only moved tags, and the layout check
-can still demand identical words. Obstetrics and Gynecology Forms 8, 9 and 10
-are laid out this way. Forms 8 and 10 were copy-edited first, and Form 8 also
-had its capture gaps filled first (`CASES.md`).
+can still demand identical words. Obstetrics and Gynecology Forms 7 to 10 are
+laid out this way. Forms 7, 8 and 10 were copy-edited first, and Forms 7 and 8
+also had their capture damage repaired first (`CASES.md`).
 
 ## 7. The answer key
 
