@@ -492,12 +492,13 @@ list. One you have opened but answered nothing in reads "Started". It is all
 read from the same saved progress the engine writes, so no exam's `data.js` is
 loaded to draw the page.
 
-Above the subjects, **Pick up where you left off** lists the forms under way,
-newest first, up to three ("latest 3 of 5" when there are more). It is an open
-panel of the same make as a subject's, and its rows are the same rows, built by
-the same code, Clear included; each name adds its subject, and the line under
-it says when it was last worked ("Last worked on today") in place of the
-question count. Coming back to the list with the browser's Back button redraws
+Above the subjects, **Pick up where you left off** holds the one form you
+worked on last, and only that one: older forms left half done stay in their
+subjects rather than piling up here. It is an open panel of the same make as a
+subject's, and its row is the same row, built by the same code, Clear included;
+the name adds its subject, and the line under it says when it was last worked
+("Last worked on today") in place of the question count. Clear it, and the
+next most recent takes its place. Coming back to the list with the browser's Back button redraws
 it, so a page restored from the back-forward cache does not show the progress
 from before the exam was opened.
 

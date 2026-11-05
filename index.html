@@ -184,11 +184,12 @@
   h1:focus{outline:none;}
 
   /* Coming back is the common visit, and the exam you were in the middle of
-     is otherwise one click deep inside its subject. So whatever is under way
-     sits above the list, newest first, as an open panel of the same make as
-     a subject's: a head row with its count, then the very rows the subjects
-     use, built by the same code, with the subject added to each name and
-     when it was last worked under it. */
+     is otherwise one click deep inside its subject. So the one you worked on
+     last sits above the list, alone: older forms left half done stay in their
+     subjects rather than piling up here. It is an open panel of the same make
+     as a subject's, a head row and then the very row the subjects use, built
+     by the same code, with the subject added to its name and when it was last
+     worked under it. */
   .resume-block{
     background:#fff;
     border:1px solid var(--border);
@@ -198,17 +199,13 @@
   }
   .resume-block[hidden]{display:none;}
   .resume-head{
-    display:flex;align-items:center;gap:14px;
-    /* the right inset is the subject heads' chevron and its gap, so this
-       count lines up with theirs below it */
-    padding:15px 47px 15px 18px;
+    padding:15px 18px;
     border-bottom:1px solid var(--divider);
   }
   .resume-h{
-    flex:1 1 auto;min-width:0;margin:0;
+    margin:0;
     font-size:var(--fs-md);font-weight:600;color:var(--navy-dark);
   }
-  .resume-meta{font-size:var(--fs-xs);color:var(--faint);white-space:nowrap;}
 
   .foot{margin-top:30px;font-size:var(--fs-xs);color:var(--faint);text-align:center;}
   /* The tour lives here, and only here: always reachable, never in the way
@@ -309,7 +306,6 @@
     <section class="resume-block" id="resumeBlock" aria-labelledby="resumeHead" hidden>
       <div class="resume-head">
         <h2 class="resume-h" id="resumeHead">Pick up where you left off</h2>
-        <span class="resume-meta" id="resumeMeta"></span>
       </div>
       <div id="resumeRows"></div>
     </section>
@@ -595,15 +591,11 @@
       .map(e => ({e, p: progressOf(e)}))
       .filter(x => x.p.kind === 'going')
       .sort((a, b) => b.p.savedAt - a.p.savedAt)
-      .slice(0, 3);
+      .slice(0, 1);   // the last one worked on, and only that one
     const block = document.getElementById('resumeBlock');
     const rows = document.getElementById('resumeRows');
     rows.innerHTML = '';
     block.hidden = !going.length;
-    const total = exams.filter(e => progressOf(e).kind === 'going').length;
-    document.getElementById('resumeMeta').textContent = total > going.length
-      ? 'latest ' + going.length + ' of ' + total
-      : total + ' in progress';
     going.forEach(({e}) => rows.append(row(e, {resume: true})));
   }
   /* The notice of what is new. Dismissing it is remembered under its own key,
