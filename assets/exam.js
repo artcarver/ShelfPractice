@@ -664,7 +664,7 @@ function render(){
   const expEl = document.getElementById('explanation');
   const expHtml = shown && EXAM.explanations ? EXAM.explanations[q.n] : null;
   if(expHtml){
-    expEl.innerHTML = '<div class="exp-h">Explanation</div>' + expHtml
+    expEl.innerHTML = '<div class="exp-h">Explanation</div>' + objectiveCard(expHtml)
                     + writtenNote(EXAM.written && EXAM.written[q.n]);
     expEl.style.display = '';
   }else{
@@ -860,6 +860,39 @@ const WRITTEN_NOTE = {
 function writtenNote(kind){
   const text = WRITTEN_NOTE[kind];
   return text ? '<p class="exp-note">' + escapeHtml(text) + '</p>' : '';
+}
+
+/* The educational objective is the item compressed, and its first sentence is
+   usually the point. So it is drawn as a card under its own heading, with that
+   sentence as the headline and the rest at body weight: a whole paragraph in
+   bold left nothing standing out, in the objective or in the bold terms of the
+   discussion under it. The data keeps the form's own line, a
+   <p class="exp-obj"> that opens "Educational Objective:", and the heading is
+   lifted out of it here, so the way it is drawn never touches a data.js. A
+   paragraph that does not open that way is left as it is. */
+const OBJECTIVE_RE = /^<p class="exp-obj">\s*Educational (objectives?)\s*:\s*([\s\S]*?)<\/p>/i;
+function objectiveCard(html){
+  const m = html.match(OBJECTIVE_RE);
+  if(!m) return html;
+  const [lead, rest] = splitFirstSentence(m[2].trim());
+  return '<div class="exp-obj"><div class="exp-obj-h">Educational ' + m[1].toLowerCase() + '</div>'
+       + '<p class="exp-obj-lead">' + lead + '</p>'
+       + (rest ? '<p>' + rest + '</p>' : '')
+       + '</div>' + html.slice(m[0].length);
+}
+/* A sentence ends at a full stop, question or exclamation mark followed by a
+   capital or an opening bracket. Not after a run of initials, though: "U.S.
+   Preventive Services Task Force" is one sentence. A single initial is left
+   alone, since in the objectives it is a real ending ("hepatitis B.", "factor
+   V.") and a genus initial is followed by a lowercase species anyway. */
+function splitFirstSentence(text){
+  const end = /[.?!](?=\s+[A-Z(])/g;
+  let m;
+  while((m = end.exec(text))){
+    if(/(?:[A-Z]\.){2,}$/.test(text.slice(0, m.index + 1))) continue;
+    return [text.slice(0, m.index + 1), text.slice(m.index + 1).trim()];
+  }
+  return [text, ''];
 }
 
 /* A lab row whose label is indented sits under the row above it, the way a

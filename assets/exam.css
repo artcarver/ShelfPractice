@@ -1476,13 +1476,29 @@
   }
   .explanation p{margin:0 0 13px;}
   .explanation p:last-child{margin-bottom:0;}
-  .explanation p.exp-obj{
-    font-weight:700;
-    background:#eaf2f8;
-    border-radius:var(--r-sm);
-    padding:12px 14px;
-    margin-bottom:16px;
+  /* The educational objective: a card under its own heading, its first
+     sentence as the headline and the rest at body weight. The engine builds
+     it from the form's "Educational Objective:" paragraph (objectiveCard in
+     exam.js). The card sits white on the explanation's tint so it reads as
+     the summary of what follows rather than more of it. */
+  .explanation .exp-obj{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:var(--r-md);
+    padding:12px 16px 14px;
+    margin-bottom:18px;
   }
+  .explanation .exp-obj-h{
+    font-size:var(--fs-xs);
+    font-weight:700;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--navy);
+    margin-bottom:7px;
+  }
+  .explanation .exp-obj p{margin:0 0 8px;}
+  .explanation .exp-obj p:last-child{margin-bottom:0;}
+  .explanation .exp-obj p.exp-obj-lead{font-weight:700;color:var(--navy-dark);}
   .explanation p.exp-note{
     /* Marks the part of an explanation the form did not print, where the
        source capture cut off and the text had to be written instead. The

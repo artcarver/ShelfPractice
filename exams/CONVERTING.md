@@ -156,7 +156,10 @@ Two house styles, and the source decides which:
 - **Objective first** — `<p class="exp-obj">Educational Objective: …</p>`
   followed by the discussion. Use it when the source prints an Educational
   Objective line, wherever on the page it appears; it moves to the front.
-  Thirty-three of the current forms are this style.
+  Thirty-three of the current forms are this style. The engine draws the line
+  as a card headed "Educational objective", its first sentence as the headline
+  and the rest at body weight, so the data keeps it as printed: no `<b>` inside
+  it, and its sentences in the form's order.
 - **Plain paragraphs** — no objective line in the source (Medicine Forms 3–6,
   Surgery Forms 3–6, and Obstetrics and Gynecology Form 10, whose capture never
   printed one).
