@@ -274,7 +274,10 @@ work, after transcribing and copy-editing, and it changes no word:
 - bold the answer where the discussion states it, and a few key terms, about
   one a paragraph. Bolding much more makes it all look the same again.
 - bold each choice name in the Incorrect Answers paragraphs, including a second
-  choice the same paragraph names
+  choice the same paragraph names. A form that runs every incorrect answer
+  into one paragraph after the header gets one paragraph per choice, starting
+  at the sentence that first names it. Obstetrics and Gynecology Form 8 was
+  printed this way.
 - leave the objective alone, since the engine draws it
 
 Check it the way copy-edits are checked. Strip the tags from before and
@@ -282,8 +285,9 @@ after, and the words must be identical. Where a form also needs copy-editing,
 do that first and commit it on its own, then lay it out against the
 copy-edited text. Each commit then holds one kind of change: a corrected word
 never sits inside a commit that says it only moved tags, and the layout check
-can still demand identical words. Obstetrics and Gynecology Forms 9 and 10 are
-laid out this way, and Form 10 was copy-edited first.
+can still demand identical words. Obstetrics and Gynecology Forms 8, 9 and 10
+are laid out this way. Forms 8 and 10 were copy-edited first, and Form 8 also
+had its capture gaps filled first (`CASES.md`).
 
 ## 7. The answer key
 

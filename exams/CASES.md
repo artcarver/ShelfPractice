@@ -34,6 +34,24 @@ them before doing the same again:
 Medicine Form 9 item 36, Medicine Form 6 item 30 and Family Medicine Form 5
 item 11 are single items filled the same way.
 
+**Obstetrics and Gynecology Form 8** is the middle case: complete pages, but
+cut sentences throughout, and nobody had looked for them until the form was
+laid out for reading. There were 23 gaps in 20 items. Fourteen were the last
+line of an objective or a paragraph, which stopped mid-phrase ("Treatment
+consists of", "require tight", "making chorionic villus sampling an"). Five
+were a sentence that ran straight into the next choice's name ("less likely
+than cervical Cervical stenosis (Choice D)"). The other four: item 4 lost the
+opening of its Choice A paragraph, item 6 lost text mid-sentence ("associated
+with more usually sufficient for"), item 22's objective was reduced to
+"Alloimmunization required during pregnancy.", and item 43 had an unreadable
+run where two sentences had been spliced. Most fills are the form's own words: an
+objective's cut sentence is usually repeated whole in its discussion. Item
+17 was the opposite kind of damage. Its whole Incorrect Answers section was
+pasted onto the end of its discussion, behind a stray "v", and the second
+copy was deleted. The sweep that finds these takes two checks: a paragraph
+that does not end in terminal punctuation, and a lowercase word followed
+directly by a capitalized choice name and "(Choice".
+
 Pediatrics Form 8 is the text-transcription version of the same loss. Five items
 carry written text, all of it a sentence the page seam cut: item 13's objective
 (rebuilt from its own discussion) plus two phrases in its discussion, and one
