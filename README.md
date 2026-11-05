@@ -133,8 +133,9 @@ for under a fifth of the block, exists for blocks saved before per-item
 timing, and an older tutor block read carefully would fail it.
 
 The running score ("9 of 12 correct so far") is on the Review grid, a click
-away, rather than in the subbar beside every question, which counts answers as
-it does in exam mode. The grid shows checked items in their result colours
+away, rather than in the subbar beside every question, which holds only the
+clock while a block is open, in either mode: the Item box already says where
+you are. The grid shows checked items in their result colours
 with the answered-but-unchecked ones in navy beside them. A tutor-mode score is named as one wherever it appears — the
 results line, the downloaded report, the exam list, the import dialog — since
 it was earned with each answer shown as it went in and is not the same figure
@@ -468,7 +469,12 @@ were reading rather than jumping to the score.
 The start screen only appears when you arrive fresh. Reloading a tab you
 are already working in goes straight back into the exam — the per-tab flag
 lives in `sessionStorage`, so a reload keeps it while a new tab or a later
-visit does not, and those still get the resume / start-over choice. Start
+visit does not, and those still get the resume / start-over choice. A
+reload, or Back and Forward, returns to the exam as it was left, paused
+included. Following a link back to it in the same tab (the exam list's
+Resume, after leaving from the pause card) is the decision to carry on, as the
+start screen's Resume is, so a paused block resumes there instead of stopping
+at the pause card to be resumed a second time. Start
 Over is a quiet text link rather than a button beside Resume, and it asks
 for confirmation, since it throws away every answer.
 
@@ -487,16 +493,35 @@ Inside a panel each form gets a row: the form label, its question count, and —
 only once you have touched it — where it stands, either "3 of 50 answered" or
 the score. The row's action reads Start, Resume or Review to match. An
 untouched exam says nothing rather than repeating "Not started" down the whole
-list. It is all read from the same saved progress the engine writes, so no
-exam's `data.js` is loaded to draw the page.
+list. One you have opened but answered nothing in reads "Started". It is all
+read from the same saved progress the engine writes, so no exam's `data.js` is
+loaded to draw the page.
 
-A row you have touched also carries a quiet **Clear**, which forgets that exam
+Above the subjects, **Pick up where you left off** holds the one form you
+worked on last, if it is still under way: older forms left half done stay in
+their subjects rather than piling up here, and if the last thing you did was
+finish a form, the panel is not shown at all. It is an open panel of the same
+make as a subject's, and its row is the same row, built by the same code; the
+name adds its subject, and the line under it says when it was last worked
+("Last worked on today") in place of the question count. It has no Reset, which
+stays in the subjects: an **×** in its corner hides the panel instead, leaving
+the progress alone and the form in its subject. Hiding is remembered against
+when the form was last saved, so the next time any form is worked on, the
+panel is back with that one. Coming back to the list with the browser's Back button redraws
+it, so a page restored from the back-forward cache does not show the progress
+from before the exam was opened.
+
+A row you have touched also carries a quiet **Reset**, which erases that exam
 entirely — answers, score, highlights and notes — and returns the row to Start.
+It was called Clear, which left open what it cleared (on the resume panel it
+read as clearing the row from the panel); Reset is the question banks' word for
+it. Its question names the form in full ("Reset Neurology CMS Form 4?"), since
+every subject has a Form 4.
 It is the difference between Start Over inside an exam, which empties the
 answers but leaves the exam started and still showing Resume, and wanting the
 list to look as though you had never opened it. It asks before it does
 anything, there is no undo, and an exam you have never opened has no button
-since it has nothing to clear.
+since it has nothing to reset.
 
 The exam page also loads `assets/labvalues.js` / `assets/labvalues.css`, which add a **Lab Values** button to the toolbar. It opens a searchable, tabbed reference panel (Serum / Cerebrospinal / Blood / Urine and BMI) that splits the screen beside the question. The lab-value data is shared across all exams — edit it once in `assets/labvalues.js`.
 

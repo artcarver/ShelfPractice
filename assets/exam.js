@@ -678,16 +678,15 @@ function render(){
 
   const note = document.getElementById('answeredNote');
   if(note){
-    /* While the block is open this is a count, not a score, in either mode:
-       tutor mode's running score is on the review grid, a click away, rather
-       than in view beside every question. */
+    /* While the block is open the subbar holds the clock alone: the Item box
+       already says where you are, the progress line under the bar how far
+       along, and tutor mode's running score is on the review grid. Once the
+       block is graded, items reopened from the results carry the score. */
     if(state.graded){
       const s = state.score || computeScore();
       note.textContent = `Score: ${s.correct} of ${s.total} correct`;
     }else{
-      // "of 50" is already in the Item box beside it; two "of 50"s read as
-      // two counts of one thing
-      note.textContent = `${Object.keys(state.answers).length} answered`;
+      note.textContent = '';
     }
   }
   updateProgress();
@@ -2685,8 +2684,22 @@ renderPause();
    away rather than holding it behind a timer. */
 document.getElementById('loadingScreen').style.display = 'none';
 
+/* How this page was reached. A reload, or Back and Forward, returns to the
+   exam as it was left, paused included. Following a link to it (the exam
+   list's Resume, a start screen's Next up) is the decision to carry on, the
+   same as the start screen's own Resume, so a paused block resumes there
+   rather than stopping at the pause card to be resumed a second time, which
+   also flashed the loading page before the navy card. */
+function arrivedByLink(){
+  try{
+    const nav = performance.getEntriesByType('navigation')[0];
+    return !!nav && nav.type === 'navigate';
+  }catch(e){ return false; }
+}
+
 if(enteredThisSession()){
   // same tab, already working here: a reload should not interrupt
+  if(arrivedByLink() && state.paused && !state.graded) state.paused = false;
   enterExam();
 }else{
   document.getElementById('startScreen').style.display = 'block';

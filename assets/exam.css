@@ -526,6 +526,7 @@
   /* the count and the clock sit side by side, so they share a size; the
      clock is the one you glance at, so it gets the darker ink */
   .answered-note{color:var(--muted);font-size:var(--fs-sm);}
+  .answered-note:empty{display:none;}
   .timer{color:var(--text);font-size:var(--fs-sm);font-variant-numeric:tabular-nums;}
   .progress-track{
     position:sticky;
@@ -880,7 +881,10 @@
   .strike-toggle.active{background:var(--muted);border-color:var(--muted);color:#fff;}
 
   .opt.graded{cursor:default;}
-  .opt.graded:hover{background:inherit;}
+  /* A revealed item does not answer to the pointer, but only its plain rows
+     lose the hover tint: the correct and wrong rows keep their green and red
+     under the pointer, or hovering the answer would hide it. */
+  .opt.graded:not(.correct-answer):not(.wrong-selected):hover{background:inherit;}
   .opt.correct-answer{background:var(--correct-bg);}
   .opt.correct-answer .tag{background:var(--correct);color:#fff;}
   .opt.wrong-selected{background:var(--incorrect-bg);}

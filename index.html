@@ -62,20 +62,14 @@
     transform:rotate(90deg);color:var(--navy);
   }
   .group{border-top:1px solid var(--divider);}
-  a.row{
-    display:flex;align-items:center;gap:16px;
-    padding:15px 18px;
-    text-decoration:none;color:inherit;
-    transition:background .12s;
-  }
   .row-wrap + .row-wrap{border-top:1px solid var(--divider);}
 
-  /* An exam row is one link and, when there is progress, one Clear button,
+  /* An exam row is one link and, when there is progress, one Reset button,
      and a button cannot sit inside a link. So the link holds the name and its
-     hit area is stretched over the whole row, and Clear sits above that, beside
+     hit area is stretched over the whole row, and Reset sits above that, beside
      the status it would erase. Start, Resume and Review then always end the
      row at its right edge, under the subject chevrons, whether a row has a
-     Clear or not. */
+     Reset or not. */
   .exam-row{
     position:relative;
     display:flex;align-items:center;gap:16px;
@@ -90,7 +84,7 @@
   .exam-row:hover .row-go svg{color:var(--navy);transform:translateX(2px);}
   .exam-row .row-clear{position:relative;z-index:1;}
 
-  /* Clearing an exam throws away answers, highlights and notes with no undo,
+  /* Resetting an exam throws away answers, highlights and notes with no undo,
      so the control stays out of the way: it appears only on a row that has
      something to clear, reads as faint metadata until you reach for it, and
      asks before it does anything. */
@@ -125,8 +119,6 @@
     white-space:nowrap;
   }
   .row-go svg{color:#b3c1cb;transition:color .12s, transform .12s;}
-  a.row:hover{background:var(--navy-tint);}
-  a.row:hover .row-go svg{color:var(--navy);transform:translateX(2px);}
 
   /* What is new. Everything else on this page is a white panel on grey, so
      the notice is the one navy card on it: a yellow ribbon across its corner,
@@ -192,26 +184,41 @@
   h1:focus{outline:none;}
 
   /* Coming back is the common visit, and the exam you were in the middle of
-     is otherwise one click deep inside its subject. So whatever is under way
-     sits above the list, newest first, as rows of the same family as the
-     exam rows below it: a panel with a small heading, not a banner. */
+     is otherwise one click deep inside its subject. So the one you worked on
+     last sits above the list, alone: older forms left half done stay in their
+     subjects rather than piling up here. It is an open panel of the same make
+     as a subject's, a head row and then the very row the subjects use, built
+     by the same code, with the subject added to its name and when it was last
+     worked under it. */
   .resume-block{
     background:#fff;
     border:1px solid var(--border);
-    border-left:4px solid var(--navy);
     border-radius:var(--r-md);
     overflow:hidden;
     margin-top:16px;
   }
   .resume-block[hidden]{display:none;}
-  .resume-h{
-    margin:0;padding:12px 18px 0;
-    font-size:var(--fs-xs);font-weight:700;letter-spacing:.06em;text-transform:uppercase;
-    color:var(--muted);
+  .resume-head{
+    display:flex;align-items:center;gap:14px;
+    padding:9px 12px 9px 18px;
+    border-bottom:1px solid var(--divider);
   }
-  .resume-block a.row{padding:10px 18px 14px;}
-  .resume-block a.row + a.row{border-top:1px solid var(--divider);padding-top:14px;}
-  .row-when{color:var(--faint);}
+  .resume-h{
+    flex:1 1 auto;min-width:0;margin:0;
+    font-size:var(--fs-md);font-weight:600;color:var(--navy-dark);
+  }
+  /* Hides the panel, not the progress: the form stays in its subject, and
+     the panel comes back the next time any form is worked on. So it is a
+     quiet close, not a destructive button; Reset lives in the subjects. */
+  .resume-x{
+    flex:none;width:32px;height:32px;
+    display:flex;align-items:center;justify-content:center;
+    border:0;border-radius:var(--r-sm);
+    background:none;color:var(--faint);cursor:pointer;
+    transition:background .12s, color .12s;
+  }
+  .resume-x:hover{background:var(--navy-tint);color:var(--navy);}
+  .resume-x:focus-visible{outline:2px solid var(--navy);outline-offset:1px;}
 
   .foot{margin-top:30px;font-size:var(--fs-xs);color:var(--faint);text-align:center;}
   /* The tour lives here, and only here: always reachable, never in the way
@@ -241,7 +248,6 @@
     *{transition:none !important;}
     /* The open chevron keeps its quarter turn: with the transition gone it is
        a state indicator drawn in one position, not a movement. */
-    a.row:hover .row-go svg,
     .exam-row:hover .row-go svg{transform:none;}
     /* the notice simply appears */
     .news{animation:none;}
@@ -311,7 +317,14 @@
     </section>
 
     <section class="resume-block" id="resumeBlock" aria-labelledby="resumeHead" hidden>
-      <h2 class="resume-h" id="resumeHead">Pick up where you left off</h2>
+      <div class="resume-head">
+        <h2 class="resume-h" id="resumeHead">Pick up where you left off</h2>
+        <button type="button" class="resume-x" id="resumeDismiss"
+                aria-label="Hide this. Your progress stays in its subject."
+                title="Hide this. Your progress stays in its subject."><svg width="14" height="14"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+                stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+      </div>
       <div id="resumeRows"></div>
     </section>
 
@@ -342,9 +355,10 @@
 
   /* Saved progress lives under the same two keys the engine writes — see the
      note in exams/manifest.js — so a row can say where that exam stands, and
-     Clear can forget it, without loading its data.js. */
+     Reset can forget it, without loading its data.js. */
   const stateKey   = e => e.storageKey || ('exam_state_' + e.id);
   const sessionKey = e => 'exam_session_' + e.id;
+  const subjectOf  = e => e.title.replace(/\s*practice exams?\s*$/i, '') || e.title;
 
   function progressOf(e){
     let s = null;
@@ -359,7 +373,8 @@
     const timed = s.timed === true;
     if(s.graded && s.score && s.score.total){
       return {kind:'done', correct:s.score.correct, total:s.score.total,
-              pct: Math.round((s.score.correct / s.score.total) * 100), tutor:tutor, timed:timed};
+              pct: Math.round((s.score.correct / s.score.total) * 100), tutor:tutor, timed:timed,
+              savedAt: s.savedAt || 0};
     }
     const answered = Object.keys(s.answers || {}).length;
     if(answered || s.elapsedMs || s.runningSince)
@@ -381,7 +396,11 @@
     return (p.tutor ? ' · tutor' : '') + (p.timed ? ' · timed' : '');
   }
 
-  function row(e){
+  /* One exam's row. The resume panel asks for the same row with the subject
+     in its name, since it mixes subjects, and when it was last worked in
+     place of the question count. */
+  function row(e, opts){
+    const resume = !!(opts && opts.resume);
     const p = progressOf(e);
     let state = '', cta = 'Start';
     if(p.kind === 'done'){
@@ -389,8 +408,10 @@
             + p.correct + ' of ' + p.total + ' correct' + tags(p) + '</div>';
       cta = 'Review';
     }else if(p.kind === 'going'){
-      state = '<div class="row-state"><b>' + p.answered + '</b> of ' + p.total
-            + ' answered' + tags(p) + '</div>';
+      // begun, but nothing answered yet: "0 of 50 answered" reads as a fault
+      state = '<div class="row-state">'
+            + (p.answered ? '<b>' + p.answered + '</b> of ' + p.total + ' answered' : 'Started')
+            + tags(p) + '</div>';
       cta = 'Resume';
     }
 
@@ -399,9 +420,12 @@
     const a = document.createElement('a');
     a.className = 'row-link';
     a.href = 'exam.html?exam=' + encodeURIComponent(e.slug);
+    const name = resume ? subjectOf(e) + (e.label ? ' · ' + e.label : '') : (e.label || e.title);
+    const last = resume ? when(p.savedAt) : '';
     a.innerHTML =
-      '<div class="row-form">' + (e.label || e.title) + '</div>' +
-      '<div class="row-len">' + (e.items ? e.items + ' questions' : 'Practice block') + '</div>';
+      '<div class="row-form">' + name + '</div>' +
+      '<div class="row-len">' + (last ? 'Last worked on ' + last
+        : (e.items ? e.items + ' questions' : 'Practice block')) + '</div>';
     // the link's own text is only the form, so a reader gets the rest here
     const stateText = state.replace(/<[^>]+>/g, '');
     a.setAttribute('aria-label', [cta, e.title, e.label, stateText].filter(Boolean).join(', '));
@@ -411,21 +435,25 @@
     /* An exam you have never opened has nothing to clear, so it gets no
        button. Restarting from inside the exam wipes the answers but leaves the
        exam started; this is the way back to a clean slate. */
-    if(p.kind !== 'new'){
+    if(p.kind !== 'new' && !resume){
       const clear = document.createElement('button');
       clear.type = 'button';
       clear.className = 'row-clear';
-      clear.textContent = 'Clear';
-      clear.title = 'Forget this exam and start it fresh';
-      clear.setAttribute('aria-label',
-        [('Clear saved progress for ' + e.title), e.label].filter(Boolean).join(' '));
+      /* "Clear" left open what it cleared, and on the resume panel it read
+         as clearing the row from the panel. "Reset" is the question banks'
+         word for erasing progress, and the question names the form in full,
+         since every subject has a Form 4. */
+      const full = subjectOf(e) + (e.label ? ' ' + e.label : '');
+      clear.textContent = 'Reset';
+      clear.title = 'Erase your progress on this form and start it fresh';
+      clear.setAttribute('aria-label', 'Reset ' + full + ', erasing its progress');
       clear.addEventListener('click', () => {
         const what = p.kind === 'done'
-          ? 'your score and answers'
-          : 'your answers so far';
-        if(!confirm('Clear ' + (e.label || e.title) + '?\n\n'
-                  + 'This forgets ' + what + ', along with any highlights and '
-                  + 'notes, and returns the exam to Start. It cannot be undone.')) return;
+          ? 'your score, your answers'
+          : 'your answers';
+        if(!confirm('Reset ' + full + '?\n\n'
+                  + 'This erases ' + what + ', notes and highlights, and puts the '
+                  + 'form back to Start. It cannot be undone.')) return;
         forget(e);
         renderList();
       });
@@ -457,7 +485,7 @@
   const byName = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'});
   const collected = new Map();
   exams.forEach(e => {
-    const subject = e.title.replace(/\s*practice exams?\s*$/i, '') || e.title;
+    const subject = subjectOf(e);
     if(!collected.has(subject)) collected.set(subject, []);
     collected.get(subject).push(e);
   });
@@ -581,33 +609,45 @@
     return d.toLocaleDateString(undefined, {month:'short', day:'numeric'});
   }
 
-  function placeResume(){
-    const going = exams
+  /* The form worked on last, if it is still under way and has not been
+     hidden since. "Last" means across every form, finished ones included: if
+     the last thing you did was finish a form, there is nothing to pick up,
+     and an older half-done one does not step in. Hiding it is remembered
+     against when it was last saved, so the next time any form is worked on,
+     the panel is back with that one. */
+  const RESUME_KEY = 'shelf_resume_hidden';
+  function readHidden(){
+    try{ return JSON.parse(localStorage.getItem(RESUME_KEY)) || null; }catch(err){ return null; }
+  }
+  function latestWorked(){
+    return exams
       .map(e => ({e, p: progressOf(e)}))
-      .filter(x => x.p.kind === 'going')
-      .sort((a, b) => b.p.savedAt - a.p.savedAt)
-      .slice(0, 3);
+      .filter(x => x.p.kind !== 'new')
+      .sort((a, b) => (b.p.savedAt || 0) - (a.p.savedAt || 0))[0] || null;
+  }
+  function placeResume(){
+    const last = latestWorked();
+    const hidden = readHidden();
+    const show = !!last && last.p.kind === 'going' &&
+      !(hidden && hidden.slug === last.e.slug && hidden.savedAt >= (last.p.savedAt || 0));
     const block = document.getElementById('resumeBlock');
     const rows = document.getElementById('resumeRows');
     rows.innerHTML = '';
-    block.hidden = !going.length;
-    going.forEach(({e, p}) => {
-      const subject = e.title.replace(/\s*practice exams?\s*$/i, '') || e.title;
-      const a = document.createElement('a');
-      a.className = 'row';
-      a.href = 'exam.html?exam=' + encodeURIComponent(e.slug);
-      const last = when(p.savedAt);
-      a.innerHTML =
-        '<div class="row-main">' +
-          '<div class="row-form">' + subject + (e.label ? ' · ' + e.label : '') + '</div>' +
-          '<div class="row-len"><b>' + p.answered + '</b> of ' + p.total + ' answered' + tags(p) +
-            (last ? '<span class="row-when"> · ' + last + '</span>' : '') + '</div>' +
-        '</div>' +
-        '<div class="row-go"><span>Resume</span>' + CHEV + '</div>';
-      rows.append(a);
-    });
+    block.hidden = !show;
+    if(show) rows.append(row(last.e, {resume: true}));
   }
-
+  document.getElementById('resumeDismiss').addEventListener('click', () => {
+    const last = latestWorked();
+    if(last){
+      try{
+        localStorage.setItem(RESUME_KEY,
+          JSON.stringify({slug: last.e.slug, savedAt: last.p.savedAt || 0}));
+      }catch(err){}
+    }
+    renderList();
+    // the button is gone, so focus goes to the page heading above it
+    document.getElementById('pageHead').focus();
+  });
   /* The notice of what is new. Dismissing it is remembered under its own key,
      a preference like the open subjects, so it outlives any exam's progress
      and is not carried by Export. A browser that will not store it simply
@@ -673,6 +713,10 @@
      importing into it — and the storage event fires only in the tabs that did
      not do the writing, which is exactly the set that is now out of date. */
   window.addEventListener('storage', () => renderList());
+  /* Back from an exam can bring this page out of the browser's back-forward
+     cache as it was, with no load and no storage event, so the rows would
+     still show the progress from before the exam was opened. */
+  window.addEventListener('pageshow', (ev) => { if(ev.persisted) renderList(); });
 
   if(exams.length){
     describeShelf();
