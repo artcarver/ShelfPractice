@@ -18,6 +18,13 @@
 */
 window.EXAMS = [
   {
+    slug: "family-medicine-form1",
+    id: "family_medicine_practice_exam_form1",
+    title: "Family Medicine Practice Exam",
+    label: "CMS Form 1",
+    items: 50
+  },
+  {
     slug: "family-medicine-form2",
     id: "family_medicine_practice_exam_form2",
     title: "Family Medicine Practice Exam",

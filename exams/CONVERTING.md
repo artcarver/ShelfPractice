@@ -161,8 +161,8 @@ Two house styles, and the source decides which:
   run into it and the rest at body weight, so the data keeps it as printed: no
   `<b>` inside it, and its sentences in the form's order.
 - **Plain paragraphs** — no objective line in the source (Medicine Forms 3–6,
-  Surgery Forms 3–6, and Obstetrics and Gynecology Form 10, whose capture never
-  printed one).
+  Surgery Forms 3–6, Obstetrics and Gynecology Form 10, whose capture never
+  printed one, and Family Medicine Form 1, whose answer document is commentary).
 
 Do not mix the two inside one form.
 
