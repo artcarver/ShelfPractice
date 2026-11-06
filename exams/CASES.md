@@ -116,7 +116,9 @@ from the item's own reasoning:
 - **Psychiatry Form 6 item 8** and **Surgery Form 9 item 34** lost only the
   objective line; both discussions and every incorrect-answer paragraph
   survive, so each objective is a compression of the item's own discussion and
-  each item is marked `objective`.
+  each item is marked `objective`. **Family Medicine Form 2 item 16** is the
+  same loss. Its transcription says so in place of the line, and the objective
+  is written the same way.
 - **Obstetrics and Gynecology Form 6 item 36** arrived as two sentences of
   shorthand — the diagnosis and the rule behind it, no objective and no
   incorrect-answer paragraphs. The surviving sentences stay as the discussion;
@@ -167,6 +169,18 @@ the review screen sits on A, and A is the key.
 Pediatrics Form 8 is the opposite case and worth knowing as the baseline: the
 printed key list, all 50 `Correct Answer` headers, the choice text beside each
 letter and every "Incorrect Answers" line agreed, so nothing was contested.
+
+Family Medicine Form 2 shows the explanation and the question disagreeing about
+the letters themselves, with no doubt about the key. In item 6 the explanation
+gives four of the five wrong choices the wrong letters, rotated by one place:
+it puts granulomatosis with polyangiitis last, where "Wegener granulomatosis"
+would have sorted. In item 29 it swaps doxycycline and fluconazole. All three
+sources agree on both keys (A and D), and each Incorrect Answers line still
+lists the right set of letters. The question is the form's, so its choice list
+stands. The explanation's letters are corrected to match it, as copy-edits,
+since the item's own choice list settles which letter each name carries. This
+is worth checking against the question page whenever it happens, because if
+the transcription reordered the choices, the correction runs the wrong way.
 
 ## Degraded text, splices and second passes
 
