@@ -182,6 +182,26 @@ since the item's own choice list settles which letter each name carries. This
 is worth checking against the question page whenever it happens, because if
 the transcription reordered the choices, the correction runs the wrong way.
 
+Family Medicine Form 1 is the case where the explanation is not the form's at
+all. Its answer document is commentary: a heading with the keyed letter, then a
+few sentences or a passage lifted from a reference, with no objective and no
+Incorrect Answers section. Some of it argues with the form. Item 28 opens "This
+is not a good question" and still defends the key. Item 45's heading keys A,
+no vaccines, and its commentary calls the question "bad" and says the answer is
+C, because the CDC now recommends PPSV23 for smokers and influenza vaccine for
+every adult. The key is A. The heading is the commentator copying the form's
+answer, and the discussion is the commentator disagreeing with it from later
+guidance, which is the Family Medicine Form 3 item 32 case: a key that was
+right when the form was written is still the form's key. §7's ranking puts the
+explanation above the header because the explanation is usually the form's own
+reasoning. Here it is not, so it cannot outrank the form. The commentary stays
+as printed, so the page shows key A beside a paragraph arguing for C, and the
+reader can see why. Item 50 had no commentary at all, only its letter, and its
+explanation is written and marked `all`. Its manifest entry carries
+`explanationSource: "commentary"`, so the start screen warns that the
+explanations are shorter, unofficial, and in places argue with the key, before
+anyone begins the block.
+
 ## Degraded text, splices and second passes
 
 It also reports runs of three or more consecutive words no exam has ever used.

@@ -30,6 +30,31 @@ document.getElementById('examName').textContent = SUBJECT;
   sub.textContent = EXAM.title.slice(SUBJECT.length).trim();
   sub.hidden = !sub.textContent;
 })();
+
+/* A form whose explanations are not the official ones says so before it is
+   begun, on the start screen in every state, so nobody works the block
+   expecting the depth the other forms have. The manifest names the kind
+   (explanationSource) and the wording lives here, as the WRITTEN notes do, so
+   every such form says it the same way. A kind not listed draws nothing. */
+const SOURCE_NOTICE = {
+  commentary: {
+    lead: 'Shorter explanations.',
+    text: 'The explanations for this form come from an unofficial commentary, '
+      + 'not the NBME. Most are a few sentences long, with no educational '
+      + 'objective and no discussion of each wrong answer, and in places the '
+      + "commentary disputes the form's answer. Your score always follows the "
+      + "form's own key."
+  }
+};
+(() => {
+  const notice = SOURCE_NOTICE[EXAM.explanationSource];
+  if(!notice) return;
+  const el = document.getElementById('examNotice');
+  const lead = document.createElement('b');
+  lead.textContent = notice.lead;
+  el.replaceChildren(lead, ' ' + notice.text);
+  el.hidden = false;
+})();
 /* The bar names the subject and, beside it, the form. It has room for one
    short line, so the title drops its "Practice Exam" suffix there — the
    browser tab and the results screen still say it in full. */

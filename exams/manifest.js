@@ -10,6 +10,10 @@
      label       form/source line shown next to the item count
      items       number of questions, used by the landing page
      storageKey  optional; only needed to keep progress saved under an older key
+     explanationSource
+                 optional; set when the explanations are not the form's own, so
+                 the start screen says so. "commentary" is the one kind so far,
+                 and its wording lives in assets/exam.js (SOURCE_NOTICE).
 
    Two browser keys are derived from an entry, and index.html and assets/exam.js
    have to agree on both: progress is localStorage `storageKey` or
@@ -17,6 +21,15 @@
    screen is sessionStorage "exam_session_<id>".
 */
 window.EXAMS = [
+  {
+    slug: "family-medicine-form1",
+    id: "family_medicine_practice_exam_form1",
+    title: "Family Medicine Practice Exam",
+    label: "CMS Form 1",
+    items: 50,
+    // The answer document is commentary, not NBME explanations.
+    explanationSource: "commentary"
+  },
   {
     slug: "family-medicine-form2",
     id: "family_medicine_practice_exam_form2",

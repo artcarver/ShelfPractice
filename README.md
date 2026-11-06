@@ -38,7 +38,7 @@ now, which `manifest.js` is the authority on:
 
 | Subject | Forms | With exhibits |
 | --- | --- | --- |
-| Family Medicine | 2–5 | all 4 |
+| Family Medicine | 1–5 | all 5 |
 | Medicine | 3–10 | all 8 |
 | Neurology | 4–9 | all 6 |
 | Obstetrics & Gynecology | 4–10 | all 7 |
@@ -46,7 +46,7 @@ now, which `manifest.js` is the authority on:
 | Psychiatry | 3–8 | 1 of 6 (Form 5, the Figure 1 / Figure 2 exhibit on item 48) |
 | Surgery | 3–9 | all 7 |
 
-Forty-five forms, 2,250 items.
+Forty-six forms, 2,300 items.
 
 ## Design
 
@@ -630,6 +630,12 @@ Two steps: drop in a folder, add a line to the manifest.
      items: 50
    }
    ```
+
+   A form whose explanations are not its own, such as Family Medicine Form 1,
+   whose answer document is unofficial commentary, also carries
+   `explanationSource: "commentary"`. The start screen then says so in a note
+   under the title. The wording lives in `assets/exam.js`, and `verify-exam`
+   rejects a kind the engine does not know.
 
 The landing page picks it up automatically, and it is reachable at
 `exam.html?exam=medicine-form1`. Keep `id` unique so saved progress doesn't

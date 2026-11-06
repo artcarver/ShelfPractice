@@ -83,6 +83,16 @@
     color:var(--navy-dark);letter-spacing:-.3px;
   }
   .start-card > p.sub{margin:6px 0 0;color:var(--muted);font-size:var(--fs-md);}
+  /* A caution about the form itself, such as explanations that are not the
+     official ones. Amber, the "look at this" hue, rather than the incorrect
+     red: nothing is wrong, the reader is just told what to expect. */
+  .start-notice{
+    margin:18px 0 0;padding:11px 14px;
+    font-size:var(--fs-sm);line-height:1.55;color:var(--text);
+    background:color-mix(in srgb, var(--slow) 9%, var(--panel));
+    border-left:3px solid var(--slow);border-radius:var(--r-sm);
+  }
+  .start-notice b{color:var(--navy-dark);}
 
   /* What the block is, in three figures, before anything is asked. */
   .start-facts{
