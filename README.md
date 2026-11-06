@@ -42,11 +42,11 @@ now, which `manifest.js` is the authority on:
 | Medicine | 3–10 | all 8 |
 | Neurology | 4–9 | all 6 |
 | Obstetrics & Gynecology | 4–10 | all 7 |
-| Pediatrics | 5–9 | all 5 |
+| Pediatrics | 3–9 | all 7 |
 | Psychiatry | 3–8 | 1 of 6 (Form 5, the Figure 1 / Figure 2 exhibit on item 48) |
 | Surgery | 3–9 | all 7 |
 
-Forty-two forms, 2,100 items.
+Forty-four forms, 2,200 items.
 
 ## Design
 
@@ -140,6 +140,28 @@ with the answered-but-unchecked ones in navy beside them. A tutor-mode score is 
 results line, the downloaded report, the exam list, the import dialog — since
 it was earned with each answer shown as it went in and is not the same figure
 as a cold one.
+
+### Explanations
+
+A graded item opens its explanation in one panel, headed "Explanation" inside
+the box. Where the form prints an Educational Objective, it comes first as a
+white card. "Educational objective" runs into its first sentence, which is set
+bold as the headline, and the rest of the objective follows at body weight.
+The engine draws the card from the line as the form prints it, so `data.js`
+keeps the objective plain.
+
+The forms laid out for reading go further. A form prints its discussion as one
+long paragraph; here it is broken where its subject turns, with the answer and
+a few key terms in bold. Each incorrect answer gets a paragraph of its own, led
+by its choice name in bold. No word changes: a form's text fixes are committed
+first, and the layout commit is checked to leave its text identical.
+`exams/CONVERTING.md` has the rules under "Laying it out for reading". So far
+that covers Obstetrics and Gynecology Forms 4 to 10 and Pediatrics Forms 3
+and 4.
+
+Where an explanation carries text the site wrote because the capture lost it,
+a quiet line at the foot of the panel says so. The wording lives in
+`assets/exam.js`, so every form says it the same way.
 
 ### Timed mode
 
