@@ -2241,7 +2241,7 @@ function renderStart(){
   if(!going){
     note.textContent = (SIBLINGS.length > 1 && SIBLINGS[0].slug === EXAM.slug)
       ? 'Newest of ' + SIBLINGS.length + ' ' + subjectName + ' forms' : '';
-    foot.textContent = 'Progress saves in this browser only.';
+    foot.textContent = 'Your progress is saved only in this browser, never sent anywhere.';
     showModePick(preferredMode());
     showClockPick(preferredClock());
     return;
