@@ -40,13 +40,13 @@ now, which `manifest.js` is the authority on:
 | --- | --- | --- |
 | Family Medicine | 1–5 | all 5 |
 | Medicine | 3–10 | all 8 |
-| Neurology | 4–9 | all 6 |
+| Neurology | 3–9 | all 7 |
 | Obstetrics & Gynecology | 4–10 | all 7 |
 | Pediatrics | 3–9 | all 7 |
 | Psychiatry | 3–8 | 1 of 6 (Form 5, the Figure 1 / Figure 2 exhibit on item 48) |
 | Surgery | 3–9 | all 7 |
 
-Forty-six forms, 2,300 items.
+Forty-seven forms, 2,350 items.
 
 ## Design
 

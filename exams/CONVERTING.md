@@ -156,7 +156,7 @@ Two house styles, and the source decides which:
 - **Objective first** — `<p class="exp-obj">Educational Objective: …</p>`
   followed by the discussion. Use it when the source prints an Educational
   Objective line, wherever on the page it appears; it moves to the front.
-  Thirty-six of the current forms are this style. The engine draws the line
+  Thirty-seven of the current forms are this style. The engine draws the line
   as a card whose first sentence is the headline, with "Educational objective"
   run into it and the rest at body weight, so the data keeps it as printed: no
   `<b>` inside it, and its sentences in the form's order.

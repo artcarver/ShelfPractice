@@ -202,6 +202,21 @@ explanation is written and marked `all`. Its manifest entry carries
 explanations are shorter, unofficial, and in places argue with the key, before
 anyone begins the block.
 
+Neurology Form 3 item 22 is the one key in the repo that the form did not
+supply. Its answer page has no highlight and no `Correct Answer` line. All it
+has is a note from whoever assembled the PDF: the original had no answer for
+the item, and students were split between B, complex partial seizure, and G,
+simple partial (motor) seizure with generalization. A screenshot of the page
+confirmed it. None of the three sources §7 ranks exists for this item, so §7
+cannot settle it, and the repo's owner chose G. The item opens a matched set,
+and item 23's explanation argues through every shared choice. Its paragraph on
+G describes item 22's patient: focal motor activity such as arm twitching, then
+loss of consciousness once the excitability spreads to the other hemisphere.
+Item 22's explanation is written for G and marked `all`. Its incorrect-answer
+paragraphs keep item 23's wording wherever that wording fits. The PDF
+assembler's note is not kept, since it is not the form's and argues for no
+letter. If the form's own key turns up, it replaces this one.
+
 ## Degraded text, splices and second passes
 
 It also reports runs of three or more consecutive words no exam has ever used.
