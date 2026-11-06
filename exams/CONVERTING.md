@@ -156,7 +156,7 @@ Two house styles, and the source decides which:
 - **Objective first** — `<p class="exp-obj">Educational Objective: …</p>`
   followed by the discussion. Use it when the source prints an Educational
   Objective line, wherever on the page it appears; it moves to the front.
-  Thirty-three of the current forms are this style. The engine draws the line
+  Thirty-six of the current forms are this style. The engine draws the line
   as a card whose first sentence is the headline, with "Educational objective"
   run into it and the rest at body weight, so the data keeps it as printed: no
   `<b>` inside it, and its sentences in the form's order.
@@ -297,10 +297,11 @@ do that first and commit it on its own, then lay it out against the
 copy-edited text. Each commit then holds one kind of change: a corrected word
 never sits inside a commit that says it only moved tags, and the layout check
 can still demand identical words. Obstetrics and Gynecology Forms 4 to 10 are
-laid out this way, and so are Pediatrics Forms 3 and 4. Obstetrics and
-Gynecology Forms 4 to 8 and 10 were copy-edited first, and 4 to 8 also had their
-capture damage repaired first (`CASES.md`); Pediatrics Forms 3 and 4 were
-copy-edited in their builds.
+laid out this way, and so are Pediatrics Forms 3 and 4 and Family Medicine
+Form 2. Obstetrics and Gynecology Forms 4 to 8 and 10 were copy-edited first,
+and 4 to 8 also had their capture damage repaired first (`CASES.md`);
+Pediatrics Forms 3 and 4 and Family Medicine Form 2 were copy-edited in their
+builds.
 
 ## 7. The answer key
 
