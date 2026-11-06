@@ -183,12 +183,11 @@ const CATEGORIES = [
   }
 ];
 
-function beakerSVG(){
-  return `<svg class="lv-beaker" width="22" height="22" viewBox="0 0 24 24" fill="none"
+const BEAKER_SVG = `<svg class="lv-beaker" width="22" height="22" viewBox="0 0 24 24" fill="none"
     stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
     <path d="M9 3h6M10 3v6.5L5.5 17.2A2 2 0 0 0 7.2 20h9.6a2 2 0 0 0 1.7-2.8L14 9.5V3"/>
     <path d="M8.2 13.5h7.6"/></svg>`;
-}
+
 function renderLabValues(root, opts){
   opts = opts || {};
   root.classList.add('lv');
@@ -203,7 +202,7 @@ function renderLabValues(root, opts){
   const closeBtn = opts.showClose
     ? `<button class="lv-close" id="lvClose" title="Close" aria-label="Close">&times;</button>`
     : '';
-  header.innerHTML = `<div class="lv-title">${beakerSVG()}<span>Lab Values</span></div>
+  header.innerHTML = `<div class="lv-title">${BEAKER_SVG}<span>Lab Values</span></div>
     <div class="lv-header-actions">${closeBtn}</div>`;
   root.appendChild(header);
 
@@ -226,8 +225,10 @@ function renderLabValues(root, opts){
     const b = document.createElement('button');
     b.className = 'lv-tab';
     b.dataset.id = cat.id;
-    b.innerHTML = `<span class="lv-tab-label"></span>`;
-    b.querySelector('.lv-tab-label').textContent = cat.tab;
+    const label = document.createElement('span');
+    label.className = 'lv-tab-label';
+    label.textContent = cat.tab;
+    b.append(label);
     b.addEventListener('click', () => { activeId = cat.id; renderTable(); });
     tabs.appendChild(b);
   });
@@ -259,9 +260,7 @@ function renderLabValues(root, opts){
     table.innerHTML = `<thead><tr><th>${escapeHtml(cat.heading)}</th><th>Reference Range</th></tr></thead>`;
     const tbody = document.createElement('tbody');
 
-    cat.rows.forEach(r => {
-      const [label, value, level] = [r[0], r[1] || '', r[2] || 0];
-      const meta = r[3] || {};
+    cat.rows.forEach(([label, value = '', level = 0, meta = {}]) => {
       const tr = document.createElement('tr');
       const isHeader = value === '';
       tr.className = 'lv-row' + (isHeader ? ' lv-group' : '') + (meta.bold ? ' lv-bold' : '');
@@ -312,8 +311,7 @@ function renderLabValues(root, opts){
     renderTable();
   });
   if(opts.showClose){
-    const cb = root.querySelector('#lvClose');
-    if(cb) cb.addEventListener('click', () => opts.onClose && opts.onClose());
+    root.querySelector('#lvClose').addEventListener('click', () => opts.onClose && opts.onClose());
   }
 
   renderTable();

@@ -2,8 +2,8 @@
    The panel itself is a flex column with an internally-scrolling body. */
 
 .lv{
-  --lv-navy:#0b4a73;
-  --lv-ink:#1c2b36;
+  --lv-navy:var(--navy);
+  --lv-ink:var(--text);
   --lv-muted:#5f6f7a;
   --lv-line:#eaeff3;
   --lv-line-strong:#dbe3e9;

@@ -1,8 +1,10 @@
 /* Shared exam engine.
    exam.html defines window.EXAM before this script loads, merging the exam's
    catalog entry from exams/manifest.js with its own data.js:
-   { id, title, label?, items?, storageKey?, basePath?,
-     questions, images, answerKey, explanations? } */
+   { slug, id, title, label?, items?, storageKey?, explanationSource?, basePath,
+     questions, images, answerKey, explanations?, written? }
+   It loads assets/transfer.js first too, which is where saved progress and
+   the catalog are read, so this page reads them as the exam list does. */
 
 const EXAM = window.EXAM;
 const QUESTIONS = EXAM.questions;
@@ -23,7 +25,10 @@ document.title = EXAM.title;
 /* The subject is what tells one exam from another, so it is the start
    screen's heading, with "Practice Exam" under it; every surgery form shares
    the full title, and the chip above says which form this is. */
-const SUBJECT = EXAM.title.replace(/\s+Practice Exams?$/i, '') || EXAM.title;
+const SUBJECT = SHELF_TRANSFER.subjectOf(EXAM);
+/* The form without the "CMS" every label opens with, for the places that
+   already name the subject beside it: "CMS Form 6" is "Form 6" there. */
+function formName(e){ return (e.label || e.title).replace(/^CMS\s+/i, ''); }
 document.getElementById('examName').textContent = SUBJECT;
 (() => {
   const sub = document.getElementById('examSub');
@@ -69,7 +74,7 @@ if(EXAM.label){
      subject does not: "CMS Form 6" becomes "Form 6". The start screen still
      shows the label in full. */
   const tag = document.getElementById('examFormTag');
-  tag.textContent = EXAM.label.replace(/^CMS\s+/i, '');
+  tag.textContent = formName(EXAM);
   tag.title = EXAM.label;
   tag.style.display = '';
 }
@@ -130,7 +135,11 @@ const state = {
   gradedAt: null
 };
 
-const STORAGE_KEY = EXAM.storageKey || ('exam_state_' + EXAM.id);
+const STORAGE_KEY = SHELF_TRANSFER.stateKey(EXAM);
+
+/* Whether the exam itself is up, rather than the start screen in front of
+   it. The clock, the pause card and the time limit belong to the exam. */
+let enteredExam = false;
 
 function loadState(){
   try{
@@ -239,21 +248,18 @@ function reviewing(){
    clock has already stopped for good. */
 function syncReviewClock(){
   if(!enteredExam || state.paused || state.graded || timeUpOpen) return;
-  if(reviewing()){
-    if(state.runningSince){
-      state.elapsedMs += Date.now() - state.runningSince;
-      state.runningSince = null;
-    }
-  }else{
-    startClock();
-  }
+  if(reviewing()) bankBlockClock();
+  else startClock();
 }
 function stopClock(){
-  if(state.runningSince){
-    state.elapsedMs += Date.now() - state.runningSince;
-    state.runningSince = null;
-  }
+  bankBlockClock();
   stopItemClock();   // the item clock never outlives the block clock
+}
+/* Stop the block clock alone, banking the stretch it was running. */
+function bankBlockClock(){
+  if(!state.runningSince) return;
+  state.elapsedMs += Date.now() - state.runningSince;
+  state.runningSince = null;
 }
 
 /* The item clock. startItemClock is a no-op unless a question is actually on
@@ -299,9 +305,13 @@ function slowThresholdMs(){
 
 function currentQ(){ return QUESTIONS[state.idx]; }
 
-function isCorrect(n){
-  return state.answers[n] && ANSWER_KEY[n] && state.answers[n] === ANSWER_KEY[n];
+function answeredCount(){ return Object.keys(state.answers).length; }
+
+function resultOf(n){
+  if(!state.answers[n]) return 'unanswered';
+  return state.answers[n] === ANSWER_KEY[n] ? 'correct' : 'incorrect';
 }
+function isCorrect(n){ return resultOf(n) === 'correct'; }
 
 /* ---------- tutor mode ---------- */
 
@@ -333,9 +343,10 @@ const UNIT = (() => {
 })();
 function unitOf(n){ return UNIT[n] || [n]; }
 
-function listItems(ns){
-  return ns.length < 2 ? String(ns[0] || '')
-       : ns.slice(0, -1).join(', ') + ' and ' + ns[ns.length - 1];
+/* A list the way a sentence says it: "4", "4 and 5", "4, 5 and 6". */
+function joinAnd(xs){
+  return xs.length < 2 ? String(xs[0] || '')
+       : xs.slice(0, -1).join(', ') + ' and ' + xs[xs.length - 1];
 }
 
 function checkedTally(){
@@ -420,11 +431,9 @@ function renderTimeUp(){
   document.getElementById('app').inert = timeUpOpen;
   renderPause();   // hides the question and the notes while the card is up
   if(!timeUpOpen) return;
-  const answered = Object.keys(state.answers).length;
-  const marked = markedIndexes().length;
   document.getElementById('timeUpLimit').textContent = humanDuration(timeLimitMs());
-  document.getElementById('timeUpAnswered').textContent = answered + ' / ' + QUESTIONS.length;
-  document.getElementById('timeUpMarked').textContent = marked;
+  document.getElementById('timeUpAnswered').textContent = answeredCount() + ' / ' + QUESTIONS.length;
+  document.getElementById('timeUpMarked').textContent = markedIndexes().length;
   document.getElementById('timeUpHead').focus();
 }
 /* End there: graded as it stands, exactly as End block grades it. The card
@@ -505,8 +514,8 @@ function renderCheck(q){
   }else{
     const others = waiting.filter(n => n !== q.n);
     hint.textContent = (state.answers[q.n] && others.length)
-      ? 'Answer item ' + listItems(others) + ' too: items ' + listItems(unit) + ' are checked together.'
-      : 'Items ' + listItems(unit) + ' are checked together.';
+      ? 'Answer item ' + joinAnd(others) + ' too: items ' + joinAnd(unit) + ' are checked together.'
+      : 'Items ' + joinAnd(unit) + ' are checked together.';
   }
 }
 
@@ -534,12 +543,10 @@ function nudgeToExplanation(){
   const main = document.getElementById('examMain');
   const split = document.getElementById('app').classList.contains('lab-open') &&
                 getComputedStyle(main).overflowY === 'auto';
-  const foot = document.querySelector('footer.botbar');
-  const floor = foot ? foot.getBoundingClientRect().top : window.innerHeight;
+  const floor = document.querySelector('footer.botbar').getBoundingClientRect().top;
   const want = exp.getBoundingClientRect().top + 96 - floor;
   if(want <= 0) return;
-  const track = document.querySelector('.progress-track');
-  const ceiling = track ? track.getBoundingClientRect().bottom : 0;
+  const ceiling = document.querySelector('.progress-track').getBoundingClientRect().bottom;
   const room = document.getElementById('qoptions').getBoundingClientRect().top - ceiling - 12;
   const by = Math.min(want, Math.max(0, room));
   if(by <= 0) return;
@@ -657,6 +664,11 @@ function render(){
     row.innerHTML = `<input type="radio" name="opt" id="opt_${letter}" ${selected===letter?'checked':''} ${shown?'disabled':''}>
       <label for="opt_${letter}">${body}</label>${tag}${strikeBtn}`;
     if(!shown){
+      const toggleStrike = () => {
+        state.struck[strikeKey] = !state.struck[strikeKey];
+        saveState();
+        render();
+      };
       row.addEventListener('click', (e) => {
         if(e.target.closest('.strike-toggle')) return;
         state.answers[q.n] = letter;
@@ -664,21 +676,11 @@ function render(){
         render();
       });
       // right-click anywhere on the choice also toggles the cross-out
-      row.addEventListener('contextmenu', (e) => {
-        e.preventDefault();
-        state.struck[strikeKey] = !state.struck[strikeKey];
-        saveState();
-        render();
+      row.addEventListener('contextmenu', (e) => { e.preventDefault(); toggleStrike(); });
+      row.querySelector('.strike-toggle').addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleStrike();
       });
-      const st = row.querySelector('.strike-toggle');
-      if(st){
-        st.addEventListener('click', (e) => {
-          e.stopPropagation();
-          state.struck[strikeKey] = !state.struck[strikeKey];
-          saveState();
-          render();
-        });
-      }
     }
     optsDiv.appendChild(row);
   });
@@ -701,19 +703,13 @@ function render(){
 
   document.getElementById('markChk').checked = !!state.marked[q.n];
 
-  const note = document.getElementById('answeredNote');
-  if(note){
-    /* While the block is open the subbar holds the clock alone: the Item box
-       already says where you are, the progress line under the bar how far
-       along, and tutor mode's running score is on the review grid. Once the
-       block is graded, items reopened from the results carry the score. */
-    if(state.graded){
-      const s = state.score || computeScore();
-      note.textContent = `Score: ${s.correct} of ${s.total} correct`;
-    }else{
-      note.textContent = '';
-    }
-  }
+  /* While the block is open the subbar holds the clock alone: the Item box
+     already says where you are, the progress line under the bar how far
+     along, and tutor mode's running score is on the review grid. Once the
+     block is graded, items reopened from the results carry the score. */
+  const s = state.graded ? (state.score || computeScore()) : null;
+  document.getElementById('answeredNote').textContent =
+    s ? `Score: ${s.correct} of ${s.total} correct` : '';
   updateProgress();
 
   document.getElementById('prevBtn').disabled = state.idx === 0;
@@ -724,11 +720,8 @@ function render(){
     isLast ? (state.graded ? 'Item List' : 'Review / Finish') : 'Next';
 
   // stepping through only the items you got wrong, once the block is graded
-  const ni = document.getElementById('nextIncorrectBtn');
-  if(ni){
-    const wrong = state.graded ? incorrectIndexes() : [];
-    ni.style.display = wrong.length ? '' : 'none';
-  }
+  document.getElementById('nextIncorrectBtn').style.display =
+    (state.graded && incorrectIndexes().length) ? '' : 'none';
 
   renderPause();
   closeLightbox();
@@ -739,8 +732,7 @@ function render(){
    page where it is. Only the callers that change item call this.
    With the Lab Values panel open the question column scrolls, not the window. */
 function scrollQuestionTop(){
-  const main = document.getElementById('examMain');
-  if(main) main.scrollTop = 0;
+  document.getElementById('examMain').scrollTop = 0;
   window.scrollTo(0,0);
 }
 
@@ -811,21 +803,21 @@ function goToItem(i){
   scrollQuestionTop();
 }
 
+/* For text set into markup, in an element or in a quoted attribute. */
 function escapeHtml(s){
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 /* Thin bar under the subbar: answered fraction while testing, then the
    correct fraction (in green) once the block is graded. */
 function updateProgress(){
   const fill = document.getElementById('progressFill');
-  if(!fill) return;
   if(state.graded){
     const s = state.score || computeScore();
     fill.style.width = (s.correct / s.total) * 100 + '%';
     fill.classList.add('graded');
   }else{
-    fill.style.width = (Object.keys(state.answers).length / QUESTIONS.length) * 100 + '%';
+    fill.style.width = (answeredCount() / QUESTIONS.length) * 100 + '%';
     fill.classList.remove('graded');
   }
 }
@@ -1265,7 +1257,7 @@ document.getElementById('reviewOverlay').addEventListener('click', (e) => {
 document.getElementById('finishBtn').addEventListener('click', () => {
   /* Ending the block cannot be undone, so it always asks, and says what is
      still open: blanks, and items you meant to come back to. */
-  const unanswered = QUESTIONS.length - Object.keys(state.answers).length;
+  const unanswered = QUESTIONS.length - answeredCount();
   const marked = markedIndexes().length;
   // tutor mode: picked but never checked, which grading takes as they stand
   const unchecked = tutor()
@@ -1275,9 +1267,7 @@ document.getElementById('finishBtn').addEventListener('click', () => {
   if(unanswered) open.push(items(unanswered) + ' unanswered');
   if(unchecked) open.push(items(unchecked) + ' answered but not checked');
   if(marked) open.push(items(marked) + ' marked for review');
-  const said = open.length < 3 ? open.join(' and ')
-             : open.slice(0, -1).join(', ') + ' and ' + open[open.length - 1];
-  const lead = open.length ? said + '.\n\n' : '';
+  const lead = open.length ? joinAnd(open) + '.\n\n' : '';
   if(!confirm(lead.charAt(0).toUpperCase() + lead.slice(1)
             + 'End the block and see your score? Answers cannot be changed after this.')) return;
   /* The confirmation stops the page, the clock's tick included, while the
@@ -1288,14 +1278,9 @@ document.getElementById('finishBtn').addEventListener('click', () => {
 });
 
 function computeScore(){
-  let correct = 0, incorrect = 0, unanswered = 0;
-  QUESTIONS.forEach(q => {
-    const a = state.answers[q.n];
-    if(!a) unanswered++;
-    else if(a === ANSWER_KEY[q.n]) correct++;
-    else incorrect++;
-  });
-  return {correct, incorrect, unanswered, total: QUESTIONS.length};
+  const score = {correct: 0, incorrect: 0, unanswered: 0, total: QUESTIONS.length};
+  QUESTIONS.forEach(q => { score[resultOf(q.n)]++; });
+  return score;
 }
 
 /* The results table.
@@ -1317,11 +1302,6 @@ const expandedNotes = new Set();   // item numbers whose note is expanded in pla
 /* The first click on a header sorts the way that column is useful: items in
    form order, results with what needs attention on top, times slowest first. */
 const SORT_DEFAULT_DIR = {item:'asc', result:'asc', time:'desc'};
-
-function resultOf(n){
-  if(!state.answers[n]) return 'unanswered';
-  return state.answers[n] === ANSWER_KEY[n] ? 'correct' : 'incorrect';
-}
 
 /* The leading article carries nothing and costs the first characters of every
    row, where the width is scarcest. Everything after it is the form's own
@@ -1461,8 +1441,7 @@ function buildResultsBody(){
      read carefully would lose its Time column for it. */
   const anyTime = tutor() ? timedMs > 0
                 : (blockMs > 0 ? timedMs >= blockMs * 0.2 : timedMs > 0);
-  const table = document.querySelector('.results-table');
-  if(table) table.classList.toggle('no-times', !anyTime);
+  document.querySelector('.results-table').classList.toggle('no-times', !anyTime);
   if(!anyTime && resultsSort.key === 'time') resultsSort = {key:'item', dir:'asc'};
   renderSortHeaders();
 
@@ -1572,11 +1551,9 @@ function showResults(){
 
   const score = computeScore();
   const {correct, incorrect, unanswered, total} = score;
-  const pct = Math.round((correct/total)*100);
 
-  document.getElementById('scorePercent').textContent = pct + '%';
-  // the breakdown beside it already says "30 Correct"
-  document.getElementById('scoreFrac').textContent = '';
+  // a percentage alone: the breakdown beside it already says "30 Correct"
+  document.getElementById('scorePercent').textContent = pctOf(score) + '%';
   const answeredN = total - unanswered;
   /* A tutor-mode score was worked with the answers coming in as it went, so
      the line says so; and its pace is time to answer, made from the item
@@ -1632,9 +1609,9 @@ document.getElementById('backToExamBtn').addEventListener('click', () => {
 
 /* The results screen and the start screen of a scored block both offer this. */
 function downloadResults(){
-  const {correct, incorrect, unanswered, total} = computeScore();
-  const pct = Math.round((correct/total)*100);
-  let lines = [EXAM.title + ' - Results',
+  const score = computeScore();
+  const {correct, incorrect, unanswered, total} = score;
+  const lines = [EXAM.title + ' - Results',
     EXAM.label ? EXAM.label : null,
     tutor() ? 'Tutor mode: each answer was checked as it was given' : null,
     state.timed ? 'Timed: ' + formatDuration(timeLimitMs()) + ' limit'
@@ -1645,7 +1622,7 @@ function downloadResults(){
                      + ' correct (' + pctOf(state.scoreAtTimeUp) + '%)'
         : (timerWentOff() ? 'Timed until ' + formatDuration(state.timerOffAt)
                             + ', then the timer was turned off' : null)),
-    `Score: ${correct} of ${total} correct (${pct}%)`,
+    `Score: ${correct} of ${total} correct (${pctOf(score)}%)`,
     `Incorrect: ${incorrect}    Unanswered: ${unanswered}`,
     `Time elapsed: ${formatDuration(elapsedMs())}`,
     '',
@@ -1657,7 +1634,7 @@ function downloadResults(){
   QUESTIONS.forEach(q => {
     const ans = state.answers[q.n] || '(unanswered)';
     const correctLetter = ANSWER_KEY[q.n] || '?';
-    const result = !state.answers[q.n] ? 'UNANSWERED' : (state.answers[q.n] === correctLetter ? 'CORRECT' : 'INCORRECT');
+    const result = resultOf(q.n).toUpperCase();
     const ms = itemMsFor(q.n);
     // the same two facts the screen now shows beside the letters
     const extra = [ms > 0 ? formatItemTime(ms) : null, state.marked[q.n] ? 'marked' : null]
@@ -1717,7 +1694,8 @@ document.getElementById('staleDismiss').addEventListener('click', () => {
   document.getElementById('staleNote').hidden = true;
 });
 
-// timer
+/* ---------- the clock on screen ---------- */
+
 function pad(n){ return String(n).padStart(2,'0'); }
 function formatDuration(ms){
   const secs = Math.floor(ms/1000);
@@ -1751,10 +1729,7 @@ function tickTimer(){
   timer.classList.toggle('is-paused', state.paused);
   timer.classList.toggle('is-low', counting() && !state.paused && remainingMs() <= 5 * 60000);
   document.getElementById('timerOffBtn').hidden = !counting();
-  if(state.paused){
-    const el = document.getElementById('pausedElapsed');
-    if(el) el.textContent = label;
-  }
+  if(state.paused) document.getElementById('pausedElapsed').textContent = label;
   // only a block someone is in can run out; the start screen just reports it
   if(counting() && enteredExam && !state.paused && !timeUpOpen && remainingMs() <= 0) timeUp();
 }
@@ -1762,23 +1737,17 @@ setInterval(tickTimer, 1000);
 
 /* ---------- pause ---------- */
 
-let enteredExam = false;   // the overlay belongs to the exam, not the start screen
-
 /* The toolbar tracks what is on screen: no clock control once the block is
    graded, and no Lab Values on the results screen, where there is no question
    to read them against. */
 function renderToolbar(){
   const onResults = document.getElementById('resultsScreen').style.display === 'block';
-  const pause = document.getElementById('pauseBtn');
-  if(pause) pause.style.display = state.graded ? 'none' : '';
-  const lab = document.getElementById('labValuesBtn');
-  if(lab) lab.style.display = onResults ? 'none' : '';
+  document.getElementById('pauseBtn').style.display = state.graded ? 'none' : '';
+  document.getElementById('labValuesBtn').style.display = onResults ? 'none' : '';
   // notes belong to an item, so they go away with the question view
-  const notes = document.getElementById('notesBtn');
-  if(notes) notes.style.display = onResults ? 'none' : '';
+  document.getElementById('notesBtn').style.display = onResults ? 'none' : '';
   // once graded, the Pause slot becomes the way back to the score
-  const results = document.getElementById('resultsBtn');
-  if(results) results.style.display = (state.graded && !onResults) ? '' : 'none';
+  document.getElementById('resultsBtn').style.display = (state.graded && !onResults) ? '' : 'none';
   /* The item counter, Previous/Next and the subbar all describe the current
      question. On the results screen there is none, so they are at best inert
      and at worst misleading: the subbar's "Mark for review" box would flag a
@@ -1809,48 +1778,34 @@ function goToNextIncorrect(){
    which item, and how the block stands. It is a glance, not a report — the
    numbers that reward study belong to the results screen. */
 function renderPauseFigures(){
-  const answered = Object.keys(state.answers).length;
+  const answered = answeredCount();
 
-  const where = document.getElementById('pauseWhere');
-  if(where){
-    // which exam; how far through it is the "answered" figure below, and
-    // "item 40 of 50" beside "39 / 50" read as two counts of one thing
-    where.textContent = [SUBJECT,
-                         (EXAM.label || '').replace(/^CMS\s+/i, ''),
-                         tutor() ? 'Tutor mode' : '',
-                         state.timed ? 'Timed' : '']
-                        .filter(Boolean).join(' · ');
-  }
+  // which exam; how far through it is the "answered" figure below, and
+  // "item 40 of 50" beside "39 / 50" read as two counts of one thing
+  document.getElementById('pauseWhere').textContent =
+    [SUBJECT, EXAM.label && formName(EXAM), tutor() && 'Tutor mode', state.timed && 'Timed']
+      .filter(Boolean).join(' · ');
   /* The same bar the start screen draws, so the two say it the same way. */
-  const fill = document.getElementById('pauseFill');
-  if(fill){
-    fill.style.width = (answered / QUESTIONS.length) * 100 + '%';
-    document.getElementById('pauseBar').setAttribute('aria-label',
-      answered + ' of ' + QUESTIONS.length + ' items answered');
-  }
+  document.getElementById('pauseFill').style.width = (answered / QUESTIONS.length) * 100 + '%';
+  document.getElementById('pauseBar').setAttribute('aria-label',
+    answered + ' of ' + QUESTIONS.length + ' items answered');
   /* Three figures, each with its own label, rather than one sentence strung
      together with dots that read as a run-on. A timed block's clock figure
      is the time left, since that is the one it is racing. */
-  const ans = document.getElementById('pausedAnswered');
-  if(ans) ans.textContent = answered + ' / ' + QUESTIONS.length;
-  const clockLabel = document.getElementById('pausedElapsedLabel');
-  if(clockLabel) clockLabel.textContent = counting() ? 'left' : 'elapsed';
+  document.getElementById('pausedAnswered').textContent = answered + ' / ' + QUESTIONS.length;
+  document.getElementById('pausedElapsedLabel').textContent = counting() ? 'left' : 'elapsed';
   document.getElementById('pauseTimerOffBtn').hidden = !counting();
-  const pace = document.getElementById('pausedPace');
-  if(pace){
-    document.getElementById('pausedPaceWrap').style.display = answered ? '' : 'none';
-    if(answered) pace.textContent = formatItemTime(paceMs(answered));
-    // the same figure the results screen gives, under the same name
-    document.getElementById('pausedPaceLabel').textContent =
-      tutor() ? 'per item to answer' : 'per item';
-  }
+  document.getElementById('pausedPaceWrap').style.display = answered ? '' : 'none';
+  if(answered) document.getElementById('pausedPace').textContent = formatItemTime(paceMs(answered));
+  // the same figure the results screen gives, under the same name
+  document.getElementById('pausedPaceLabel').textContent =
+    tutor() ? 'per item to answer' : 'per item';
 }
 
 function renderPause(){
   renderToolbar();
-  const screen = document.getElementById('pauseScreen');
-  if(!screen) return;
-  screen.style.display = (state.paused && enteredExam) ? 'flex' : 'none';
+  document.getElementById('pauseScreen').style.display =
+    (state.paused && enteredExam) ? 'flex' : 'none';
   // the question must not be readable while the clock is stopped
   document.getElementById('examBody').style.visibility =
     (state.paused || timeUpOpen) ? 'hidden' : '';
@@ -2138,35 +2093,18 @@ const SHORT_SUBJECT = {'Obstetrics and Gynecology': 'OB/GYN'};
 const subjectName = SHORT_SUBJECT[SUBJECT] || SUBJECT;
 const formCollator = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'});
 const SIBLINGS = (window.EXAMS || [])
-  .filter(e => (e.title.replace(/\s+Practice Exams?$/i, '') || e.title) === SUBJECT)
+  .filter(e => SHELF_TRANSFER.subjectOf(e) === SUBJECT)
   .sort((a, b) => formCollator.compare(b.label || b.title, a.label || a.title));
-function formName(e){ return (e.label || e.title).replace(/^CMS\s+/i, ''); }
 
 function hasProgress(){
-  return Object.keys(state.answers).length > 0 || state.graded ||
-         state.paused || elapsedMs() > 0;
+  return answeredCount() > 0 || state.graded || state.paused || elapsedMs() > 0;
 }
 /* Where a form stands: this one from the live state, the others from what
    their own pages saved. */
 function standingOf(e){
-  let s;
-  if(e.slug === EXAM.slug){
-    if(!hasProgress()) return {kind: 'new'};
-    s = state;
-  }else{
-    s = window.SHELF_TRANSFER ? SHELF_TRANSFER.readState(e) : null;
-    if(!s) return {kind: 'new'};
-  }
-  if(s.graded && s.score && s.score.total){
-    return {kind: 'done', correct: s.score.correct, total: s.score.total,
-            pct: Math.round((s.score.correct / s.score.total) * 100)};
-  }
-  const answered = Object.keys(s.answers || {}).length;
-  if(answered || s.elapsedMs || s.runningSince){
-    const total = e.slug === EXAM.slug ? QUESTIONS.length : (e.items || 0);
-    return {kind: 'going', answered, total};
-  }
-  return {kind: 'new'};
+  return e.slug === EXAM.slug
+    ? SHELF_TRANSFER.standing(state, QUESTIONS.length)
+    : SHELF_TRANSFER.standing(SHELF_TRANSFER.readState(e), e.items);
 }
 
 function renderForms(){
@@ -2228,15 +2166,7 @@ function renderNextUp(){
 }
 
 /* "today", "yesterday", or the date, the way the exam list says it. */
-function whenSaid(ms){
-  if(!ms) return '';
-  const d = new Date(ms), now = new Date();
-  const day = x => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
-  const diff = Math.round((day(now) - day(d)) / 86400000);
-  if(diff <= 0) return 'today';
-  if(diff === 1) return 'yesterday';
-  return d.toLocaleDateString(undefined, {month: 'short', day: 'numeric'});
-}
+const {whenSaid} = SHELF_TRANSFER;
 
 function itemCount(n){ return n + (n === 1 ? ' item' : ' items'); }
 
@@ -2272,7 +2202,7 @@ function renderStart(){
     return;
   }
 
-  const answered = Object.keys(state.answers).length;
+  const answered = answeredCount();
   const total = QUESTIONS.length;
   const marked = markedIndexes();
   const resume = document.getElementById('resumeLabel');
@@ -2283,8 +2213,7 @@ function renderStart(){
     note.textContent = state.gradedAt ? 'Finished ' + whenSaid(state.gradedAt) : 'Scored';
     foot.textContent = 'Starting over clears this score. Download it first to keep a copy.';
     const s = state.score || computeScore();
-    const pct = Math.round((s.correct / s.total) * 100);
-    document.getElementById('startPct').textContent = pct + '%';
+    document.getElementById('startPct').textContent = pctOf(s) + '%';
     document.getElementById('startFrac').innerHTML = '<b>' + s.correct + '</b> of ' + s.total + ' correct';
     const answeredN = s.total - s.unanswered;
     document.getElementById('scoreMeta').textContent = [
@@ -2436,6 +2365,31 @@ window.addEventListener('pageshow', (e) => {
   if(e.persisted && enteredExam){ startClock(); saveState(); }
 });
 
+/* ---------- the pinned bars ---------- */
+
+/* The toolbar, the subbar and the progress track stay put while the question
+   scrolls. The stylesheet pins them; it cannot know how tall they are, and the
+   toolbar reflows with the window — the subject line drops out at 1180px, the
+   item box at 760px, and the whole bar wraps to two rows when the tools no
+   longer fit. So the heights are measured and published as --topbar-h and
+   --subbar-h, which is what the bars below them offset against.
+   Rounding up by a hair: a fractional height left a one-pixel line of the
+   scrolling question showing between two bars that are meant to touch. */
+function measureBars(){
+  const root = document.documentElement.style;
+  const bar  = document.querySelector('header.topbar');
+  const sub  = document.querySelector('.subbar');
+  root.setProperty('--topbar-h', Math.ceil(bar.getBoundingClientRect().height) + 'px');
+  /* The subbar is hidden on the results screen, where it has no height to
+     give; getBoundingClientRect says 0 for it, which is the right answer. */
+  root.setProperty('--subbar-h', Math.ceil(sub.getBoundingClientRect().height) + 'px');
+}
+measureBars();
+(() => {
+  const barWatch = new ResizeObserver(measureBars);
+  ['header.topbar', '.subbar'].forEach(sel => barWatch.observe(document.querySelector(sel)));
+})();
+
 /* ---------- per-item notes ---------- */
 
 /* A note belongs to an item, not to the block, so the panel always shows the
@@ -2459,17 +2413,14 @@ function notesShouldShow(){
 }
 
 function renderNotes(){
-  if(!notesPanel) return;
   const q = currentQ();
   notesPanel.style.display = notesShouldShow() ? '' : 'none';
   if(notesShouldShow()) placeNotes();
   document.getElementById('notesItem').textContent = q.n;
   // never overwrite what is being typed; this also keeps the caret put
   if(notesText.value !== noteFor(q.n)) notesText.value = noteFor(q.n);
-  if(notesBtn){
-    notesBtn.classList.toggle('has-note', hasNote(q.n));
-    notesBtn.setAttribute('aria-expanded', notesShouldShow() ? 'true' : 'false');
-  }
+  notesBtn.classList.toggle('has-note', hasNote(q.n));
+  notesBtn.setAttribute('aria-expanded', notesShouldShow() ? 'true' : 'false');
 }
 
 /* ---------- where the window sits ---------- */
@@ -2483,40 +2434,8 @@ const NOTES_MIN_W = 240, NOTES_MIN_H = 170;
 
 function notesDocked(){ return window.innerWidth <= 640; }
 
-/* ---------- the pinned bars ---------- */
-
-/* The toolbar, the subbar and the progress track stay put while the question
-   scrolls. The stylesheet pins them; it cannot know how tall they are, and the
-   toolbar reflows with the window — the subject line drops out at 1180px, the
-   item box at 760px, and the whole bar wraps to two rows when the tools no
-   longer fit. So the heights are measured and published as --topbar-h and
-   --subbar-h, which is what the bars below them offset against.
-   Rounding up by a hair: a fractional height left a one-pixel line of the
-   scrolling question showing between two bars that are meant to touch. */
-function measureBars(){
-  const root = document.documentElement.style;
-  const bar  = document.querySelector('header.topbar');
-  const sub  = document.querySelector('.subbar');
-  root.setProperty('--topbar-h', (bar ? Math.ceil(bar.getBoundingClientRect().height) : 0) + 'px');
-  /* The subbar is hidden on the results screen, where it has no height to
-     give; getBoundingClientRect says 0 for it, which is the right answer. */
-  root.setProperty('--subbar-h', (sub ? Math.ceil(sub.getBoundingClientRect().height) : 0) + 'px');
-}
-measureBars();
-if(window.ResizeObserver){
-  const barWatch = new ResizeObserver(measureBars);
-  ['header.topbar', '.subbar'].forEach(sel => {
-    const el = document.querySelector(sel);
-    if(el) barWatch.observe(el);
-  });
-}else{
-  /* No observer: a resize is the case that actually moves these heights. */
-  window.addEventListener('resize', measureBars);
-}
-
 function topbarBottom(){
-  const bar = document.querySelector('header.topbar');
-  return bar ? bar.getBoundingClientRect().bottom : 0;
+  return document.querySelector('header.topbar').getBoundingClientRect().bottom;
 }
 
 /* Keep the window on screen and clear of the toolbar, whatever the viewport
@@ -2536,12 +2455,10 @@ function clampNotes(pos){
    the subbar's answered count and clock, which you want to keep an eye on. */
 function defaultNotesPos(){
   const w = 340, h = 260;
-  const track = document.querySelector('.progress-track');
-  const top = track ? track.getBoundingClientRect().bottom : topbarBottom();
+  const top = document.querySelector('.progress-track').getBoundingClientRect().bottom;
   /* inside the exam panel, not against the window edge: on a wide screen the
      panel is centred and the window edge is out in the grey margin */
-  const app = document.getElementById('app');
-  const right = app ? app.getBoundingClientRect().right : window.innerWidth;
+  const right = document.getElementById('app').getBoundingClientRect().right;
   return {x: Math.max(4, right - w - 24), y: top + 18, w, h};
 }
 
@@ -2562,8 +2479,8 @@ function placeNotes(){
 
 /* Dragging by the title bar. Pointer capture keeps the drag alive even when
    the pointer outruns the window. */
-const notesHead = document.getElementById('notesHead');
-if(notesHead){
+(() => {
+  const notesHead = document.getElementById('notesHead');
   let drag = null;
   notesHead.addEventListener('pointerdown', (e) => {
     if(notesDocked() || e.target.closest('button')) return;
@@ -2589,10 +2506,10 @@ if(notesHead){
   };
   notesHead.addEventListener('pointerup', endDrag);
   notesHead.addEventListener('pointercancel', endDrag);
-}
+})();
 
 /* The window is CSS-resizable; record the size the browser gives it. */
-if(window.ResizeObserver && notesPanel){
+(() => {
   let sizeTimer = null;
   new ResizeObserver(() => {
     if(!state.notesOpen || notesDocked() || notesPanel.style.display === 'none') return;
@@ -2604,7 +2521,7 @@ if(window.ResizeObserver && notesPanel){
     clearTimeout(sizeTimer);
     sizeTimer = setTimeout(saveState, 400);
   }).observe(notesPanel);
-}
+})();
 
 window.addEventListener('resize', () => {
   if(state.notesOpen && notesPanel.style.display !== 'none') placeNotes();
@@ -2615,19 +2532,18 @@ let notesStatusTimer = null;
 
 function flashNotesSaved(){
   const el = document.getElementById('notesStatus');
-  if(!el) return;
   el.textContent = 'Saved';
   el.classList.add('show');
   clearTimeout(notesStatusTimer);
   notesStatusTimer = setTimeout(() => el.classList.remove('show'), 1400);
 }
 
-if(notesText){
+(() => {
   notesText.addEventListener('input', () => {
     const q = currentQ();
     if(notesText.value.trim()) state.notes[q.n] = notesText.value;
     else delete state.notes[q.n];        // an emptied note is no note at all
-    if(notesBtn) notesBtn.classList.toggle('has-note', hasNote(q.n));
+    notesBtn.classList.toggle('has-note', hasNote(q.n));
     clearTimeout(notesSaveTimer);
     notesSaveTimer = setTimeout(() => {
       notesSaveTimer = null;
@@ -2650,18 +2566,16 @@ if(notesText){
   document.addEventListener('visibilitychange', () => {
     if(document.visibilityState === 'hidden') flushNotes();
   });
-}
+})();
 
-function openNotes(focus){
+function openNotes(){
   state.notesOpen = true;
   saveState();
   renderNotes();
-  if(focus !== false){
-    notesText.focus();
-    // typing continues where you left off rather than at the start
-    const end = notesText.value.length;
-    notesText.setSelectionRange(end, end);
-  }
+  notesText.focus();
+  // typing continues where you left off rather than at the start
+  const end = notesText.value.length;
+  notesText.setSelectionRange(end, end);
 }
 function closeNotes(){
   clearTimeout(notesSaveTimer);
@@ -2678,24 +2592,20 @@ function toggleNotes(){
   state.notesOpen ? closeNotes() : openNotes();
 }
 
-if(notesBtn) notesBtn.addEventListener('click', toggleNotes);
-const notesCloseBtn = document.getElementById('notesClose');
-if(notesCloseBtn) notesCloseBtn.addEventListener('click', closeNotes);
-const notesClearBtn = document.getElementById('notesClear');
-if(notesClearBtn){
-  notesClearBtn.addEventListener('click', () => {
-    const q = currentQ();
-    if(!hasNote(q.n)){ notesText.focus(); return; }
-    if(!confirm('Clear your note on item ' + q.n + '?')) return;
-    delete state.notes[q.n];
-    notesText.value = '';
-    clearTimeout(notesSaveTimer);
-    notesSaveTimer = null;
-    saveState();
-    renderNotes();
-    notesText.focus();
-  });
-}
+notesBtn.addEventListener('click', toggleNotes);
+document.getElementById('notesClose').addEventListener('click', closeNotes);
+document.getElementById('notesClear').addEventListener('click', () => {
+  const q = currentQ();
+  if(!hasNote(q.n)){ notesText.focus(); return; }
+  if(!confirm('Clear your note on item ' + q.n + '?')) return;
+  delete state.notes[q.n];
+  notesText.value = '';
+  clearTimeout(notesSaveTimer);
+  notesSaveTimer = null;
+  saveState();
+  renderNotes();
+  notesText.focus();
+});
 
 /* ---------- Lab Values panel (splits the layout, reflowing the question) ---------- */
 
@@ -2720,8 +2630,7 @@ function openLabValues(){
     showClose: true,
     onClose: closeLabValues
   });
-  const b = document.getElementById('labValuesBtn');
-  if(b) b.setAttribute('aria-expanded', 'true');
+  document.getElementById('labValuesBtn').setAttribute('aria-expanded', 'true');
 }
 
 function closeLabValues(){
@@ -2730,12 +2639,10 @@ function closeLabValues(){
   document.getElementById('app').classList.remove('lab-open');
   lvSide.remove();
   lvSide = null;
-  const b = document.getElementById('labValuesBtn');
-  if(b) b.setAttribute('aria-expanded', 'false');
+  document.getElementById('labValuesBtn').setAttribute('aria-expanded', 'false');
 }
 
-const labBtn = document.getElementById('labValuesBtn');
-if(labBtn) labBtn.addEventListener('click', toggleLabValues);
+document.getElementById('labValuesBtn').addEventListener('click', toggleLabValues);
 
 loadState();
 // a fresh arrival, not a reload of this tab: whatever was running has stopped

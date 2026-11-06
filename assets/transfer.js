@@ -11,14 +11,21 @@
  * downloads, so one file is both the report you read and the progress you can
  * put back. Nothing here knows about any particular exam — it is handed a
  * manifest and a storage reader, the same separation the engine keeps.
+ *
+ * Because both pages load it, it is also where they read the catalog and
+ * saved progress: the storage keys, what a saved record amounts to, the
+ * subject a title names, and "today" or "yesterday". Each was once written
+ * out on both pages, and copies of one rule drift apart.
  */
 (() => {
   const VERSION = 1;
   const OPEN  = '===== ShelfPractice progress data =====';
   const CLOSE = '===== end progress data =====';
 
+  /* ---------- reading the catalog and what is saved ---------- */
+
   /* The key an exam's state is saved under. The manifest may name its own, so
-     this is the one place that decides, and both pages ask rather than guess. */
+     this is the one place that decides, and every page asks rather than guess. */
   function stateKey(entry){ return entry.storageKey || ('exam_state_' + entry.id); }
   function sessionKey(entry){ return 'exam_session_' + entry.id; }
 
@@ -28,6 +35,45 @@
       return raw ? JSON.parse(raw) : null;
     }catch(e){ return null; }
   }
+
+  /* What a saved record amounts to: not begun, under way, or scored, and how
+     it was worked. The exam list, an exam's side column and the import dialog
+     all read a record through this, so none of them can call a block begun
+     that another calls untouched. A clock that has run is a block begun, even
+     with nothing answered. `items` is the form's length, for "3 of 50". */
+  function standing(st, items){
+    if(!st) return {kind: 'new'};
+    const how = {tutor: st.mode === 'tutor', timed: st.timed === true, savedAt: st.savedAt || 0};
+    if(st.graded && st.score && st.score.total){
+      const {correct, total} = st.score;
+      return Object.assign({kind: 'done', correct, total, pct: Math.round((correct / total) * 100)}, how);
+    }
+    const answered = Object.keys(st.answers || {}).length;
+    if(answered || st.elapsedMs || st.runningSince)
+      return Object.assign({kind: 'going', answered, total: items || 0}, how);
+    return {kind: 'new'};
+  }
+
+  /* Every form of a subject shares one title ("Surgery Practice Exam"), so
+     the subject is the title without its suffix. */
+  function subjectOf(entry){
+    return entry.title.replace(/\s+Practice Exams?$/i, '') || entry.title;
+  }
+
+  /* "today", "yesterday", or the date: when a record was last saved, which is
+     what tells two half-done forms apart. A record from before saves were
+     dated says nothing rather than guess. */
+  function whenSaid(ms){
+    if(!ms) return '';
+    const d = new Date(ms), now = new Date();
+    const day = x => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+    const diff = Math.round((day(now) - day(d)) / 86400000);
+    if(diff <= 0) return 'today';
+    if(diff === 1) return 'yesterday';
+    return d.toLocaleDateString(undefined, {month: 'short', day: 'numeric'});
+  }
+
+  /* ---------- the file ---------- */
 
   /* A clock that is still running is stored as "banked time, plus a timestamp
      it has been running since". Carried to another browser on another day that
@@ -225,15 +271,14 @@
      a row in the dialog reads the way the row on the list reads. */
   function describe(st, items){
     if(!st) return 'nothing saved';
+    const p = standing(st, items);
+    if(p.kind === 'new') return 'nothing answered';
     // the list names a tutor-mode block as one, and so does this
-    const mode = (st.mode === 'tutor' ? ', tutor mode' : '') + (st.timed === true ? ', timed' : '');
-    if(st.graded && st.score && st.score.total)
-      return 'scored ' + Math.round((st.score.correct / st.score.total) * 100) + '%'
-           + ', ' + st.score.correct + ' of ' + st.score.total + ' correct' + mode;
-    const answered = Object.keys(st.answers || {}).length;
-    if(answered) return answered + ' of ' + (items || '?') + ' answered' + mode;
-    if(st.elapsedMs) return 'started, nothing answered yet';
-    return 'nothing answered';
+    const mode = (p.tutor ? ', tutor mode' : '') + (p.timed ? ', timed' : '');
+    if(p.kind === 'done')
+      return 'scored ' + p.pct + '%, ' + p.correct + ' of ' + p.total + ' correct' + mode;
+    if(p.answered) return p.answered + ' of ' + (items || '?') + ' answered' + mode;
+    return 'started, nothing answered yet';
   }
 
   /* ---------- files ---------- */
@@ -447,7 +492,7 @@
 
   window.SHELF_TRANSFER = {
     VERSION, OPEN, CLOSE,
-    stateKey, sessionKey, readState, settle,
+    stateKey, sessionKey, readState, standing, subjectOf, whenSaid, settle,
     payload, wrap, read, plan, apply, sanitize, describe,
     download, pick, importFrom, closeDialog
   };

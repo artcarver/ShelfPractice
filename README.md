@@ -17,7 +17,8 @@ assets/
                     highlighting, cross-outs, lab tables, saved progress)
   labvalues.css     Styles for the Lab Values reference panel
   labvalues.js      Lab Values data + panel (searchable, tabbed)
-  transfer.js       Export and import of saved progress, shared by both pages
+  transfer.js       Saved progress, shared by both pages: reading it the same
+                    way on each, and export and import
   transfer.css      The import dialog, which both pages can open
 exams/
   manifest.js       The catalog: one entry per exam
@@ -50,10 +51,11 @@ Forty-seven forms, 2,350 items.
 
 ## Design
 
-`assets/theme.css` holds the tokens both pages load first: colour, four corner
-radii, six type sizes, and the two or three primitives that appear on every
-screen (the navy top bar and its brand, buttons, the keyboard caps). The
-landing page and the exam page then describe only what is particular to them.
+`assets/theme.css` holds the tokens every page loads first: colour, four corner
+radii, seven type sizes, and the few primitives that appear on every screen
+(the navy top bar and its brand, buttons, the keyboard caps, and a `hidden`
+attribute that always hides). The landing page and the exam page then describe
+only what is particular to them.
 The scales are short on purpose — when something new needs a value it takes the
 nearest step rather than adding one, which is what keeps the screens looking
 like one product.

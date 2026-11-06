@@ -100,7 +100,6 @@
   }
   .row-clear:hover{background:var(--incorrect-bg);color:var(--incorrect);}
   .row-clear:focus-visible{outline:2px solid var(--navy);outline-offset:1px;}
-  .row-main{flex:1 1 auto;min-width:0;}
   .row-form{font-weight:600;color:var(--navy);font-size:var(--fs-md);}
   .row-len{font-size:var(--fs-xs);color:var(--faint);margin-top:2px;}
 
@@ -132,8 +131,6 @@
     border-radius:var(--r-lg);
     animation:news-in .4s ease-out both;
   }
-  /* the hidden attribute has to win over the animation's display */
-  .news[hidden]{display:none;}
   @keyframes news-in{
     from{opacity:0;transform:translateY(-6px);}
     to{opacity:1;transform:none;}
@@ -197,7 +194,6 @@
     overflow:hidden;
     margin-top:16px;
   }
-  .resume-block[hidden]{display:none;}
   .resume-head{
     display:flex;align-items:center;gap:14px;
     padding:9px 12px 9px 18px;
@@ -235,7 +231,6 @@
   }
   .foot-link:hover{color:var(--navy);}
   .foot-tools{margin-top:7px;}
-  .foot-tools [hidden]{display:none;}
   .empty{
     background:#fff;border:1px solid var(--border);border-radius:var(--r-md);
     padding:20px;color:var(--muted);font-size:var(--fs-base);
@@ -353,35 +348,11 @@
                    + '<code>exams/manifest.js</code> yet.</p>';
   }
 
-  /* Saved progress lives under the same two keys the engine writes — see the
-     note in exams/manifest.js — so a row can say where that exam stands, and
-     Reset can forget it, without loading its data.js. */
-  const stateKey   = e => e.storageKey || ('exam_state_' + e.id);
-  const sessionKey = e => 'exam_session_' + e.id;
-  const subjectOf  = e => e.title.replace(/\s*practice exams?\s*$/i, '') || e.title;
-
-  function progressOf(e){
-    let s = null;
-    try{
-      const raw = localStorage.getItem(stateKey(e));
-      s = raw ? JSON.parse(raw) : null;
-    }catch(err){}
-    if(!s) return {kind:'new'};
-    /* A tutor-mode score was earned with each answer shown as it went in, so
-       it is named as one wherever it appears beside a score that was not. */
-    const tutor = s.mode === 'tutor';
-    const timed = s.timed === true;
-    if(s.graded && s.score && s.score.total){
-      return {kind:'done', correct:s.score.correct, total:s.score.total,
-              pct: Math.round((s.score.correct / s.score.total) * 100), tutor:tutor, timed:timed,
-              savedAt: s.savedAt || 0};
-    }
-    const answered = Object.keys(s.answers || {}).length;
-    if(answered || s.elapsedMs || s.runningSince)
-      return {kind:'going', answered:answered, total:e.items || 0,
-              savedAt: s.savedAt || 0, tutor:tutor, timed:timed};
-    return {kind:'new'};
-  }
+  /* Saved progress is read the way the engine writes it, through
+     assets/transfer.js, so a row can say where that exam stands, and Reset
+     can forget it, without loading its data.js. */
+  const {subjectOf, whenSaid} = SHELF_TRANSFER;
+  const progressOf = e => SHELF_TRANSFER.standing(SHELF_TRANSFER.readState(e), e.items);
 
   function chevron(cls){
     return '<svg class="' + cls + '" width="15" height="15" viewBox="0 0 24 24" '
@@ -391,7 +362,9 @@
   const CHEV = chevron('');
 
   /* How a block was worked, where it was not the default: tutor mode, the
-     real form's clock, or both. */
+     real form's clock, or both. A tutor-mode score was earned with each
+     answer shown as it went in, so it is named as one wherever it appears
+     beside a score that was not. */
   function tags(p){
     return (p.tutor ? ' · tutor' : '') + (p.timed ? ' · timed' : '');
   }
@@ -421,7 +394,7 @@
     a.className = 'row-link';
     a.href = 'exam.html?exam=' + encodeURIComponent(e.slug);
     const name = resume ? subjectOf(e) + (e.label ? ' · ' + e.label : '') : (e.label || e.title);
-    const last = resume ? when(p.savedAt) : '';
+    const last = resume ? whenSaid(p.savedAt) : '';
     a.innerHTML =
       '<div class="row-form">' + name + '</div>' +
       '<div class="row-len">' + (last ? 'Last worked on ' + last
@@ -467,8 +440,8 @@
   /* Remove every trace of one exam: the saved state the row reads, and the
      per-tab flag that lets a reload skip the start screen. */
   function forget(e){
-    try{ localStorage.removeItem(stateKey(e)); }catch(err){}
-    try{ sessionStorage.removeItem(sessionKey(e)); }catch(err){}
+    try{ localStorage.removeItem(SHELF_TRANSFER.stateKey(e)); }catch(err){}
+    try{ sessionStorage.removeItem(SHELF_TRANSFER.sessionKey(e)); }catch(err){}
   }
 
   /* Sibling forms of one exam share a title — every surgery form is called
@@ -500,7 +473,8 @@
 
   /* Which subjects are open is remembered per browser, so the list you came
      back to is the one you left. Nothing is open on a first visit — the point
-     of the panels is that the page opens as three choices rather than sixteen. */
+     of the panels is that the page opens as one row per subject rather than
+     one per form. */
   const OPEN_KEY = 'shelf_open_subjects';
   function readOpen(){
     try{ return new Set(JSON.parse(localStorage.getItem(OPEN_KEY)) || []); }
@@ -594,19 +568,6 @@
         ? forms.charAt(0).toUpperCase() + forms.slice(1) + ', '
           + items.toLocaleString() + ' items. ' + PRIVACY
         : PRIVACY;
-  }
-
-  /* "Today", "yesterday", or the date: when you last worked on it, which is
-     what tells two half-done forms apart. Records saved before the engine
-     stamped them have no date, and say nothing rather than guess. */
-  function when(ms){
-    if(!ms) return '';
-    const d = new Date(ms), now = new Date();
-    const day = x => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
-    const diff = Math.round((day(now) - day(d)) / 86400000);
-    if(diff <= 0) return 'today';
-    if(diff === 1) return 'yesterday';
-    return d.toLocaleDateString(undefined, {month:'short', day:'numeric'});
   }
 
   /* The form worked on last, if it is still under way and has not been

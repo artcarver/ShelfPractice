@@ -1,9 +1,9 @@
 /* Shared design tokens.
  *
- * Both the landing page and the exam page load this first, so the two screens
- * agree on colour, corner radius, type size and elevation instead of each
- * inventing its own. Page-specific rules live in index.html and exam.css and
- * are expected to reach for these variables rather than raw values.
+ * Every page loads this first, so the screens agree on colour, corner radius,
+ * type size and elevation instead of each inventing its own. Page-specific
+ * rules live in index.html, exam.css and walkthrough.html and are expected to
+ * reach for these variables rather than raw values.
  *
  * The scales are deliberately short — four radii, seven type sizes. When a new
  * piece of UI needs a value, it takes the nearest step rather than adding one.
@@ -59,12 +59,16 @@
      forms of colour blindness. */
   --marked:#6b3fa0;
 
-  /* The results table tints a whole row, where the grid tints one small cell.
-     At that area the cell tints read as heavy and swallow the violet marked
-     stripe sitting on top of them, so the rows take a lighter step of the
-     same two hues and leave --correct-bg / --incorrect-bg to the grid. */
-  --correct-row:#eff9f3;
+  /* The results table tints a missed row, where the grid tints one small
+     cell. At that area the cell tint reads as heavy and swallows the violet
+     marked stripe sitting on top of it, so the row takes a lighter step of
+     the same hue and leaves --incorrect-bg to the grid. */
   --incorrect-row:#fdf2f0;
+
+  /* The incorrect share of a score bar. Beside the correct green the full
+     incorrect red is nearly the same lightness, so the two only differed in
+     hue; this lighter step keeps the bar readable without colour vision. */
+  --incorrect-soft:#e08a7e;
 
   /* An item that ran long against the rest of the block: not a mistake, so
      not the incorrect red — a caution amber that reads as "look at this". */
@@ -92,11 +96,6 @@
 
   /* --- elevation --- */
   --shadow-md:0 3px 14px rgba(11,74,115,.12);
-
-  /* The incorrect share of a score bar. Beside the correct green the full
-     incorrect red is nearly the same lightness, so the two only differed in
-     hue; this lighter step keeps the bar readable without colour vision. */
-  --incorrect-soft:#e08a7e;
 }
 
 *{box-sizing:border-box;}
@@ -145,6 +144,10 @@ a.brand:hover .brand-name{text-decoration:underline;}
 }
 
 /* --- small shared pieces --- */
+/* Hidden means hidden. The browser's own rule for the attribute loses to any
+   display an element's class sets, so without this every flex or grid piece
+   that can be hidden needed a [hidden] rule of its own. */
+[hidden]{display:none !important;}
 /* Text for a screen reader that would be noise on screen: a column whose
    meaning is carried by its cells, an icon-only control's name. */
 .sr-only{

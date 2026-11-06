@@ -15,10 +15,10 @@
                  the start screen says so. "commentary" is the one kind so far,
                  and its wording lives in assets/exam.js (SOURCE_NOTICE).
 
-   Two browser keys are derived from an entry, and index.html and assets/exam.js
-   have to agree on both: progress is localStorage `storageKey` or
-   "exam_state_<id>", and the per-tab flag that lets a reload skip the start
-   screen is sessionStorage "exam_session_<id>".
+   Two browser keys are derived from an entry, in one place, assets/transfer.js
+   (stateKey and sessionKey), which every page asks: progress is localStorage
+   `storageKey` or "exam_state_<id>", and the per-tab flag that lets a reload
+   skip the start screen is sessionStorage "exam_session_<id>".
 */
 window.EXAMS = [
   {
