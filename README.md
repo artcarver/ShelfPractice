@@ -157,7 +157,7 @@ by its choice name in bold. No word changes: a form's text fixes are committed
 first, and the layout commit is checked to leave its text identical.
 `exams/CONVERTING.md` has the rules under "Laying it out for reading". So far
 that covers Obstetrics and Gynecology Forms 4 to 10, Pediatrics Forms 3
-and 4, and Family Medicine Form 2.
+and 4, Family Medicine Form 2, and Neurology Form 3.
 
 Where an explanation carries text the site wrote because the capture lost it,
 a quiet line at the foot of the panel says so. The wording lives in
