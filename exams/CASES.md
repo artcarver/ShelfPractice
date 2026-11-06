@@ -32,7 +32,10 @@ them before doing the same again:
   discussion, and the other four are argued for in the discussion itself.
 
 Medicine Form 9 item 36, Medicine Form 6 item 30 and Family Medicine Form 5
-item 11 are single items filled the same way.
+item 11 are single items filled the same way, and so is Pediatrics Form 3 item
+38, whose source has only a transcriber's note where the explanation should be.
+That is the Medicine Form 4 item 50 case below: the note's argument is kept,
+and the prose around it is written in the form's style and marked `all`.
 
 **Obstetrics and Gynecology Form 8** is the middle case: complete pages, but
 cut sentences throughout, and nobody had looked for them until the form was
