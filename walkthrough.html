@@ -43,12 +43,14 @@
   main.page h1{margin:0 0 8px;font-size:var(--fs-xl);color:var(--navy-dark);letter-spacing:-.2px;}
   .lede{margin:0 0 6px;color:var(--muted);font-size:var(--fs-md);line-height:1.6;max-width:66ch;}
 
-
   .step{margin-top:24px;}
 
   /* A screen inside the page. The border and the shadow are what say "this is
-     the app", the way the exam page's own #app does against the grey. */
+     the app", the way the exam page's own #app does against the grey. Review
+     and Pause cover the frame, so the frame is what they are measured
+     against. */
   .frame{
+    position:relative;
     background:var(--panel);
     border:1px solid var(--border);
     border-radius:var(--r-md);
@@ -62,9 +64,6 @@
      subject was squeezed to "M...". The frame always drops it, as the exam
      page does at this width. */
   .frame .exam-title{display:none;}
-  /* Review and Pause cover the frame, so the frame is what they are measured
-     against. */
-  .frame{position:relative;}
 
   /* The Lab Values split. The engine's own rule for this hangs off #app and
      #examBody, which belong to the exam page; the panel itself (.lv-side) is
@@ -92,14 +91,12 @@
     padding:20px;
     background:rgba(10,20,28,.55);
   }
-  .frame-over[hidden]{display:none;}
   .frame-over .modal{max-width:640px;max-height:100%;}
   .frame-paused{
     background:linear-gradient(160deg, var(--navy) 0%, var(--navy-dark) 100%);
   }
   .frame-paused .pause-card{max-width:420px;padding:28px 30px;}
   .frame-paused .pause-card h1{font-size:var(--fs-lg);}
-  .notes-pop[hidden]{display:none;}
 
   /* Controls that drive the demonstration are not part of the exam, so they
      sit outside the frame and look like page furniture, never like chrome. */
@@ -357,6 +354,8 @@
   const resetBtn= document.getElementById('dReset');
   const noteEl  = document.getElementById('dAnsweredNote');
   const progEl  = document.getElementById('dProgress');
+  const frame   = document.getElementById('demo');
+  const markChk = document.getElementById('dMark');
 
   let selected = null;
   const struck = {};
@@ -453,7 +452,7 @@
   }
   gradeBtn.addEventListener('click', () => {
     grade(true);
-    document.getElementById('demo').scrollIntoView({behavior:'smooth', block:'start'});
+    frame.scrollIntoView({behavior:'smooth', block:'start'});
   });
   resetBtn.addEventListener('click', () => grade(false));
 
@@ -463,7 +462,7 @@
      nobody could see it happen. So it only fires while the frame is actually
      in front of you. */
   function frameOnScreen(){
-    const r = document.getElementById('demo').getBoundingClientRect();
+    const r = frame.getBoundingClientRect();
     return r.bottom > 0 && r.top < (window.innerHeight || 0);
   }
   document.addEventListener('keydown', e => {
@@ -525,7 +524,6 @@
      it does in the exam, and Lab Values does it with the exam's own component
      rather than a copy of it. */
 
-  const frame = document.getElementById('demo');
   const body  = document.getElementById('dBody');
 
   /* Lab Values. assets/labvalues.js exposes renderLabValues(root), which is
@@ -690,7 +688,6 @@
     pause.hidden = true;
   });
 
-  const markChk = document.getElementById('dMark');
   markChk.addEventListener('change', () => { if(!review.hidden) renderGrid(); });
 
   renderOptions();

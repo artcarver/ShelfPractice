@@ -98,14 +98,16 @@ for (const slug of slugs) {
   // three or more words in a row that no exam has ever used: prose does not do
   // this, so the page was captured badly and needs reading against the form
   let run = [];
-  for (const m of words) {
-    if (seen(m[0]) <= 1 && m[0].length >= 3) { run.push(m); continue; }
+  const endRun = () => {
     if (run.length >= 3) note(slug, 'unreadable', `${run.length} words`,
       around(text, run[0].index, run.at(-1).index + run.at(-1)[0].length));
     run = [];
+  };
+  for (const m of words) {
+    if (seen(m[0]) <= 1 && m[0].length >= 3) run.push(m);
+    else endRun();
   }
-  if (run.length >= 3) note(slug, 'unreadable', `${run.length} words`,
-    around(text, run[0].index, run.at(-1).index + run.at(-1)[0].length));
+  endRun();
 }
 
 // ---- report ----------------------------------------------------------------

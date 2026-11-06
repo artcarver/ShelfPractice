@@ -178,9 +178,9 @@ const candidates = ['playwright', process.env.PLAYWRIGHT_PATH];
 try {
   candidates.push(execSync('npm root -g', { encoding: 'utf8' }).trim() + '/playwright/index.mjs');
 } catch { /* npm not on PATH */ }
+const require = createRequire(import.meta.url);
 for (const spec of candidates.filter(Boolean)) {
   try {
-    const require = createRequire(import.meta.url);
     let target = spec;
     try { target = require.resolve(spec); } catch { /* an absolute path is fine as-is */ }
     // A CommonJS build imports with its exports on `default`, and one that
