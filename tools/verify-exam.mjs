@@ -50,6 +50,13 @@ const { questions, images, answerKey, explanations, written } = data.EXAM_DATA;
 if (entry && entry.items !== questions.length)
   fail(`manifest says ${entry.items} items, data.js has ${questions.length}`);
 
+// The start-screen notice for a form whose explanations are not its own is
+// drawn from this field, and a kind the engine does not know draws nothing —
+// silently. Keep this list in step with SOURCE_NOTICE in assets/exam.js.
+const SOURCE_KINDS = ['commentary'];
+if (entry && entry.explanationSource !== undefined && !SOURCE_KINDS.includes(entry.explanationSource))
+  fail(`explanationSource "${entry.explanationSource}" is not one of ${SOURCE_KINDS.join(', ')}`);
+
 const seen = new Set();
 for (const q of questions) {
   const at = `item ${q.n}`;

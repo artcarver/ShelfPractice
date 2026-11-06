@@ -631,6 +631,12 @@ Two steps: drop in a folder, add a line to the manifest.
    }
    ```
 
+   A form whose explanations are not its own, such as Family Medicine Form 1,
+   whose answer document is unofficial commentary, also carries
+   `explanationSource: "commentary"`. The start screen then says so in a note
+   under the title. The wording lives in `assets/exam.js`, and `verify-exam`
+   rejects a kind the engine does not know.
+
 The landing page picks it up automatically, and it is reachable at
 `exam.html?exam=medicine-form1`. Keep `id` unique so saved progress doesn't
 collide between exams; the engine logs a console warning if `items` disagrees

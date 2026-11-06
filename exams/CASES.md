@@ -197,7 +197,10 @@ explanation above the header because the explanation is usually the form's own
 reasoning. Here it is not, so it cannot outrank the form. The commentary stays
 as printed, so the page shows key A beside a paragraph arguing for C, and the
 reader can see why. Item 50 had no commentary at all, only its letter, and its
-explanation is written and marked `all`.
+explanation is written and marked `all`. Its manifest entry carries
+`explanationSource: "commentary"`, so the start screen warns that the
+explanations are shorter, unofficial, and in places argue with the key, before
+anyone begins the block.
 
 ## Degraded text, splices and second passes
 
