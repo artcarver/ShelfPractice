@@ -40,13 +40,13 @@ now, which `manifest.js` is the authority on:
 | --- | --- | --- |
 | Family Medicine | 1–5 | all 5 |
 | Medicine | 3–10 | all 8 |
-| Neurology | 4–9 | all 6 |
+| Neurology | 3–9 | all 7 |
 | Obstetrics & Gynecology | 4–10 | all 7 |
 | Pediatrics | 3–9 | all 7 |
 | Psychiatry | 3–8 | 1 of 6 (Form 5, the Figure 1 / Figure 2 exhibit on item 48) |
 | Surgery | 3–9 | all 7 |
 
-Forty-six forms, 2,300 items.
+Forty-seven forms, 2,350 items.
 
 ## Design
 
@@ -157,7 +157,7 @@ by its choice name in bold. No word changes: a form's text fixes are committed
 first, and the layout commit is checked to leave its text identical.
 `exams/CONVERTING.md` has the rules under "Laying it out for reading". So far
 that covers Obstetrics and Gynecology Forms 4 to 10, Pediatrics Forms 3
-and 4, and Family Medicine Form 2.
+and 4, Family Medicine Form 2, and Neurology Form 3.
 
 Where an explanation carries text the site wrote because the capture lost it,
 a quiet line at the foot of the panel says so. The wording lives in
