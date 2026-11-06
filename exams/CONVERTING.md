@@ -276,10 +276,12 @@ work, after transcribing and copy-editing, and it changes no word:
 - bold each choice name in the Incorrect Answers paragraphs, including a second
   choice the same paragraph names. A form that runs every incorrect answer
   into one paragraph after the header gets one paragraph per choice, starting
-  at the sentence that first names it. Obstetrics and Gynecology Forms 5 to 8
-  were printed this way. Count a Greek letter as a sentence start. If
-  you don't, "abscess. β-Hemolytic streptococcus (Choice C) includes…" reads
-  as one sentence, and the last line of one choice moves into the next. When
+  at the sentence that first names it. Obstetrics and Gynecology Forms 4 to 8
+  were printed this way, with choice lists running as far as O. Count a Greek
+  letter or a digit as a sentence start. If you don't, "abscess.
+  β-Hemolytic streptococcus (Choice C) includes…" and "carriers. 40%
+  (Choice B) is…" each read as one sentence, and the last line of one choice
+  moves into the next. When
   a choice's name falls late in its paragraph's first sentence ("Chlamydia can
   result in pharyngitis, but… a throat culture (Choice D)"), bold the name
   where it stands, not the sentence leading up to it. A choice's paragraph
@@ -294,9 +296,9 @@ after, and the words must be identical. Where a form also needs copy-editing,
 do that first and commit it on its own, then lay it out against the
 copy-edited text. Each commit then holds one kind of change: a corrected word
 never sits inside a commit that says it only moved tags, and the layout check
-can still demand identical words. Obstetrics and Gynecology Forms 5 to 10 are
-laid out this way. Forms 5, 6, 7, 8 and 10 were copy-edited first, and Forms 5,
-6, 7 and 8 also had their capture damage repaired first (`CASES.md`).
+can still demand identical words. Obstetrics and Gynecology Forms 4 to 10 are
+laid out this way. Forms 4 to 8 and 10 were copy-edited first, and Forms 4 to 8
+also had their capture damage repaired first (`CASES.md`).
 
 ## 7. The answer key
 
