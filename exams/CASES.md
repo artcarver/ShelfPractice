@@ -34,6 +34,39 @@ them before doing the same again:
 Medicine Form 9 item 36, Medicine Form 6 item 30 and Family Medicine Form 5
 item 11 are single items filled the same way.
 
+**Obstetrics and Gynecology Form 8** is the middle case: complete pages, but
+cut sentences throughout, and nobody had looked for them until the form was
+laid out for reading. There were 23 gaps in 20 items. Fourteen were the last
+line of an objective or a paragraph, which stopped mid-phrase ("Treatment
+consists of", "require tight", "making chorionic villus sampling an"). Five
+were a sentence that ran straight into the next choice's name ("less likely
+than cervical Cervical stenosis (Choice D)"). The other four: item 4 lost the
+opening of its Choice A paragraph, item 6 lost text mid-sentence ("associated
+with more usually sufficient for"), item 22's objective was reduced to
+"Alloimmunization required during pregnancy.", and item 43 had an unreadable
+run where two sentences had been spliced. Most fills are the form's own words: an
+objective's cut sentence is usually repeated whole in its discussion. Item
+17 was the opposite kind of damage. Its whole Incorrect Answers section was
+pasted onto the end of its discussion, behind a stray "v", and the second
+copy was deleted. The sweep that finds these takes two checks: a paragraph
+that does not end in terminal punctuation, and a lowercase word followed
+directly by a capitalized choice name and "(Choice".
+
+**Obstetrics and Gynecology Form 7** passes that sweep almost clean, and is
+the case for why the sweep is not enough. Its damage is splices, which leave
+every paragraph ending in a full stop. Twelve items carry a second, degraded
+reading of a passage just ahead of the clean one. It usually opens on an
+orphan word or a stray letter ("4 be asymptomatic.", "h inhibit
+implantation", "common. Because of her infection"), and it is found by
+reading, not by a check. Six more carry a fragment in the wrong section. The
+start of the Incorrect Answers section sits on the end of the discussion in
+14, 18, 37 and 38, and the discussion's last sentence sits in the header in
+9 and 24. Each fragment goes back where it belongs, and the item then needs
+only its lost opening written. Ten headers had also lost their letter list.
+Restore it as the key's complement only when every letter in it is named by
+a paragraph beneath. Items 22, 31 and 37 had no paragraph for a choice, so
+one was written for each and marked.
+
 Pediatrics Form 8 is the text-transcription version of the same loss. Five items
 carry written text, all of it a sentence the page seam cut: item 13's objective
 (rebuilt from its own discussion) plus two phrases in its discussion, and one

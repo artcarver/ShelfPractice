@@ -156,7 +156,10 @@ Two house styles, and the source decides which:
 - **Objective first** — `<p class="exp-obj">Educational Objective: …</p>`
   followed by the discussion. Use it when the source prints an Educational
   Objective line, wherever on the page it appears; it moves to the front.
-  Thirty-three of the current forms are this style.
+  Thirty-three of the current forms are this style. The engine draws the line
+  as a card whose first sentence is the headline, with "Educational objective"
+  run into it and the rest at body weight, so the data keeps it as printed: no
+  `<b>` inside it, and its sentences in the form's order.
 - **Plain paragraphs** — no objective line in the source (Medicine Forms 3–6,
   Surgery Forms 3–6, and Obstetrics and Gynecology Form 10, whose capture never
   printed one).
@@ -258,6 +261,42 @@ than transcribed, and a corrected verb was the form's sentence and still is.
 Copy-edit the text inside marked items as well — prose that was never the form's
 raises no fidelity question at all — but leave the marks as they are, and add
 none for a correction.
+
+### Laying it out for reading
+
+A form prints its discussion as one paragraph of a hundred to three hundred
+words, which is a wall to read on a screen. Laying it out is a third kind of
+work, after transcribing and copy-editing, and it changes no word:
+
+- break the discussion where its subject turns (what the condition is, why
+  it fits this patient, how it is diagnosed, how it is treated), keeping the
+  sentences in the form's order
+- bold the answer where the discussion states it, and a few key terms, about
+  one a paragraph. Bolding much more makes it all look the same again.
+- bold each choice name in the Incorrect Answers paragraphs, including a second
+  choice the same paragraph names. A form that runs every incorrect answer
+  into one paragraph after the header gets one paragraph per choice, starting
+  at the sentence that first names it. Obstetrics and Gynecology Forms 5 to 8
+  were printed this way. Count a Greek letter as a sentence start. If
+  you don't, "abscess. β-Hemolytic streptococcus (Choice C) includes…" reads
+  as one sentence, and the last line of one choice moves into the next. When
+  a choice's name falls late in its paragraph's first sentence ("Chlamydia can
+  result in pharyngitis, but… a throat culture (Choice D)"), bold the name
+  where it stands, not the sentence leading up to it. A choice's paragraph
+  starts where its discussion does, which can be a sentence before the name:
+  "Chancroid presents with an exudative painful genital ulcer…" belongs with
+  the Haemophilus ducreyi (Choice C) sentence after it, and a lead-in that
+  names no choice stays with the one it introduces rather than standing alone.
+- leave the objective alone, since the engine draws it
+
+Check it the way copy-edits are checked. Strip the tags from before and
+after, and the words must be identical. Where a form also needs copy-editing,
+do that first and commit it on its own, then lay it out against the
+copy-edited text. Each commit then holds one kind of change: a corrected word
+never sits inside a commit that says it only moved tags, and the layout check
+can still demand identical words. Obstetrics and Gynecology Forms 5 to 10 are
+laid out this way. Forms 5, 6, 7, 8 and 10 were copy-edited first, and Forms 5,
+6, 7 and 8 also had their capture damage repaired first (`CASES.md`).
 
 ## 7. The answer key
 
