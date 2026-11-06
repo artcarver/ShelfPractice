@@ -297,8 +297,9 @@ do that first and commit it on its own, then lay it out against the
 copy-edited text. Each commit then holds one kind of change: a corrected word
 never sits inside a commit that says it only moved tags, and the layout check
 can still demand identical words. Obstetrics and Gynecology Forms 4 to 10 are
-laid out this way. Forms 4 to 8 and 10 were copy-edited first, and Forms 4 to 8
-also had their capture damage repaired first (`CASES.md`).
+laid out this way, and so is Pediatrics Form 4. Obstetrics and Gynecology Forms
+4 to 8 and 10 were copy-edited first, and 4 to 8 also had their capture damage
+repaired first (`CASES.md`); Pediatrics Form 4 was copy-edited in its build.
 
 ## 7. The answer key
 
