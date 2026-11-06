@@ -288,7 +288,7 @@
 
   <main>
     <h1 id="pageHead" tabindex="-1">Practice exams</h1>
-    <p class="lede" id="lede">Every item has a full explanation. Progress saves in this browser.</p>
+    <p class="lede" id="lede">No account, no tracking, and your answers are never sent anywhere.</p>
 
     <!-- Shown until it is dismissed, then never again in this browser. -->
     <section class="news" id="newsBanner" aria-label="What is new" hidden>
@@ -586,14 +586,14 @@
      sentence instead of quietly falsifying it. */
   function describeShelf(){
     if(!exams.length) return;
+    const PRIVACY = 'No account, no tracking, and your answers are never sent anywhere.';
     const items = exams.reduce((n, e) => n + (e.items || 0), 0);
     const forms = exams.length + (exams.length === 1 ? ' form' : ' forms');
     document.getElementById('lede').textContent =
       items
         ? forms.charAt(0).toUpperCase() + forms.slice(1) + ', '
-          + items.toLocaleString() + ' items, every one with a full explanation. '
-          + 'Progress saves in this browser.'
-        : 'Every item has a full explanation. Progress saves in this browser.';
+          + items.toLocaleString() + ' items. ' + PRIVACY
+        : PRIVACY;
   }
 
   /* "Today", "yesterday", or the date: when you last worked on it, which is
