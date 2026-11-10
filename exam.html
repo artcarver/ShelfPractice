@@ -141,7 +141,7 @@
              clock. Both are offered only on a fresh start: they are fixed for
              the attempt, and Start over offers them again. A timed block can
              still turn its timer off partway, but not back on. -->
-        <fieldset class="mode-pick" id="modePick">
+        <fieldset class="mode-pick">
           <legend>When to see the answers</legend>
           <div class="pick-grid">
             <label class="mode-opt">
@@ -156,7 +156,7 @@
             </label>
           </div>
         </fieldset>
-        <fieldset class="mode-pick" id="clockPick">
+        <fieldset class="mode-pick">
           <legend>Clock</legend>
           <div class="pick-grid">
             <label class="mode-opt clock-opt">
@@ -171,7 +171,7 @@
           <p class="clock-note" id="clockNote"></p>
         </fieldset>
 
-        <div class="start-actions" id="beginRow">
+        <div class="start-actions">
           <button class="btn" id="beginBtn"><span id="beginLabel">Begin exam</span><kbd>Enter</kbd></button>
         </div>
       </div>
@@ -290,17 +290,17 @@
     <div class="topbar-right">
       <button type="button" class="tb-item" id="labValuesBtn" aria-expanded="false" title="Reference ranges beside the question">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6M10 3v6l-5.6 9.6A2 2 0 0 0 6.1 21h11.8a2 2 0 0 0 1.7-2.4L14 9V3"/><path d="M7.2 15.5h9.6"/></svg>
-        <div>Lab Values</div>
+        <span>Lab Values</span>
       </button>
       <button type="button" class="tb-item" id="notesBtn" aria-expanded="false" title="Write a note about this item (N)">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h9l5 5v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14 3v5h5"/><path d="M8 12h8M8 16h5"/></svg>
-        <div>Notes</div>
+        <span>Notes</span>
         <span class="tb-dot" aria-hidden="true"></span>
       </button>
       <div class="tb-wrap">
         <button type="button" class="tb-item" id="textSizeBtn" aria-haspopup="true" aria-expanded="false" title="Size of the question text (&minus; and +)">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 18.5 6.5 8l4 10.5"/><path d="M3.8 15.2h5.4"/><path d="M13.5 18.5 17.75 5l4.25 13.5"/><path d="M14.9 14.6h5.7"/></svg>
-          <div>Text size</div>
+          <span>Text size</span>
         </button>
         <div class="size-pop" id="sizePop" role="menu" aria-label="Text size" hidden>
           <button type="button" class="size-opt" data-size="s" role="menuitemradio">Small</button>
@@ -311,19 +311,19 @@
       </div>
       <button type="button" class="tb-item" id="reviewOpenBtn" title="See every item at once and jump to any of them">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7.5" height="7.5" rx="1"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1"/></svg>
-        <div>Review</div>
+        <span>Review</span>
       </button>
       <button type="button" class="tb-item" id="resultsBtn" style="display:none" title="Back to your score and the item list">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10"/><path d="M12 20V4"/><path d="M20 20v-7"/></svg>
-        <div>Results</div>
+        <span>Results</span>
       </button>
       <button type="button" class="tb-item" id="pauseBtn" title="Pause the exam and stop the clock (Esc)">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
-        <div>Pause</div>
+        <span>Pause</span>
       </button>
       <button type="button" class="tb-item" id="restartBtn" title="Clear every answer and start this exam again">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3.2-6.9"/><path d="M3 4v5h5"/></svg>
-        <div>Restart</div>
+        <span>Restart</span>
       </button>
     </div>
   </header>
@@ -345,7 +345,7 @@
       <main id="quizMain">
         <div class="graded-banner" id="gradedBanner" aria-live="polite"></div>
         <div class="set-note" id="setNote" style="display:none"></div>
-        <div class="qimg-wrap" id="qimgWrap" style="display:none"><img id="qimg" src="" alt="Exhibit"></div>
+        <div class="qimg-wrap" id="qimgWrap" style="display:none"><img id="qimg" alt="Exhibit"></div>
         <div class="stem" id="qstem"></div>
         <div class="set-lead" id="setLead" style="display:none"></div>
         <div class="options" id="qoptions"></div>
@@ -465,7 +465,7 @@
   </div>
 
   <!-- Enlarged exhibit -->
-  <div class="overlay" id="imgOverlay"><img id="imgZoom" src="" alt="Exhibit (enlarged)"></div>
+  <div class="overlay" id="imgOverlay"><img id="imgZoom" alt="Exhibit (enlarged)"></div>
 
 </div>
 

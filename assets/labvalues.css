@@ -126,6 +126,8 @@
   overflow-x:hidden;
   background:var(--lv-tint);
 }
+/* drawn inside the edge: the panel clips anything outside it */
+.lv-body:focus-visible{outline-offset:-2px;}
 .lv-table{
   width:100%;
   border-collapse:collapse;

@@ -143,7 +143,7 @@
      markers are therefore a signpost for a person and nothing more. What the
      parser looks for is a line that is itself a payload, taken from the end so
      a file appended to twice restores the newer one.
-  
+
      The joined fallback is for a file that has been through something that
      wraps long lines. JSON has no raw newlines inside it, so putting the lines
      back together with nothing between them restores the original exactly. */

@@ -57,7 +57,7 @@
     overflow:hidden;
     box-shadow:var(--shadow-md);
   }
-  .frame main{padding:22px 24px 26px;}
+  .frame-q{padding:22px 24px 26px;max-width:1000px;}
   .frame header.topbar{border-radius:0;}
   /* The frame is narrower than the window it sits in, so the window-width
      rule that drops the subject from the exam's bar never fires here, and the
@@ -150,7 +150,7 @@
 </head>
 <body>
   <header class="pagebar">
-    <a class="brand" href="index.html"><svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><rect x="1.5" y="1.5" width="21" height="21" rx="5.5"/><rect class="mark-bar" x="6" y="6" width="2.9" height="12" rx="1.2"/><rect class="mark-bar" x="10.6" y="8.4" width="2.9" height="9.6" rx="1.2"/><rect class="mark-bar" x="15.2" y="10.6" width="2.9" height="7.4" rx="1.2"/></svg><span class="brand-name">Shelf Practice</span></a>
+    <a class="brand" href="index.html" title="All practice exams"><svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><rect x="1.5" y="1.5" width="21" height="21" rx="5.5"/><rect class="mark-bar" x="6" y="6" width="2.9" height="12" rx="1.2"/><rect class="mark-bar" x="10.6" y="8.4" width="2.9" height="9.6" rx="1.2"/><rect class="mark-bar" x="15.2" y="10.6" width="2.9" height="7.4" rx="1.2"/></svg><span class="brand-name">Shelf Practice</span></a>
     <a class="bar-link" href="index.html">All practice exams</a>
   </header>
 
@@ -192,10 +192,10 @@
             </button>
           </div>
           <div class="topbar-right">
-            <button type="button" class="tb-item" id="dLabBtn" aria-expanded="false" title="Reference ranges beside the question"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6M10 3v6l-5.6 9.6A2 2 0 0 0 6.1 21h11.8a2 2 0 0 0 1.7-2.4L14 9V3"/><path d="M7.2 15.5h9.6"/></svg><div>Lab Values</div></button>
-            <button type="button" class="tb-item" id="dNotesBtn" aria-expanded="false" title="Write a note about this item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h9l5 5v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14 3v5h5"/><path d="M8 12h8M8 16h5"/></svg><div>Notes</div><span class="tb-dot" aria-hidden="true"></span></button>
+            <button type="button" class="tb-item" id="dLabBtn" aria-expanded="false" title="Reference ranges beside the question"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6M10 3v6l-5.6 9.6A2 2 0 0 0 6.1 21h11.8a2 2 0 0 0 1.7-2.4L14 9V3"/><path d="M7.2 15.5h9.6"/></svg><span>Lab Values</span></button>
+            <button type="button" class="tb-item" id="dNotesBtn" aria-expanded="false" title="Write a note about this item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h9l5 5v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14 3v5h5"/><path d="M8 12h8M8 16h5"/></svg><span>Notes</span><span class="tb-dot" aria-hidden="true"></span></button>
             <div class="tb-wrap">
-              <button type="button" class="tb-item" id="dSizeBtn" aria-haspopup="true" aria-expanded="false" title="Size of the question text"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 18.5 6.5 8l4 10.5"/><path d="M3.8 15.2h5.4"/><path d="M13.5 18.5 17.75 5l4.25 13.5"/><path d="M14.9 14.6h5.7"/></svg><div>Text size</div></button>
+              <button type="button" class="tb-item" id="dSizeBtn" aria-haspopup="true" aria-expanded="false" title="Size of the question text"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 18.5 6.5 8l4 10.5"/><path d="M3.8 15.2h5.4"/><path d="M13.5 18.5 17.75 5l4.25 13.5"/><path d="M14.9 14.6h5.7"/></svg><span>Text size</span></button>
               <div class="size-pop" id="dSizePop" role="menu" aria-label="Text size" hidden>
                 <button type="button" class="size-opt" data-size="s" role="menuitemradio">Small</button>
                 <button type="button" class="size-opt" data-size="m" role="menuitemradio">Default</button>
@@ -203,8 +203,8 @@
                 <button type="button" class="size-opt" data-size="xl" role="menuitemradio">Larger</button>
               </div>
             </div>
-            <button type="button" class="tb-item" id="dReviewBtn" title="Every item in the block, and the way out of it"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7.5" height="7.5" rx="1"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1"/></svg><div>Review</div></button>
-            <button type="button" class="tb-item" id="dPauseBtn" title="Pause the exam and stop the clock"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg><div>Pause</div></button>
+            <button type="button" class="tb-item" id="dReviewBtn" title="Every item in the block, and the way out of it"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7.5" height="7.5" rx="1"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1"/></svg><span>Review</span></button>
+            <button type="button" class="tb-item" id="dPauseBtn" title="Pause the exam and stop the clock"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg><span>Pause</span></button>
           </div>
         </header>
 
@@ -219,12 +219,12 @@
 
         <div class="frame-body" id="dBody">
         <div class="frame-main">
-        <main>
+        <div class="frame-q">
           <div class="graded-banner" id="dBanner" aria-live="polite"></div>
           <div class="stem" id="dStem">A 58-year-old man comes to the emergency department because of crushing substernal chest pain that began 2 hours ago while he was mowing his lawn. The pain radiates to his left jaw and is accompanied by diaphoresis and nausea. He has smoked one pack of cigarettes daily for 30 years. His pulse is 98/min, respirations are 20/min, and blood pressure is 148/92 mm Hg. Cardiac examination shows no murmurs or gallops. An ECG shows 3-mm ST-segment elevation in leads II, III, and aVF. The nearest catheterization laboratory is in this hospital and can be ready in 30 minutes. Which of the following is the most appropriate next step in management?</div>
           <div class="options" id="dOpts"></div>
           <div class="explanation" id="dExp" style="display:none"></div>
-        </main>
+        </div>
 
         <footer class="botbar">
           <div class="botbar-row">

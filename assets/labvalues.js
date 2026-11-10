@@ -237,6 +237,9 @@ function renderLabValues(root, opts){
   // ----- table body -----
   const body = document.createElement('div');
   body.className = 'lv-body';
+  // the table scrolls inside the panel, so the keyboard has to be able to land
+  // on it to scroll it; not every browser makes a scroller focusable itself
+  body.tabIndex = 0;
   root.appendChild(body);
 
   function categoryMatches(cat, q){
