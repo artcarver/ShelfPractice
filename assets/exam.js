@@ -567,7 +567,7 @@ function render(){
     img.src = IMAGES[q.image];
     imgWrap.style.display = '';
   }else{
-    img.src = '';
+    img.removeAttribute('src');
     imgWrap.style.display = 'none';
   }
 
@@ -1846,7 +1846,7 @@ function openLightbox(){
 }
 function closeLightbox(){
   document.getElementById('imgOverlay').classList.remove('show');
-  document.getElementById('imgZoom').src = '';
+  document.getElementById('imgZoom').removeAttribute('src');
 }
 function lightboxOpen(){
   return document.getElementById('imgOverlay').classList.contains('show');
